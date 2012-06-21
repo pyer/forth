@@ -1,0 +1,23 @@
+GIT Help
+========
+
+How to get the repository ?
+git clone git://github.com/pyer/forth
+git remote set-url origin git@github.com:pyer/forth
+
+How to add a file ?
+git add file
+
+How to save changes ?
+git commit file -m "+ ..."
+
+How to update the remote repository ?
+git push origin master
+
+How to update the local repository ?
+git pull
+
+More ?
+git log
+git status
+
