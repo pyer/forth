@@ -811,15 +811,6 @@ FCode (p4_loword)
     P4xW0(*SP) = 0;
 }
 
-/** REWIND-FILE     ( file-id -- ior )
- *  Rewind the file.
- : REWIND-FILE       ( file-id -- ior )
-    0 0 ROT REPOSITION-FILE ;
- */
-FCode (p4_rewind_file)
-{
-    *SP = p4_reposition_file ((void*) *SP, 0);
-}
 
 P4_LISTWORDS(toolbelt) =
 {
@@ -886,7 +877,6 @@ P4_LISTWORDS(toolbelt) =
     P4_FXco ("EMITS",			p4_emits),
     P4_FXco ("HIWORD",			p4_hiword),
     P4_FXco ("LOWORD",			p4_loword),
-    P4_FXco ("REWIND-FILE",		p4_rewind_file),
 
     P4_INTO ("ENVIRONMENT", 0 ),
     P4_OCON ("TOOLBELT-EXT",		1999 ),
