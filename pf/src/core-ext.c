@@ -2844,11 +2844,6 @@ FCode (p4_backslash)
     switch (SOURCE_ID)
     {
      case 0:
-         if (BLK)
-         {
-             TO_IN += 64 - TO_IN % 64;
-             break;
-         }
      case -1:
          TO_IN = NUMBER_TIB;
          break;

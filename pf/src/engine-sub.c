@@ -34,7 +34,6 @@ static char* id __attribute__((unused)) =
 #include <pfe/option-ext.h>
 #include <pfe/double-sub.h>
 #include <pfe/debug-ext.h>
-#include <pfe/block-sub.h>
 #include <pfe/file-sub.h>
 #include <pfe/term-sub.h>
 #include <pfe/_missing.h>
@@ -408,7 +407,6 @@ p4_evaluate (const p4_char_t *p, int n)
     RP = (p4xcode **) p4_save_input (RP);
 #  endif
     SOURCE_ID = -1;
-    BLK = 0;
     TIB = p;                /* leave that warning for a while... */
     NUMBER_TIB = n;
     TO_IN = 0;
@@ -436,7 +434,6 @@ p4_include_file (p4_File *fid)
 	RP = (p4xcode **) p4_save_input (RP);
 #      endif
 	SOURCE_ID = (p4cell) fid;
-	BLK = 0;
 	TO_IN = 0;
 	FX (p4_interpret);
 #      if defined P4_RP_IN_VM
@@ -647,7 +644,7 @@ p4_interpret_loop (P4_VOID)
          /* initialize */
      case 'A': /* do abort */
          abort_system (FX_VOID);
-         p4_redo_all_words (PFE.abort_wl);
+//         p4_redo_all_words (PFE.abort_wl);
          /* -> do quit */
      case 'Q': /* do quit */
          quit_system (FX_VOID);
@@ -658,7 +655,7 @@ p4_interpret_loop (P4_VOID)
          p4_unnest_input (NULL);
          for (;;)
          {
-             p4_do_all_words (PFE.prompt_wl);
+//             p4_do_all_words (PFE.prompt_wl);
              FX (p4_ok);
              FX (p4_cr);
              FX (p4_query);
@@ -742,6 +739,7 @@ static const p4_char_t p4_lit_precision[] = "precision";
 static const p4_char_t p4_lit_source_any_case[] = "source-any-case";
 static const p4_char_t p4_lit_source_upper_case[] = "source-upper-case";
 static const p4_char_t p4_lit_lower_case_filenames[] = "lower-case-filenames";
+
 /**
  * setup all system variables and initialize the dictionary
  * to reach a very clean status as if right after cold boot.
@@ -798,8 +796,10 @@ FCode (p4_cold_system)
     /* Wipe the dictionary: */
     p4_memset (PFE.dict, 0, (PFE.dictlimit - PFE.dict));
     p4_preload_only ();
+/*
     if (! PFE.abort_wl)     PFE.abort_wl  = p4_new_wordlist (0);
     if (! PFE.prompt_wl)    PFE.prompt_wl = p4_new_wordlist (0);
+*/
     FX (p4_preload_interpret);
     FX (p4_only_RT);
     {
@@ -826,7 +826,6 @@ FCode (p4_boot_system)
 
     /* Action of COLD ABORT and QUIT, but don't enter the interactive QUIT */
     RESET_ORDER = P4_TRUE;
-    /* FX (p4_cold_system); */
     REDEFINED_MSG = P4_FALSE;
     {
 #ifndef MODULE0
@@ -871,27 +870,9 @@ FCode (p4_boot_system)
 
     REDEFINED_MSG = P4_FALSE;
     {
-	static const p4_char_t p4_lit_block_file[] = "block-file";
 	static const p4_char_t p4_lit_boot_file[] = "boot-file";
 
 	register const char* file;
-#       ifndef PFE_BLOCK_FILE /* USER-CONFIG: --block-file=<mapped-file> */
-#       define PFE_BLOCK_FILE PFE_DEFAULT_BLKFILE
-#       endif
-
-	if ((file = (char*) p4_search_option_string (
-	    p4_lit_block_file, 10, PFE_BLOCK_FILE, PFE.set)))
-	{
-	    if (! p4_set_blockfile (p4_open_blockfile(
-		   (const p4_char_t*) file, p4_strlen (file)))
-		&& p4_strcmp (file, PFE_DEFAULT_BLKFILE) != 0)
-	    {
-		P4_fatal1 ("Can't find block file %s", file);
-		PFE.exitcode = 4;
-		p4_longjmp_exit ();
-	    }
-	}
-
 #       ifndef PFE_BOOT_FILE /* USER-CONFIG: --boot-file=<included-file> */
 #       define PFE_BOOT_FILE 0
 #       endif

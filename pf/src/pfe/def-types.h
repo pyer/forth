@@ -175,7 +175,6 @@ struct p4_File			/* describes a file */
 struct p4_Input			/* an input source specification */
 {
     p4cell source_id;		/* SOURCE-ID */
-    p4_File *block_file;	/* which file is active? */
     p4ucell blk;		/* currently loaded block */
     union { _p4_off_t pos;	/* stream file: beginning of line in file */
         char compat[8]; } line;
@@ -271,8 +270,6 @@ struct p4_Session
     /* we keep the following entries only to speed up runtime processing: */
     char const** inc_paths;     /* usually points to "INC-PATH" */
     char const** inc_ext;       /* usually points to "INC-EXT" */
-    char const** blk_paths;     /* usually points to "BLK-PATH" */
-    char const** blk_ext;       /* usually points to "BLK-EXT" */
     char const** lib_paths;     /* usually points to "LIB-PATH" */
     /*                 _editor; // use option_string("$EDITOR") */
 
@@ -280,7 +277,7 @@ struct p4_Session
     int     cpus;          /* how many cpus do we have in this tread */
 
     char const** unused_prefix;      /* use option_string("PREFIX-DIR") */
-    char const** boot_name;          /* points to argv[0] usually... */
+    char ** boot_name;          /* points to argv[0] usually... */
     char const** unused_bootcommand; /* use option_string("BOOT-INIT") */
     char const** optv;
     p4cell       unused_heap;        /* obsoleted bitfield */
@@ -583,8 +580,6 @@ struct p4_Thread
 
 # define p4_SOURCE_ID	(PFE.input.source_id)
 # define p4_SOURCE_FILE	((p4_File*) SOURCE_ID)
-# define p4_BLOCK_FILE	(PFE.input.block_file)
-# define p4_BLK		(PFE.input.blk)
 # define p4_TIB		(PFE.input.tib)
 # define p4_NUMBER_TIB	(PFE.input.number_tib)
 # define p4_TO_IN	(PFE.input.to_in)
@@ -592,8 +587,6 @@ struct p4_Thread
 #ifdef _P4_SOURCE
 # define SOURCE_ID	p4_SOURCE_ID
 # define SOURCE_FILE	p4_SOURCE_FILE
-# define BLOCK_FILE	p4_BLOCK_FILE
-# define BLK		p4_BLK
 # define TIB		p4_TIB
 # define NUMBER_TIB	p4_NUMBER_TIB
 # define TO_IN		p4_TO_IN

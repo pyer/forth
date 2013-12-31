@@ -29,84 +29,16 @@ static char* id __attribute__((unused)) =
 
 #include <pfe/def-comp.h>
 #include <pfe/term-sub.h>
+//#include <pfe/file-ext.h>
 #include <pfe/file-sub.h>
 #include <pfe/double-sub.h>
-#include <pfe/block-ext.h>
 #include <pfe/exception-sub.h>
 #include <pfe/version-sub.h>
 #include <pfe/core-mix.h>
-#include <pfe/block-mix.h>
 
 #include <pfe/def-words.h>
 #include <pfe/logging.h>
 #include <pfe/_missing.h>
-
-/** COLD ( -- ) [FTH]
- * cold abort - reinitialize everything and go to => QUIT routine
- * ... this routine is implemented as a warm-boot in pfe.
- : COLD [ ALSO ENVIRONMENT ] EMPTY SCRIPT-FILE INCLUDED QUIT ;
- */
-FCode (p4_cold)
-{
-    FX (p4_close_all_files);
-
-#if 0
-    PFE.atexit_running = 1;
-    p4_forget (PFE.dict);
-    PFE.atexit_running = 0;
-
-    FX (p4_cold_system);
-    FX (p4_boot_system);
-#else
-    PFE.atexit_running = 1;
-    {
-        p4_namebuf_t* golden = p4_search_wordlist ((p4_char_t*) "EMPTY", 5,
-						   PFE.environ_wl);
-        if (golden)
-        {
-            p4xt xt = p4_name_from(golden);
-            if (*P4_TO_CODE(xt) != PFX (p4_marker_RT))
-                P4_fail ("COLD found non-MARKER named EMPTY in ENVIRONMENT,"
-                         " that is suspicious but still going to execute it");
-
-            /*do we need a CATCH-domain here? that'd be usage errors, right?*/
-            golden = PFE.dp;
-            p4_call (xt); /* runs => (FORGET) with MARKER-address */
-            if (PFE.dp == golden)
-            {
-                P4_fail ("COLD did run EMPTY but dictionary space was not"
-                         " touched, so now do FORGET>FENCE additionally");
-                p4_forget (FENCE);
-            }
-        }else{
-            p4_forget (FENCE);
-        }
-    }
-    PFE.atexit_running = 0;
-#endif
-
-    FX (p4_paren_abort);
-    FX (p4_script_files);
-
-    /* If it's a turnkey-application, start it: */
-    if (APPLICATION)
-    {
-        p4_call_loop (APPLICATION);
-        p4_longjmp_exit ();
-    }
-    if (P4_opt.verbose)
-        FX (p4_dot_memory);
-    /* p4_longjmp_abort (); -> paren_abort + yield */
-    p4_longjmp_yield ();
-}
-
-/** .LINE ( line# block# -- ) [FTH]
- */
-FCode (p4_dot_line)
-{
-    p4_dot_line (BLOCK_FILE, SP[0], SP[1]);
-    SP += 2;
-}
 
 
 /************************************************************************/
@@ -382,12 +314,6 @@ FCode (p4_source_line)
     switch (SOURCE_ID)
     {
     case 0:
-	if (BLK)
-	{
-	    *--SP = TO_IN / 64 + 1;	/* source line from BLOCK */
-	    break;
-	}
-	/* else fallthrough */
     case -1:			/* string from EVALUATE */
 	*--SP = 0;		/* or from QUERY (0/BLK==0) */
 	break;
@@ -405,8 +331,7 @@ FCode (p4_source_name)
     switch (SOURCE_ID)
     {
     case 0:
-	if (BLK) FX_PUSH("*block#*");
-	else FX_PUSH ("*query*"); /*correct?*/
+	FX_PUSH ("*query*"); /*correct?*/
 	break;
     case -1:
 	FX_PUSH ("*evaluate*");
@@ -611,10 +536,6 @@ FCode (p4_close_all_files)
     {
         if (f->f)
 	{
-            if (f->updated)
-	    {
-                p4_read_write (f, f->buffer, f->n, P4_FALSE);
-	    }
             p4_close_file (f);
 	}
     }
@@ -646,19 +567,10 @@ FCode (p4_dot_memory)
  */
 FCode (p4_dot_status)
 {
-    extern const char p4_dl_def[]; /* dl-def.c */
-
     FX (p4_cr);
-    FX (p4_dot_version);
-    FX (p4_cr);
-    FX (p4_dot_date); p4_outs(p4_dl_def);
-    FX (p4_cr);
-    p4_outf ("\nMemory overview:");
     FX (p4_dot_memory);
     p4_outf ("\nsearch path for binary modules:   %s", *P4_opt.lib_paths);
     p4_outf ("\nsearching for help files in:      %s", PFE_PKGHELPDIR);
-    p4_outf ("\nsearch path for block files:      %s", *P4_opt.blk_paths);
-    p4_outf ("\nextensions for block files:       %s", *P4_opt.blk_ext);
     p4_outf ("\nsearch path for source files:     %s", *P4_opt.inc_paths);
     p4_outf ("\nextensions for source files:      %s", *P4_opt.inc_ext);
     FX (p4_cr);
@@ -714,7 +626,7 @@ FCode (p4_dot_status)
 #  else
     p4_outs ("           (traditional-threading)");
 #  endif
-    FX (p4_space);
+    FX (p4_cr);
 }
 
 /************************************************************************/
@@ -883,13 +795,16 @@ P4COMPILES (p4_executes, p4_executes_execution,
  */
 FCode (p4_help)
 {
+#ifdef PFE_HELP
     p4_char_t* wordpad = p4_pocket ();
+#endif
 
     FX (p4_Q_exec);
 
     p4_word_parseword (' '); *DP=0; /* PARSE-WORD-NOHERE */
     if (! PFE.word.len || PFE.word.len > P4_POCKET_SIZE) { return; }
 
+#ifdef PFE_HELP
     memcpy (wordpad, PFE.word.ptr, PFE.word.len);
     if (LOWER_CASE)
         p4_upper (wordpad, PFE.word.len);
@@ -908,45 +823,9 @@ FCode (p4_help)
 	    p4_call(p4_name_from(name));
 	}
     }
+#endif
 }
 
-/** EDIT-BLOCKFILE ( "name" -- ) [FTH] [EXEC]
- * will load the edit module in the background and look for a word
- * called => EDIT-BLOCK that could be used to edit the blockfile.
- * If no => EDIT-BLOCKFILE word can be loaded, nothing will happen.
- * Otherwise, => OPEN-BLOCKFILE is called followed by => 0 => EDIT-BLOCK
- * to start editing the file at the first block.
- */
-FCode (p4_edit_blockfile)
-{
-    p4_char_t* wordpad = p4_pocket ();
-
-    FX (p4_Q_exec);
-
-    p4_word_parseword (' '); *DP=0; /* PARSE-WORD-NOHERE */
-    if (! PFE.word.len) { return; }
-
-    wordpad = (p4_char_t*) p4_pocket_expanded_filename (
-        PFE.word.ptr, PFE.word.len, *PFE_set.blk_paths, *PFE_set.blk_ext);
-    {
-	extern void* p4_loadm_once (const p4char* nm, int l);
-	register p4char* name;
-	register int wordlen = PFE.word.len; /* loadm might parse */
-
-	p4_loadm_once ((const p4_char_t*) "\tedit", 5);
-	if ((name = p4_search_wordlist (
-		 (const p4_char_t*) "EDIT-BLOCK-START", 16, PFE.forth_wl)))
-	{
-	    /* see => OPEN-BLOCKFILE */
-	    FX (p4_close_blockfile);
-	    if (! p4_set_blockfile (p4_open_blockfile (wordpad, wordlen)))
-		p4_throws (FX_IOR, wordpad, wordlen);
-
-	    FX_PUSH(0); /* argument for => EDIT-BLOCK */
-	    p4_call(p4_name_from(name));
-	}
-    }
-}
 
 /************************************************************************/
 /* hooks to editors and os services                                     */
@@ -989,45 +868,6 @@ FCode (p4_expand_fn)
     SP[0] = p4_strlen (fn);
 }
 
-/** ((LOAD")) ( -- ? ) [HIDDEN]
- */
-FCode_XE (p4_load_quote_execution)
-{   FX_USE_CODE_ADDR {
-#  if !defined PFE_SBR_CALL_THREADING
-    register p4_char_t *p = (p4_char_t *) IP;
-    register int n = *p++;
-
-    FX_SKIP_STRING;
-    p4_load_file (p, n, *SP++);
-#  else
-    register p4_char_t *p;
-    FX_NEW_IP_WORK;
-    p = FX_NEW_IP_CHAR;
-    FX_NEW_IP_SKIP_STRING;
-    FX_NEW_IP_DONE;
-    p4_load_file (p+1, *p, *SP++);
-#  endif
-    FX_USE_CODE_EXIT;
-}}
-
-/** LOAD"  ( [filename<">] -- ??? ) [FTH] [OLD]
- * load the specified file - this word can be compiled into a word-definition
- * obsolete! use => OPEN-BLOCKFILE name => LOAD
- */
-FCode (p4_load_quote)
-{
-    if (STATE)
-    {
-        FX_COMPILE (p4_load_quote);
-        FX (p4_parse_comma_quote);
-    }else{
-        p4_skip_delimiter (' ');
-        p4_word_parse ('"'); *DP=0; /* PARSE-NOHERE (actually PARSE-WORD) */
-        p4_load_file (PFE.word.ptr, PFE.word.len, *SP++); /* uses p4_pocket */
-    }
-}
-P4COMPILES (p4_load_quote, p4_load_quote_execution,
-  P4_SKIPS_STRING, P4_DEFAULT_STYLE);
 
 #ifndef NO_SYSTEM
 /** SYSTEM ( command-ptr command-len -- command-exitcode# ) [FTH]
@@ -1344,9 +1184,7 @@ P4_LISTWORDS (misc) =
     P4_FXco ("ok",		p4_ok),
 
     /* more fig-forth */
-    P4_FXco ("COLD",		p4_cold),
     P4_FXco ("LIT",		p4_literal_execution),
-    P4_FXco (".LINE",		p4_dot_line),
 
     /** basic system variables ( => OUT => DP => HLD => R0 => S0 ) */
     P4_DVaR ("OUT",		out),
@@ -1428,7 +1266,6 @@ P4_LISTWORDS (misc) =
 
     /* show online help: */
     P4_FXco ("HELP",		p4_help),
-    P4_FXco ("EDIT-BLOCKFILE",	p4_edit_blockfile),
   /** the application to be called, options like => ARGC => ARGV */
     P4_DVaR ("APPLICATION",	application),
 
@@ -1442,7 +1279,6 @@ P4_LISTWORDS (misc) =
     P4_DVaL ("STDERR",		stdErr),
 
     P4_FXco ("EXPAND-FN",	p4_expand_fn),
-    P4_SXco ("LOAD\"",		p4_load_quote),
 #ifndef NO_SYSTEM
     P4_FXco ("SYSTEM",		p4_system),
     P4_SXco ("SYSTEM\"",	p4_system_quote),

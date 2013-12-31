@@ -87,13 +87,7 @@ extern P4_CODE (p4_warranty);
  * show the version of the current PFE system
  : .VERSION [ ENVIRONMENT ] FORTH-NAME TYPE FORTH-VERSION TYPE ;
  */
-extern P4_CODE (p4_dot_version);
-
-/** .CVERSION ( -- )
- * show the compile date of the current PFE system
- : .CVERSION [ ENVIRONMENT ] FORTH-NAME TYPE FORTH-DATE TYPE ;
- */
-extern P4_CODE (p4_dot_date);
+extern P4_CODE (p4_version);
 
 /** STRING,               ( str len -- )
  *  Store a string in data space as a counted string.

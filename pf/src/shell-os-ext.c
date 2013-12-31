@@ -52,20 +52,10 @@ static char * id __attribute__((unused)) =
 #include <sys/stat.h>
 #endif
 
-#ifdef PFE_HAVE_VXWORKS_H
-#include <ioLib.h> /* chdir */
-#endif
-
 #include <pfe/def-comp.h>
 #include <pfe/file-sub.h>
 #include <pfe/_nonansi.h>
 #include <pfe/_missing.h>
-
-#if defined VxWorks
-#include <taskLib.h>
-extern char* getwd ( char* pathname );
-extern STATUS cd (const char*);
-#endif
 
 #include <pfe/logging.h>
 
@@ -128,44 +118,6 @@ FCode (p4_pwd)
 {
     p4_outs (getcwd (p4_pocket (), PATH_LENGTH));
     FX (p4_space);
-}
-
-/** CHDIR ( bstring -- )
- * change the current directory. <br>
- * <small> (under VxWorks it is global! do not use in scripts!!) </small>
- */
-FCode (p4_chdir)
-{
-# ifdef VxWorks
-    /* "cd" understands ".." and friends */
-# define chdir cd
-# endif
-
-    /* pocket_filename expands "~" and replaces "\" and "/" */
-    chdir (p4_pocket_filename ((* (p4_char_t**) SP) + 1, (int) **(p4_char_t**) SP));
-    FX_DROP;
-
-# ifdef VxWorks
-# undef chdir
-    {
-        static int pid = 0;
-
-        if (SOURCE_ID)
-        {
-            P4_fail ("CHDIR in K12xx scripts is dangerous "
-              "and likely to cause problems!!");
-
-            if (pid && taskIdSelf () != pid)
-            {
-                P4_fatal ("CHDIR called in two different PFE threads - "
-                  "this will definitely trash script execution environment");
-                P4_fatal ("IF your PFE scripts still work correctly - "
-                  "THEN it was just lucky timing. Change your scripts!!");
-            }
-            pid = taskIdSelf ();
-        }
-    }
-# endif
 }
 
 /* shell word helper macros _________________________________________ */
@@ -317,21 +269,10 @@ P4COMPILES (P4CAT(p4_,X), P4CAT3(p4_,X,_execution),	\
 # define RWXALL	0777
 #endif
 
-/* vxworks, mingw, (msvc) don't want modbits at mkdir */
-#ifdef PFE_HAVE_VXWORKS_H 
-# ifndef PFE_MKDIR_TAKES_ONE_ARG
-# define PFE_MKDIR_TAKES_ONE_ARG 1
-# endif
-#endif
-
 static int
-md (const char *s)
+f_mkdir (const char *s)
 {
-#if defined PFE_MKDIR_TAKES_ONE_ARG
-    return mkdir ((char*)(s));
-#else
     return mkdir (s, RWXALL);
-#endif
 }
 
 static int
@@ -378,11 +319,7 @@ ls (const char* p)
     struct dirent* dirent;
     FX (p4_cr);
   
-#  ifdef VxWorks
-    dir = opendir ((char*)p);   /* non-const char* in vxworks headers */
-#  else
     dir = opendir (p);
-#  endif
     if (!dir) return -1;
   
     while ((dirent=readdir(dir)))
@@ -407,11 +344,7 @@ ll (const char* p)
     FX (p4_start_Q_cr);
 
 
-#  ifdef VxWorks
-    dir = opendir ((char*)p);   /* non-const char* in vxworks headers */
-#  else
     dir = opendir (p);
-#  endif
     if (!dir) return -1;
     
     while ((dirent=readdir(dir)))
@@ -471,17 +404,11 @@ mv (const char *p1, const char* p2)
 static int remove (const char *name) { return _pfe_remove (name); }
 #endif
 
-#if defined __target_os_aix1
-extern int link();
-extern int remove();
-extern int chdir();
-extern int rmdir();
-#endif
-
 SHWORD1(remove);
 SHWORD1(touch);
+SHWORD1(chdir);
 SHWORD1(rmdir);
-SHWORD1(md);
+SHWORD1(f_mkdir);
 #ifdef GOT_DIR
 SHWORD1(ls);
 SHWORD1(ll);
@@ -517,9 +444,9 @@ P4_LISTWORDS (shell) =
     /** mimics a unix'ish shell-command - =>'PARSE's one filename/dirname */
     P4_SXco ("RM",		p4_remove),
     P4_SXco ("TOUCH",		p4_touch),
-    P4_FXco ("CHDIR",		p4_chdir),
+    P4_FXco ("CD",		p4_chdir),
     P4_SXco ("RMDIR",		p4_rmdir),
-    P4_SXco ("MKDIR",		p4_md),
+    P4_SXco ("MKDIR",		p4_f_mkdir),
 #ifdef PFE_HAVE_LINK
     /** mimics a unix'ish shell-command - =>'PARSE's two filenames/dirnames */
     P4_SXco ("LN",		p4_link),

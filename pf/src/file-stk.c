@@ -12,8 +12,6 @@
  *  @description
  *       The Optional File-Access Word Set and
  *       File-Access Extension Words.
- *       These words imply some kind of file-system unlike
- *       the BLOCK wordset.
  *
  */
 /*@{*/
@@ -56,16 +54,6 @@ P4_LISTWORDS (file_check) =
 
     P4_STKi ("COPY-FILE",	"src-ptr src-len dst-ptr dst-len -- errno#"),
     P4_STKi ("MOVE-FILE",	"src-ptr str-len dst-ptr dst-len -- errno#"),
-    P4_STKi ("FILE-R/W",	"buffer* block# flag? file* --"),
-    P4_STKi ("FILE-BLOCK",	"bock# file* -- buffer*"),
-    P4_STKi ("FILE-BUFFER",	"block# file* -- buffer*"),
-    P4_STKi ("FILE-EMPTY-BUFFERS", "file* --"),
-    P4_STKi ("FILE-FLUSH",	"file* --"),
-    P4_STKi ("FILE-LIST",	"block# file* --"),
-    P4_STKi ("FILE-LOAD",	"block# file* --"),
-    P4_STKi ("FILE-SAVE-BUFFERS", "file* --"),
-    P4_STKi ("FILE-THRU",	"lo-block# hi-block# file* --"),
-    P4_STKi ("FILE-UPDATE",	"file* --"),
 
     P4_INTO ("ENVIRONMENT", 0),
     P4_STKi ("FILE-EXT",        "-- year# true! | 0"),

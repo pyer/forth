@@ -21,6 +21,29 @@ typedef unsigned short p4word; /* hopefully a 16-bit type */
 
 typedef unsigned char const p4cchar;
 
+/* a cell has atleast the size of a pointer but the type of an integer */
+#if defined PFE_SIZEOF_INT && PFE_SIZEOF_INT >= PFE_SIZEOF_VOIDP
+# define       PFE_SIZEOF_CELL PFE_SIZEOF_INT
+# define       PFE_TYPEOF_CELL int
+#elif defined PFE_SIZEOF_LONG && PFE_SIZEOF_LONG >= PFE_SIZEOF_VOIDP
+# define       PFE_SIZEOF_CELL PFE_SIZEOF_LONG
+# define       PFE_TYPEOF_CELL long
+#else 
+# error cell type and size not detected.
+#endif
+
+#if defined PFE_SIZEOF_INT && PFE_SIZEOF_INT == PFE_SIZEOF_CELL / 2 
+# define       PFE_TYPEOF_HALFCELL int
+#elif defined PFE_SIZEOF_SHORT && PFE_SIZEOF_SHORT == PFE_SIZEOF_CELL / 2 
+# define       PFE_TYPEOF_HALFCELL short
+#else
+# error halfcell type not detected
+#endif
+
+#define PFE_ALIGNOF_CELL   PFE_SIZEOF_INT
+#define PFE_ALIGNOF_SFLOAT PFE_SIZEOF_FLOAT
+#define PFE_ALIGNOF_DFLOAT PFE_SIZEOF_DOUBLE
+
 typedef PFE_TYPEOF_CELL			p4cell;	 /* a stack item */
 typedef unsigned PFE_TYPEOF_CELL	p4ucell; /* dito unsigned */
 
@@ -31,6 +54,7 @@ typedef unsigned long p4ucelll;        /* a couple of warnings on LP64 */
 typedef p4cell p4celll;       /* FIXME: default p4cell should be "long" */
 typedef p4ucell p4celll;      /* instead of the traditional "int" default */
 # endif
+
 
 typedef struct
 { 

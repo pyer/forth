@@ -436,10 +436,10 @@ is_sbr_give_body(p4xcode** ip, const p4_namebuf_t** name)
     return P4_FALSE;
 }
 
+#ifdef PFE_SBR_COMPILE_CALL
 static p4_bool_t
 is_sbr_compile_call_to(p4xcode** ip, p4char* arg)
 {
-#  ifdef PFE_SBR_COMPILE_CALL
 #    undef PFE_SBR_COMPILE_CALL_FAILED
 #   define PFE_SBR_COMPILE_CALL_FAILED(X) /* we don't wanna know */
     p4char code[40];
@@ -458,9 +458,9 @@ is_sbr_compile_call_to(p4xcode** ip, p4char* arg)
         *ip = (p4xcode*)(ref + (end-code));
         return P4_TRUE;
     }
-#  endif
     return P4_FALSE;
 }
+#endif
 
 static p4_bool_t
 is_sbr_compile_call(p4xcode** ip, const p4_namebuf_t** name) 

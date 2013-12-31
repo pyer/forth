@@ -22,6 +22,7 @@ static char* id __attribute__((unused)) =
 
 #define _P4_SOURCE 1
 
+#include <pfe/def-config.h>
 #include <pfe/pfe-base.h>
 #include <pfe/def-limits.h>
 
@@ -43,7 +44,6 @@ static char* id __attribute__((unused)) =
 #endif
 
 #include <pfe/double-sub.h>
-#include <pfe/block-sub.h>
 #include <pfe/file-sub.h>
 #include <pfe/term-sub.h>
 #include <pfe/lined.h>
@@ -961,15 +961,6 @@ p4_tab (int n)
     p4_emits (n - p4_OUT % n, ' ');
 }
 
-/** _.line_ ( file* block# line# -- )
- */
-_export void
-p4_dot_line (p4_File *fid, p4cell n, p4cell l)
-{
-    register p4_byte_t *p = (p4_byte_t*) p4_block (fid, n) + l * 64;
-    p4_type (p, p4_dash_trailing (p, 64));
-}
-
 /** _expect_noecho_ ( str* str# -- span# )
  * EXPECT counted string from terminal, without echo, so no real editing
  * it will however convert backspace and tabulators, break on newline/escape
@@ -1140,7 +1131,6 @@ p4_accept (p4_char_t *tib, int n)
 FCode (p4_query)
 {
     SOURCE_ID = 0;
-    BLK = 0;
     TO_IN = 0;
     TIB = PFE.tib;
     NUMBER_TIB = p4_accept (PFE.tib, TIB_SIZE);
@@ -1167,7 +1157,6 @@ p4_next_line (void)
     }
     TIB = SOURCE_FILE->buffer;
     NUMBER_TIB = SOURCE_FILE->len = len;
-    BLK = 0;
     TO_IN = 0;
     return P4_TRUE;
 }
@@ -1185,14 +1174,8 @@ p4_source (const p4_char_t **p, int *n)
          *n = NUMBER_TIB;
          break;
      case 0:			/* string from QUERY or BLOCK */
-         if (BLK)
-         {
-             *p = p4_block (BLOCK_FILE, BLK);
-             *n = BPBUF;
-         }else{
-             *p = TIB;
-             *n = NUMBER_TIB;
-         }
+         *p = TIB;
+         *n = NUMBER_TIB;
          break;
      default:			/* source line from text file */
          *p = SOURCE_FILE->buffer;
@@ -1283,13 +1266,7 @@ p4_refill (void)
      case -1:
          return 0;
      case 0:
-         if (BLK)
-         {
-             BLK++;
-             TO_IN = 0;
-         }else{
-             FX (p4_query);
-         }
+         FX (p4_query);
          return P4_TRUE;
     default:
         return p4_next_line ();

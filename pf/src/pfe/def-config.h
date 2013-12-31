@@ -8,28 +8,13 @@
  *  @version $Revision: 1.7 $
  *     (modified $Date: 2008-05-11 12:29:19 $)
  */
-/* include the configure generated headers */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
+#if defined ARM
+#include "include/config_arm.h"
+#else
+#include "include/config_x86.h"
 #endif
-
-#include "pfe/_config.h"
-#include "pfe/_target.h" 
 
 #include <pfe/def-gcc.h>
-
-/* try to detect errornous headers.. */
-
-#if defined PFE_CONFIGVERSION && defined PFE_PFE_CONFIGVERSION
-# if PFE_CONFIGVERSION != PFE_PFE_CONFIGVERSION
-#  ifdef __GNUC__
-#  warning "wrong pfe/_config.h included, version mismatch with local config.h, expect PROBLEMS"
-#  warning "please check the gcc's include-defs (in Makefile) for the order of $builddir"
-#  else
-#  error   "wrong pfe/_config.h included, version mismatch with local config.h, check INCLUDE"
-#  endif
-# endif
-#endif
 
 #ifndef _pfe_const
 #define _pfe_const const
@@ -51,15 +36,6 @@
 
 #ifndef _extern
 #define _extern extern
-#endif
-
-#ifdef __WATCOMC__
-#undef  _export
-typedef int mode_t;
-/* 106 = truncated constants */
-/* 121 = text following pre-processor symbols is not standard C */
-/* 201 = unreachable code */
-#pragma disable_message (106, 121, 201)
 #endif
 
 #ifndef _export
@@ -93,49 +69,6 @@ typedef int mode_t;
 #endif
 #endif
 
-/* CELL type detection */
-#if !defined PFE_SIZEOF_SHORT && defined SIZEOF_SHORT
-#define PFE_SIZEOF_SHORT SIZEOF_SHORT
-#endif
-#if !defined PFE_SIZEOF_INT && defined SIZEOF_INT
-#define PFE_SIZEOF_INT SIZEOF_INT
-#endif
-#if !defined PFE_SIZEOF_LONG && defined SIZEOF_LONG
-#define PFE_SIZEOF_LONG SIZEOF_LONG
-#endif
-
-/* a cell has atleast the size of a pointer but the type of an integer */
-#if !defined PFE_TYPEOF_CELL || !defined PFE_SIZEOF_CELL
-# if defined PFE_SIZEOF_INT && PFE_SIZEOF_INT >= PFE_SIZEOF_VOIDP
-# define       PFE_SIZEOF_CELL PFE_SIZEOF_INT
-# define       PFE_TYPEOF_CELL int
-# elif defined PFE_SIZEOF_LONG && PFE_SIZEOF_LONG >= PFE_SIZEOF_VOIDP
-# define       PFE_SIZEOF_CELL PFE_SIZEOF_LONG
-# define       PFE_TYPEOF_CELL long
-# else 
-# error cell type and size not detected.
-# endif
-#endif
-
-#if !defined PFE_TYPEOF_HALFCELL
-# if defined PFE_SIZEOF_INT && PFE_SIZEOF_INT == PFE_SIZEOF_CELL / 2 
-# define       PFE_TYPEOF_HALFCELL int
-# elif defined PFE_SIZEOF_SHORT && PFE_SIZEOF_SHORT == PFE_SIZEOF_CELL / 2 
-# define       PFE_TYPEOF_HALFCELL short
-# else
-# error halfcell type not detected
-# endif
-#endif
-
-#ifndef PFE_ALIGNOF_CELL
-#define PFE_ALIGNOF_CELL PFE_SIZEOF_INT
-#endif
-#ifndef PFE_ALIGNOF_SFLOAT
-#define PFE_ALIGNOF_SFLOAT PFE_SIZEOF_FLOAT
-#endif
-#ifndef PFE_ALIGNOF_DFLOAT
-#define PFE_ALIGNOF_DFLOAT PFE_SIZEOF_DOUBLE
-#endif
 
 /* suspend problems with important defines from pfe/_config.h */
 
@@ -179,21 +112,6 @@ typedef int mode_t;
 #define PFE_HAVE_STRINGIZE 1   /* just make it the default */
 #endif 
 
-/* OS specific */
-#if defined HAVE_VXWORKS_H || defined PFE_HAVE_VXWORKS_H
-# define NO_SYSTEM
-# define STATIC_MAIN
-# ifndef __vxworks
-# define __vxworks 1
-# endif
-# ifndef VXWORKS
-# define VXWORKS 1
-# endif
-# ifndef VxWorks
-# define VxWorks 1
-# endif
-#endif
-
 #if defined _K12_SOURCE
 # ifndef PFE_WITH_SPY   /* use always in k12xx environment */
 # define PFE_WITH_SPY 1
@@ -218,7 +136,7 @@ typedef int mode_t;
 #endif
 
 #ifndef P4_MODULES
-#define P4_MODULES 1            /* use shared object modules */
+//#define P4_MODULES 1            /* use shared object modules */
 #endif                  
 #ifndef P4_STDC
 #define P4_STDC 1               /* some words from the C-language family */

@@ -16,11 +16,14 @@ static char* id __attribute__((unused)) =
 #endif
 
 #define _P4_SOURCE
-#define _P4_NO_REGS_SOURCE 1
+//#define _P4_NO_REGS_SOURCE 1
 
+#include <pfe/pfe-base.h>
 #include <pfe/def-cell.h>
 #include <pfe/def-limits.h>
 
+#include <errno.h>
+//#include <pfe/os-string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,11 +35,6 @@ static char* id __attribute__((unused)) =
 #ifdef PFE_HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#endif
-
-#ifdef VXWORKS
-/* fixme: vxworks headers should be fixed!! */
-#define stat(_X_,_Y_) (stat((char*)(_X_),(_Y_)))
 #endif
 
 _export _p4_off_t
@@ -207,5 +205,266 @@ p4_file_resize (const char *fn, _p4_off_t new_size)
         return _P4_truncate (fn, new_size);
 }
 
-/*@}*/
+/* ********************************************************************** 
+ * file interface
+ */
 
+/**
+ */
+static p4_File *
+p4_free_file_slot (void)
+{
+    p4_File *f;
+
+    for (f = PFE.files; f < PFE.files_top; f++)
+        if (f->f == NULL)
+        {
+            p4_memset (f, 0, sizeof *f);
+            return f;
+        }
+    P4_warn ("not enough file slots in pfe io subsystem");
+    return NULL;
+}
+
+/**
+ * Return best possible access method,
+ * 0 if no access but file exists, -1 if file doesn't exist.
+ */
+_export int
+p4_file_access (const p4_char_t *fn, int len)
+{
+    char* buf = p4_pocket_filename (fn, len);
+    if (_P4_access (buf, F_OK) != 0)
+        return -1;
+    if (_P4_access (buf, R_OK | W_OK) == 0)
+        return FMODE_RW;
+    if (_P4_access (buf, R_OK) == 0)
+        return FMODE_RO;
+    if (_P4_access (buf, W_OK) == 0)
+        return FMODE_WO;
+    return 0;
+}
+
+static char open_mode[][4] =	/* mode strings for fopen() */
+{
+    "r", "r+", "r+",		/* R/O W/O R/W */
+    "rb", "r+b", "r+b",		/* after application of BIN */
+};
+
+/**
+ * open file
+ */
+_export p4_File *
+p4_open_file (const p4_char_t *name, int len, int mode)
+{
+    p4_File *fid;
+    mode &= 7;
+
+    fid = p4_free_file_slot ();
+    if (fid == NULL) 
+        return NULL;
+    p4_store_filename (name, len, fid->name, sizeof fid->name);
+    fid->mode = mode;
+    fid->last_op = 0;
+    p4_strcpy (fid->mdstr, open_mode[mode - FMODE_RO]);
+    if ((fid->f = fopen (fid->name, fid->mdstr)) == NULL)
+        return NULL;
+    fid->size = (p4ucell) (p4_file_size (fid->f) / BPBUF);
+    fid->n = (p4ucelll)(p4celll) (-1); /* before first line */
+    return fid;
+}
+
+/**
+ * create file 
+ */
+_export p4_File *
+p4_create_file (const p4_char_t *name, int len, int mode)
+{
+#   define null_AT_fclose(X) { FILE* f = (X); if (!f) goto _null; fclose(f); }
+
+    char* fn;
+    p4_File *fid;
+
+    fn = p4_pocket_filename (name, len);
+    null_AT_fclose (fopen (fn, "wb"));
+    fid = p4_open_file (name, len, mode);
+    if (fid)
+    {
+        return fid;
+    }else{
+        _pfe_remove (fn);
+        return NULL;
+    }
+#   undef null_AT_fclose
+ _null:
+    
+    if (mode > 256) /* updec! */
+    {   P4_fail2 ("%s : %s", fn, strerror(PFE_io_errno));   } 
+    return NULL; 
+}
+
+/**
+ * close file
+ */
+_export int
+p4_close_file (p4_File *fid)
+{
+    int res = 0;
+    
+    if (fid->f)
+    {
+        res = fclose (fid->f);
+        p4_memset (fid, 0, sizeof *fid);
+    }
+    return res;
+}
+
+/**
+ * seek file
+ */
+_export int
+p4_reposition_file (p4_File *fid, _p4_off_t pos)
+{
+    fid->last_op = 0;
+    return _p4_fseeko (fid->f, pos, SEEK_SET) ? PFE_io_errno : 0;
+}
+
+/*
+ * Called before trying to read from a file.
+ * Checks if you may, maybe fseeks() so you can.
+ */
+static int
+p4_can_read (p4_File *fid)
+{
+    switch (fid->mode)		/* check permission */
+    {
+     case FMODE_WO:
+     case FMODE_WOB:
+         return 0;
+    }
+    if (fid->last_op < 0)		/* last operation was write? */
+        _p4_fseeko (fid->f, 0, SEEK_CUR); /* then seek to this position */
+    fid->last_op = 1;
+    return 1;
+}
+
+/*
+ * Called before trying to write to a file.
+ * Checks if you may, maybe fseeks() so you can.
+ */
+static int
+p4_can_write (p4_File *fid)
+{
+    switch (fid->mode)		/* check permission */
+    {
+     case FMODE_RO:
+     case FMODE_ROB:
+         return 0;
+    }
+    if (fid->last_op > 0)		/* last operation was read? */
+        _p4_fseeko (fid->f, 0, SEEK_CUR); /* then seek to this position */
+    fid->last_op = -1;
+    return 1;
+}
+
+/**
+ * read file
+ */
+_export int
+p4_read_file (void *p, p4ucell *n, p4_File *fid)
+{
+    int m;
+
+    if (!p4_can_read (fid))
+        return EPERM;
+    errno = 0;
+    m = fread (p, 1, *n, fid->f);
+    if (m != (int) *n)
+    {
+        *n = m;
+        return PFE_io_errno;
+    }
+    else
+        return 0;
+}
+
+/**
+ * write file
+ */
+_export int
+p4_write_file (void *p, p4ucell n, p4_File *fid)
+{
+    if (!p4_can_write (fid))
+        return EPERM;
+    errno = 0;
+    return (p4ucell) fwrite (p, 1, n, fid->f) != n ? PFE_io_errno : 0;
+}
+
+/**
+ * resize file
+ */
+_export int
+p4_resize_file (p4_File *fid, _p4_off_t size)
+{
+    _p4_off_t pos;
+    int r;
+
+    if (fid == NULL || fid->f == NULL)
+        p4_throw (P4_ON_FILE_NEX);
+
+    pos = _p4_ftello (fid->f);
+    if (pos == -1)
+        return -1;
+    
+    fclose (fid->f);
+    r = p4_file_resize (fid->name, size);
+    fid->f = fopen (fid->name, fid->mdstr);
+    
+    if (pos < size)
+        _p4_fseeko (fid->f, pos, SEEK_SET);
+    else
+        _p4_fseeko (fid->f, 0, SEEK_END);
+    return r;
+}
+
+/**
+ * read line
+ */
+_export int
+p4_read_line (void* buf, p4ucell *u, p4_File *fid, p4cell *ior)
+{
+    int c, n; char* p = buf;
+    
+    if (!p4_can_read (fid))
+        return EPERM;
+    fid->line.pos = _p4_ftello (fid->f); /* fixme: the only reference to it!*/
+    for (n = 0; (p4ucell) n < *u; n++)
+    {
+        switch (c = getc (fid->f))
+        {
+         default:
+             *p++ = c;
+             continue;
+         case EOF:
+             *u = n;
+             if (ferror (fid->f))
+                 *ior = PFE_io_errno;
+             else
+                 *ior = 0;
+             return P4_FLAG (n > 0);
+         case '\r':
+             c = getc (fid->f);
+             if (c != '\n')
+                 ungetc (c, fid->f);
+         case '\n':
+             goto happy;
+        }
+    }
+ happy:
+    *u = n;
+    *ior = 0;
+    fid->n++;
+    return P4_TRUE;
+}
+
+/*@}*/

@@ -28,7 +28,6 @@ P4_LISTWORDS (misc_check) =
     P4_STKi ("ok",		"--"),
     P4_STKi ("COLD",		"-- [THROW]"),
     P4_STKi ("LIT",		"-- lit"),
-    P4_STKi (".LINE",		"line# block# --"),
     P4_STKi ("OUT",		"-- out#*"),
     P4_STKi ("DP",		"-- dp#*"),
     P4_STKi ("HLD",		"-- hold#*"),
@@ -93,7 +92,6 @@ P4_LISTWORDS (misc_check) =
     P4_STKi ("STANDARD-I/O",	"--"),
 
     P4_STKi ("HELP",		"<name> --"),
-    P4_STKi ("EDIT-BLOCKFILE",	"<name> --"),
     P4_STKi ("APPLICATION",	"app-xt* --"),
     P4_STKi ("ARGC",		"-- argc#"),
     P4_STKi ("ARGV",		"argn# --- arg-ptr arg-len"),

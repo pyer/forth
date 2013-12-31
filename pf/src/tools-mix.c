@@ -114,7 +114,6 @@ FCode (p4_Q_file)
  */
 FCode (p4_Q_loading)
 {
-    if (BLK == 0)
         p4_throw (P4_ON_INVALID_BLOCK);
 }
 

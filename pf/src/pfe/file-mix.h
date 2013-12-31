@@ -45,49 +45,6 @@ extern P4_CODE (p4_copy_file);
  */
 extern P4_CODE (p4_move_file);
 
-/** FILE-R/W ( buffer* use-block# flag? some-file* -- ) [FTH]
- * like FIG-Forth <c> R/W </c>
- */
-extern P4_CODE (p4_file_rw);
-
-/** FILE-BLOCK ( use-block# some-file* -- buffer* ) [FTH]
- */
-extern P4_CODE (p4_file_block);
-
-/** FILE-BUFFER ( use-block# some-file* -- buffer* ) [FTH]
- */
-extern P4_CODE (p4_file_buffer);
-
-/** FILE-EMPTY-BUFFERS ( some-file* -- ) [FTH]
- */
-extern P4_CODE (p4_file_empty_buffers);
-
-/** FILE-FLUSH ( some-file* -- ) [FTH]
- simulate      : FILE-FLUSH DUP FILE-SAVE-BUFFERS FILE-EMTPY-BUFFERS ;
- */
-extern P4_CODE (p4_file_flush);
-
-/** FILE-LIST ( use-block# some-file* -- ) [FTH]
- */
-extern P4_CODE (p4_file_list);
-
-/** FILE-LOAD ( use-block# some-file* -- ) [FTH]
- */
-extern P4_CODE (p4_file_load);
-
-/** FILE-SAVE-BUFFERS ( some-file* -- ) [FTH]
- */
-extern P4_CODE (p4_file_save_buffers);
-
-/** FILE-THRU ( lo-block# hi-block# some-file* -- ) [FTH]
- * see => THRU
- */
-extern P4_CODE (p4_file_thru);
-
-/** FILE-UPDATE ( some-file* -- ) [FTH]
- */
-extern P4_CODE (p4_file_update);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

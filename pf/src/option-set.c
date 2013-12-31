@@ -93,9 +93,10 @@ static char* id __attribute__((unused)) =
 
 /**
  * fill the session struct with precompiled options
- */
 _export void
 p4_SetOptionsDefault(p4_sessionP set, int len)
+ */
+void p4_default_options(p4_sessionP set)
 {
     if (! set) return;
 
@@ -105,7 +106,7 @@ p4_SetOptionsDefault(p4_sessionP set, int len)
     set->opt.dict = set->opt.space;
     set->opt.dp = set->opt.dict;
     set->opt.last = 0;
-    if (! len) len = sizeof(*set);
+    int len = sizeof(*set);
     set->opt.dictlimit = ((p4char*)set) + len;
 
     set->argv = 0;
@@ -140,8 +141,6 @@ p4_SetOptionsDefault(p4_sessionP set, int len)
     /*set->boot_include = 0;*/
     set->inc_paths = p4_append_option_string ((p4_char_t*)
         "INC-PATH",8,PFE_PATH_DELIMITER,PFE_INC_PATH,set);
-    set->blk_paths = p4_append_option_string ((p4_char_t*)
-        "BLK-PATH",8,PFE_PATH_DELIMITER,PFE_BLK_PATH,set);
     set->lib_paths = p4_append_option_string ((p4_char_t*)
         "LIB-PATH",8,PFE_PATH_DELIMITER,PFE_LIB_PATH,set);
     set->cpus = P4_MP;
@@ -150,37 +149,8 @@ p4_SetOptionsDefault(p4_sessionP set, int len)
     {
         set->inc_ext = p4_append_option_string ((p4_char_t*)
             "INC-EXT",7,PFE_PATH_DELIMITER,PFE_INC_EXTENSIONS,set);
-        set->blk_ext = p4_append_option_string ((p4_char_t*)
-            "BLK-EXT",7,PFE_PATH_DELIMITER,PFE_BLK_EXTENSIONS,set);
     }
 
-#  ifndef _K12_SOURCE
-    /* environment scanning */
-    ___  char* t;
-    /*
-     * get special options from environment variables:
-     */
-    if ((t = getenv ("FORTHINCLUDE")) != NULL)
-    {
-        p4_change_option_string ((p4_char_t*) "INC-PATH",8,t,set);
-        p4_change_option_string ((p4_char_t*) "BLK-PATH",8,t,set);
-    }
-    else if ((t = getenv ("PFEINCLUDE")) != NULL)
-    {
-        p4_change_option_string ((p4_char_t*) "INC-PATH",8,t,set);
-        p4_change_option_string ((p4_char_t*) "BLK-PATH",8,t,set);
-    }
-    
-    if ((t = getenv ("PFEDIR")) != NULL)
-    {
-        p4_change_option_string ((p4_char_t*) "PREFIX-DIR", 10, t, set);
-    }
-    if ((t = getenv ("PFELIBDIR")) != NULL)
-    {
-        p4_change_option_string ((p4_char_t*) "LIB-PATH",8,t,set);
-    }
-    ____;
-#  endif
 }
 
 /**
@@ -241,7 +211,7 @@ static const char* help_options[] = {
     " * --OPTION-size=<val[K]>   set value '/OPTION', understands K=1024 etc.",
     " * --max-OPTION=<val[K]>    set value '#OPTION', understands K=1024 etc.",
     "   e.g. --map-base --map-file --dump-file --str-buffer-size",
-    "        --load-image --make-image --block-file --boot-file",
+    "        --load-image --make-image --boot-file",
     "        --max-locals --max-cpus --max-files --inc-path",
     "        --data-stack-size --fp-stack-size --return-stack-size",
     "        --editor-name",
@@ -272,7 +242,7 @@ help_print (p4_sessionP set, FILE* f)
         switch ((*p)[1])
         {
 	default:  
-	    if ((*p)[1] > ' ') fprintf(f, *p); 
+	    if ((*p)[1] > ' ') fprintf(f, "%s", *p); 
 	    else fprintf(f, "  %s", (*p)+2);
 	    break;
 	case '>': fprintf(f, *p, 
@@ -333,15 +303,17 @@ help_opt(const char* str, int l, const char** helptab)
     return 0;
 }
 
+
 /**
  * parse the command-line options and put them into the session-structure
  * that is used in thread->set. 
  * returns status code (0 == ok, 1 == normal, 2 == error)
  *
  * note, that these argc/argv are given as references! 
- */ 
 _export int
 p4_AddOptions (p4_sessionP set, int argc, const char** argv)
+ */ 
+int p4_set_options(p4_sessionP set, int argc, char** argv)
 {
     int i, optc, flag;		/* count of all options */
     char const ** optv;		/* values of these options */
@@ -351,7 +323,7 @@ p4_AddOptions (p4_sessionP set, int argc, const char** argv)
     if (! argc) return 0;
 
     if (argc && argv[0] && set->boot_name) 
-	set->boot_name = & argv[0];
+	set->boot_name = &argv[0];
 
     /* we may have already scanned some options (setup via set->argc) */
     optv = malloc (sizeof(char*) * (set->optc + argc));
@@ -450,8 +422,6 @@ p4_AddOptions (p4_sessionP set, int argc, const char** argv)
 	{
             set->inc_paths = p4_append_option_string ((p4_char_t*)
                 "INC-PATH",8,PFE_PATH_DELIMITER, val, set);
-            set->blk_paths = p4_append_option_string ((p4_char_t*)
-                "BLK-PATH",8,PFE_PATH_DELIMITER, val, set);
             i+=s; continue;
 	}
 #       ifdef __move_cpus_code_to_forth_vm_init
@@ -599,46 +569,6 @@ p4_AddOptions (p4_sessionP set, int argc, const char** argv)
     return 0;
 }
 
-/**
- * initalize the session struct
- *
- * => p4_SetOptionsDefault , => p4_AddOptions , => FreeOptions
- */
-_export int
-p4_SetOptions (p4_sessionP set, int len, int argc, const char** argv)
-{
-    p4_SetOptionsDefault(set, len);
-    return p4_AddOptions (set, argc, argv);
-}
-
-/** 
- * de-init the session struct
- *
- * => p4_SetOptions , => p4_AddOptions
- */
-_export int
-p4_FreeOptions (int returncode, p4_sessionP set)
-{
-    if (set->optv) free ((void*) set->optv);
-
-    p4_invalidate_string_options (set);
-    return returncode;
-}
-
-/**
- * set prelinked-modules-table
- */
-_export int
-p4_SetModules (p4_sessionP set, p4Words* modules)
-{
-    set->modules = modules;
-    return 0;
-}
-
-/************************************************************************/
-/* physical instance of the global system variable:                     */
-/************************************************************************/
-
 #ifndef P4_REGTH
 # ifdef PFE_USE_THREAD_BLOCK
 /*export*/ PFE_CC_THREADED struct p4_Thread  p4_reg;
@@ -649,75 +579,6 @@ static  char allocated_p4_opt = 0;
 /*export*/ PFE_CC_THREADED struct p4_Thread* p4TH;
 # endif
 #endif
-
-_export p4_sessionP
-p4_NewSessionOptions (int extra)
-{
-#  ifdef PFE_USE_THREAD_BLOCK
-    if (allocated_p4_opt)
-        return 0;
-    p4_SetOptionsDefault (&p4_opt, sizeof(p4_opt));
-    allocated_p4_opt = 1;
-    return &p4_opt;
-#  else
-    p4_sessionP ptr = malloc (sizeof(*ptr)+extra);
-    p4_SetOptionsDefault (ptr, sizeof(*ptr)+extra);
-    return ptr;
-#  endif
-}
-
-
-_export p4_threadP
-p4_NewThreadOptions (p4_sessionP set)
-{
-#  ifdef PFE_USE_THREAD_BLOCK
-    if (allocated_p4_reg)
-        return 0;
-    p4_reg.set = set;
-    allocated_p4_reg = 1;
-    return &p4_reg;
-#  else
-    p4_threadP ptr = malloc (sizeof(*ptr));
-    p4_memset (ptr, 0, sizeof(*ptr));
-    ptr->set = set;
-    return ptr;
-#  endif
-}
-
-_export p4_threadP
-p4_SetThreadOf(p4_threadP ptr, p4_sessionP set)
-{
-    if (! ptr) return ptr;
-    p4_memset (ptr, 0, sizeof (*ptr));
-    ptr->set = set;
-    return ptr;
-}
-
-_export char
-p4_FreeSessionPtr (p4_sessionP ptr)
-{
-#  ifdef PFE_USE_THREAD_BLOCK
-    if (ptr != &p4_opt)
-        return 1;
-    return ((allocated_p4_opt = 0));
-#  else
-    if (ptr) free (ptr);
-    return 0;
-#  endif
-}
-
-_export char
-p4_FreeThreadPtr (p4_threadP ptr)
-{
-#  ifdef PFE_USE_THREAD_BLOCK
-    if (ptr != &p4_reg)
-        return 1;
-    return ((allocated_p4_reg = 0));
-#  else
-    if (ptr) free (ptr);
-    return 0;
-#  endif
-}
 
 /*@}*/
 

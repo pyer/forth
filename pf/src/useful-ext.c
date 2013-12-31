@@ -797,7 +797,6 @@ FCode(p4_evaluate_with)
     RP = (p4xcode **) p4_save_input (RP);
 #  endif
     SOURCE_ID = -1;
-    BLK = 0;
     TIB = p;                /* leave that warning for a while... */
     NUMBER_TIB = n;
     TO_IN = 0;

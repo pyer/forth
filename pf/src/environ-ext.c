@@ -179,9 +179,11 @@ p4_environment_Q(const p4_char_t* str, p4cell l)
 		break;
 	}
     }
-#ifndef ENV_EXT_DLOPEN /* USER-CONFIG */
+/*
+#ifndef ENV_EXT_DLOPEN
 #define ENV_EXT_DLOPEN 1
 #endif
+*/
 
 #if ! ENV_EXT_DLOPEN
     return 0;

@@ -20,6 +20,17 @@
 extern "C" {
 #endif
 
+int p4_file_access (const p4_char_t *fn, int len);
+p4_File * p4_open_file (const p4_char_t *name, int len, int mode);
+p4_File * p4_create_file (const p4_char_t *name, int len, int mode);
+int p4_close_file (p4_File *fid);
+int p4_reposition_file (p4_File *fid, _p4_off_t pos);
+int p4_read_file (void *p, p4ucell *n, p4_File *fid);
+int p4_write_file (void *p, p4ucell n, p4_File *fid);
+int p4_resize_file (p4_File *fid, _p4_off_t size);
+int p4_read_line (void* buf, p4ucell *u, p4_File *fid, p4cell *ior);
+
+
 
 
 

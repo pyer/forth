@@ -12,8 +12,6 @@
  *  @description
  *       The Optional File-Access Word Set and
  *       File-Access Extension Words.
- *       These words imply some kind of file-system unlike
- *       the BLOCK wordset.
  *
  */
 /*@{*/
@@ -390,12 +388,7 @@ FCode (p4_flush_file)
     register File *fid = (File *) SP[0];
 
     if (_is_nullfile(fid)) goto nullfile;
-    if (BLOCK_FILE == fid)
-    {
-        FX (p4_save_buffers);
-        SP[0] = 0;
-    }
-    else if (fflush (fid->f))
+    if (fflush (fid->f))
 	SP[0] = PFE_io_errno;
     else
 	SP[0] = 0;

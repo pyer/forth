@@ -127,19 +127,9 @@ FCode (p4_warranty)
  * show the version of the current PFE system
  : .VERSION [ ENVIRONMENT ] FORTH-NAME TYPE FORTH-VERSION TYPE ;
  */
-FCode (p4_dot_version)
+FCode (p4_version)
 {
     p4_outs (p4_version_string ());
-}
-
-/** .CVERSION ( -- )
- * show the compile date of the current PFE system
- : .CVERSION [ ENVIRONMENT ] FORTH-NAME TYPE FORTH-DATE TYPE ;
- */
-FCode (p4_dot_date)
-{
-    p4_outf ("PFE compiled %s, %s ",
-	p4_compile_date (), p4_compile_time ());
 }
 
 /* _______________________________________________________________________ */
@@ -329,11 +319,9 @@ P4_LISTWORDS (core_misc) =
     P4_FXco ("UMAX",		p4_u_max),
 
     /* forth distributor info */
-    P4_FXco (".VERSION",	p4_dot_version),
-    P4_FXco (".CVERSION",	p4_dot_date),
-    P4_FNYM (".PFE-DATE",	".CVERSION"),
-    P4_FXco ("LICENSE",		p4_license),
-    P4_FXco ("WARRANTY",	p4_warranty),
+    P4_FXco (".VERSION",	p4_version),
+    P4_FXco (".LICENSE",	p4_license),
+    P4_FXco (".WARRANTY",	p4_warranty),
 
     /* parse and place HERE */
     P4_FXco ("STRING,",      p4_string_comma),

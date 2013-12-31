@@ -24,19 +24,6 @@ extern "C" {
 #endif
 
 
-
-
-/** COLD ( -- ) [FTH]
- * cold abort - reinitialize everything and go to => QUIT routine
- * ... this routine is implemented as a warm-boot in pfe.
- : COLD [ ALSO ENVIRONMENT ] EMPTY SCRIPT-FILE INCLUDED QUIT ;
- */
-extern P4_CODE (p4_cold);
-
-/** .LINE ( line# block# -- ) [FTH]
- */
-extern P4_CODE (p4_dot_line);
-
 /** UD.R ( x,x# r# -- ) [FTH]
  */
 extern P4_CODE (p4_u_d_dot_r);

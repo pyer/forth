@@ -20,9 +20,6 @@
 /*@{*/
 #if defined _P4_SOURCE 
 
-/* we are local... really */
-#include "pfe/_config.h"
-
 #if defined HAVE_SYS_STAT_H || defined PFE_HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif

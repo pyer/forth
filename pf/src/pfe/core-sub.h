@@ -224,10 +224,6 @@ _extern  void p4_emits (int n, const char c) ; /*{*/
  */
 _extern  void p4_tab (int n) ; /*{*/
 
-/** _.line_ ( file* block# line# -- )
- */
-_extern  void p4_dot_line (p4_File *fid, p4cell n, p4cell l) ; /*{*/
-
 /** _expect_ ( str* str# -- span# )
  * EXPECT counted string from terminal, with echo, so one can use
  * simple editing facility with backspace, but nothing more.

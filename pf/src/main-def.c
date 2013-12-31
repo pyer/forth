@@ -14,7 +14,11 @@
  */
 /*@{*/
 
-#include "pfe/_config.h"
+#if defined ARM
+#include "include/config_arm.h"
+#else
+#include "include/config_x86.h"
+#endif
 
 #if defined PFE_WITH_STATIC_REGS
 #include "main-alloc.c"

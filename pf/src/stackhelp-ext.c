@@ -3529,10 +3529,7 @@ static FCode(stackhelp_debug) {
 }
 
 extern const p4Words P4WORDS(core_check);
-extern const p4Words P4WORDS(block_check);
 extern const p4Words P4WORDS(cdecl_check);
-extern const p4Words P4WORDS(chain_check);
-extern const p4Words P4WORDS(chainlist_check);
 extern const p4Words P4WORDS(file_check);
 extern const p4Words P4WORDS(memory_check);
 extern const p4Words P4WORDS(string_check);
@@ -3599,10 +3596,7 @@ P4_LISTWORDS (stackhelp) =
     P4_XXco ("STACKHELP-LOADED",   stackhelp_init),
 
     P4_LOAD ("", core_check),
-    P4_LOAD ("", block_check),
     P4_LOAD ("", cdecl_check),
-    P4_LOAD ("", chain_check),
-    P4_LOAD ("", chainlist_check),
     P4_LOAD ("", file_check),
     P4_LOAD ("", memory_check),
     P4_LOAD ("", string_check),

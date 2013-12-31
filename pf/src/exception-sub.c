@@ -26,7 +26,6 @@ static char* id __attribute__((unused)) =
 #include <pfe/os-setjmp.h>
 
 #include <pfe/exception-sub.h>
-#include <pfe/block-sub.h>
 #include <pfe/file-sub.h>
 #include <pfe/_missing.h>
 
@@ -78,14 +77,6 @@ FCode (p4_cr_show_input)
     switch (SOURCE_ID)
     {
      case 0:
-         if (BLK && BLOCK_FILE && ! ferror (BLOCK_FILE->f))
-         {
-             p4_outf ("\n\\ Block %lu line %ld: \"%.*s\"\n",
-               (p4ucelll) BLK, (p4celll)( TO_IN / 64), len, str);
-             p4_dot_line (BLOCK_FILE, BLK, TO_IN / 64);
-             n = TO_IN % 64;
-             break;
-         } /* fallthrough*/
      case -1:
 	 p4_outf ("\n\\ Terminal input: \"%.*s\"\n", len, str); /* to Error:-line */
          p4_type (TIB, NUMBER_TIB);

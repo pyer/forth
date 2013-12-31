@@ -55,20 +55,21 @@ static FCode_RT (p4_forget_slot_RT)
         p4_xfree (PFE.p[*slot]); PFE.p[*slot] = 0;
     }
    
-    p4_slot_unuse (slot);
+//    p4_slot_unuse (slot);
 }}
 
 static void
 p4_load_slot_open (int* slot)
 {
-    int e;
+//    int e;
     if (!slot) return;
-                
+/*
     if ((e=p4_slot_use (slot))) 
     {
         P4_fail2 ("load-slot %i failed : %s", *slot, strerror(-e));
         return; 
     }
+*/
 }
 
 static void
@@ -123,7 +124,6 @@ static inline void* p4_save_input_tib (void* stack)
 {
     void* R = p4_save_input (stack);
     SOURCE_ID = -1;
-    BLK = 0;
 #  if 0
     TIB = tib;
     NUMBER_TIB = len;

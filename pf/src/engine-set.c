@@ -77,8 +77,7 @@ static char const * const empty = "";
 /* Initialize memory map:                                               */
 /************************************************************************/
 
-void
-p4_SetDictMem (p4_threadP thread, void* dictmem, long size)
+void p4_SetDictMem (p4_threadP thread, void* dictmem, long size)
 {
     if (!dictmem) return;
     thread->p[P4_MEM_SLOT] = dictmem;
@@ -323,12 +322,8 @@ p4_run_boot_system (p4_threadP th) /* main_init */
 	p4_longjmp_exit ();
     }
 
-    PFE.set->blk_ext   = p4_lookup_option_string_static (
-        "BLK-EXT",     (const char**) & empty, PFE.set);
     PFE.set->inc_ext   = p4_lookup_option_string_static (
         "INC-EXT",     (const char**) & empty, PFE.set);
-    PFE.set->blk_paths = p4_lookup_option_string_static (
-        "BLK-PATH",    (const char**) & empty, PFE.set);
     PFE.set->inc_paths = p4_lookup_option_string_static (
         "INC-PATH",    (const char**) & empty, PFE.set);
     PFE.set->lib_paths = p4_lookup_option_string_static (
@@ -337,11 +332,6 @@ p4_run_boot_system (p4_threadP th) /* main_init */
     /*  -- cold boot stage -- */
     PFE_VM_p4TH(p4_current);
     FX (p4_cold_system);
-    if (! PFE_set.quiet)
-    {
-        p4_outs ("\\ ");
-        p4_outs (p4_version_string ());
-    }
     init_accept_lined ();
 
     /* -------- warm boot stage ------- */
@@ -356,6 +346,37 @@ p4_run_boot_system (p4_threadP th) /* main_init */
     return PFE.exitcode;
 }
 
+
+
+
+/* wrapping a catch domain around p4_script_files above. The lower
+ * routine is also called from COLD which does run EMPTY followed
+ * by re-including the SCRIPT-FILE to re-initialize the system */
+static int p4_Run_script_files(p4_Thread* th);
+static int p4_run_script_files(p4_Thread* th)
+{
+    switch (p4_setjmp (th->loop))
+    {           /* classify unhandled throw codes */
+    case 'A':
+    case 'Q':	P4_fatal ("Script File Throw/Quit");
+        {   extern FCode(p4_come_back); /*:debug-ext:*/
+#         ifdef P4_RP_IN_VM
+            if (p4_R0) th->rp = RP = p4_R0; /* quit_system */
+            FX (p4_come_back);
+#         endif
+        }
+        return -1;
+    default:
+    	P4_warn ("Script File Kill");
+    	/*fallthrough*/
+    case 'X':
+    	P4_info ("Script File Exit/Bye");
+    	return th->exitcode;
+    case 0:     break;
+    }
+    return p4_Run_script_files (th);
+}
+
 /* boot_includes
  * This routine is ususally run right after p4_boot_system. Perhaps
  * some other boot routines have run, and then script-files shall
@@ -363,7 +384,7 @@ p4_run_boot_system (p4_threadP th) /* main_init */
  * routine so you can always go back to the dictionary state just
  * before this routine. That is actually done in => COLD for example.
  */
-FCode(p4_script_files)
+static FCode(p4_run_script_files)
 {
     register char const * s;
     {
@@ -402,96 +423,6 @@ FCode(p4_script_files)
       0, PFE.set);
     if (s && *s) { p4_evaluate ((const p4_char_t*) s, p4_strlen(s)); }
 }
-
-/* wrapping a catch domain around p4_script_files above. The lower
- * routine is also called from COLD which does run EMPTY followed
- * by re-including the SCRIPT-FILE to re-initialize the system */
-static
-int p4_Run_script_files(p4_Thread* th);
-int p4_run_script_files(p4_Thread* th)
-{
-    switch (p4_setjmp (th->loop))
-    {           /* classify unhandled throw codes */
-    case 'A':
-    case 'Q':	P4_fatal ("Script File Throw/Quit");
-        {   extern FCode(p4_come_back); /*:debug-ext:*/
-#         ifdef P4_RP_IN_VM
-            if (p4_R0) th->rp = RP = p4_R0; /* quit_system */
-            FX (p4_come_back);
-#         endif
-        }
-        return -1;
-    default:
-    	P4_warn ("Script File Kill");
-    	/*fallthrough*/
-    case 'X':
-    	P4_info ("Script File Exit/Bye");
-    	return th->exitcode;
-    case 0:     break;
-    }
-    return p4_Run_script_files (th);
-}
-static FCode (p4_run_script_files);
-static int p4_Run_script_files(p4_Thread* th)
-{
-    P4_CALLER_SAVEALL;
-    PFE_VM_LOAD(th);
-    FX (p4_run_script_files);
-    PFE_VM_SAVE(th);
-    P4_CALLER_RESTORE;
-    return th->exitcode;
-}
-
-static FCode (p4_run_script_files)
-{
-    if (! PFE_set.quiet)
-    {
-        int shown = 0;
-        const char* s;
-        s = (const char*) p4_search_option_string_static("BOOT-FILE",
-					0, PFE.set);
-	if (! s)   {
-            s = (const char*) p4_search_option_string_static("BANNER",
-                                        p4_copyright_string (), PFE.set);
-            p4_outs (s); p4_outs("\n"); shown++;
-        }
-	if (PFE_set.license)    {
-            s = (const char*) p4_search_option_string_static("LICENSE",
-                                        p4_license_string (), PFE.set);
-            p4_outs (s); p4_outs("\n"); shown++;
-        }
-	if (PFE_set.warranty)   {
-            s = (const char*) p4_search_option_string_static("WARRANTY",
-                                        p4_warranty_string (), PFE.set);
-            p4_outs (s); p4_outs("\n"); shown++;
-        }
-        if (! PFE_set.bye)
-        {
-            if (! shown) p4_outs("\n");
-#          ifdef PFE_THREADING_TYPE
-#          define p4_THREADING_TYPE PFE_THREADING_TYPE
-#          else
-#          define p4_THREADING_TYPE "itc"
-#          endif
-#          ifdef PFE_WITH_FFA
-#          define p4_HEADER_STYLE "ANS/ffa"
-#          else
-#          define p4_HEADER_STYLE "ANS/fig"
-#          endif
-            p4_outs(p4_HEADER_STYLE " " p4_THREADING_TYPE " Forth - ");
-            if (shown < 2)
-                p4_outs ("Please enter LICENSE and WARRANTY. ");
-            else
-                p4_outs ("Hi there, enjoy our Forth! ");
-        }
-    }
-
-    FX (p4_script_files);
-
-    if (PFE_set.verbose)
-        FX (p4_dot_memory);
-}
-
 /**
  * The run-application routine will check the various variants of
  * the pfe execution model including to start APPLICATION or to
@@ -527,16 +458,6 @@ static int p4_run_application(p4_Thread* th) /* main_loop */
     }
     return p4_Run_application (th);
 }
-static FCode (p4_run_application);
-static int p4_Run_application(p4_Thread* th)
-{
-    P4_CALLER_SAVEALL;
-    PFE_VM_LOAD(th);
-    FX (p4_run_application);
-    PFE_VM_SAVE(th); /* ... */
-    P4_CALLER_RESTORE;
-    return th->exitcode;
-}
 
 static FCode (p4_run_application)
 {
@@ -554,34 +475,35 @@ static FCode (p4_run_application)
         return;
     }
 
-    if (! PFE_set.quiet && ! PFE_set.bye)
-    {
-        const char* systemtype = 0;
-        p4_outs ("\nRunning on ");
-#      if   defined  HOST_OS_TYPE && defined HOST_CPU_TYPE
-        systemtype = HOST_CPU_TYPE " " HOST_OS_TYPE;
-#      elif defined  HOST_OS_TYPE
-        systemtype = HOST_OS_TYPE " os";
-#      elif defined  HOST_CPU_TYPE
-        systemtype = HOST_CPU_TYPE " cpu";
-#      endif
-        if (! systemtype || ! *systemtype)
-            systemtype = "host system";
-        p4_outs (systemtype);
-#      ifndef _K12_SOURCE /* BYE does'nt make sense in an embedded system */
-        p4_outs (" - to quit say BYE. ");
-#      else
-        p4_outs (" - to restart say COLD. ");
-#      endif /* _K12_SOURCE */
-        /* expecting "ok" prompt next */
-    }
-
     if (! PFE_set.bye)
-	p4_interpret_loop (); /* will catch QUIT, ABORT, COLD .. and BYE */
+	p4_interpret_loop (); /* will catch QUIT, ABORT .. and BYE */
 }
 
+
+static int p4_Run_script_files(p4_Thread* th)
+{
+    P4_CALLER_SAVEALL;
+    PFE_VM_LOAD(th);
+    FX (p4_run_script_files);
+    PFE_VM_SAVE(th);
+    P4_CALLER_RESTORE;
+    return th->exitcode;
+}
+
+static int p4_Run_application(p4_Thread* th)
+{
+    P4_CALLER_SAVEALL;
+    PFE_VM_LOAD(th);
+    FX (p4_run_application);
+    PFE_VM_SAVE(th); /* ... */
+    P4_CALLER_RESTORE;
+    return th->exitcode;
+}
+
+
+
 /**
- * init and execute the previously allocated forth-maschine,
+ * init and execute the previously allocated forth-machine,
  * e.g. pthread_create(&thread_id,0,p4_Exec,threadP);
  *
  * The following words have been extracted from a big boot init
@@ -611,58 +533,6 @@ p4_Exec(p4_threadP th)
     return retval;
 }
 
-_export int
-p4_InitVM(p4_threadP th, p4_Session* set)
-{
-    auto volatile int retval;
-    P4_CALLER_SAVEALL;
-    if (set) p4_SetThreadOf (th, set); /* fixme: set to static Option Set ? */
-    retval =               p4_run_boot_system(th);
-    if (! retval) retval = p4_run_script_files(th);
-    if (retval)   p4_atexit_cleanup ();
-    P4_CALLER_RESTORE;
-    return retval;
-}
-
-_export int
-p4_LoopVM(p4_threadP th)
-{
-    auto volatile int retval;
-    PFE_VM_ENTER(th);
-    retval = p4_run_application(th);
-    if (1)   p4_atexit_cleanup ();
-    PFE_VM_LEAVE(th);
-    return retval;
-}
-
-_export int
-p4_Evaluate(p4_threadP th, const p4_char_t* p, int n)
-{
-    auto volatile int val;                      /* this is the boiler plate */
-    PFE_VM_ENTER(th);                           /* example to wrap some pfe */
-    p4_setjmp_fenv_save(& PFE.loop_fenv);
-    switch (val = p4_setjmp (PFE.loop))         /* internal function and */
-    {                                           /* and export it in a way */
-    case 0: /* new VM */                        /* that it can be called */
-    	p4_evaluate (p, n);                     /* directly from a C' based */
-    	val = 0;                                /* application which did */
-    default:                                    /* call InitVM before to get */
-    	break; /* an error occurred */          /* a new instance of a PFE */
-    }                                           /* being put on hold for */
-    p4_setjmp_fenv_load(& PFE.loop_fenv);
-    PFE_VM_LEAVE(th);                           /* being Exec'uted finally */
-    return val;
-}
-
-_export int
-p4_DeinitVM(p4_threadP th)
-{
-    auto volatile int val;                 /* dunno whether this shorthand */
-    PFE_VM_ENTER(th);                      /* variant will actually work.. */
-    if (! (val = p4_setjmp (PFE.loop))) p4_atexit_cleanup ();
-    PFE_VM_LEAVE(th);                      /* note that there _may_ be even */
-    return val;                            /* THROWs during cleanup, partly */
-}                                          /* from forth-level ATEXIT words */
 
 static void
 p4_atexit_cleanup (void)

@@ -25,10 +25,8 @@
 #include <pfe/dict-sub.h>
 #include <pfe/dict-comp.h>
 #include <pfe/header-sub.h>
-#include <pfe/block-sub.h>
-#include <pfe/block-ext.h>
 #include <pfe/engine-sub.h>
-#include <pfe/engine-set.h>
+//#include <pfe/engine-set.h>
 #include <pfe/exception-sub.h>
 #include <pfe/memory-sub.h>
 #include <pfe/misc-ext.h>

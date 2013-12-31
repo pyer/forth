@@ -23,20 +23,19 @@ static char* id __attribute__((unused)) =
 
 extern const p4Words
     P4WORDS(core),		P4WORDS(core_misc),
-    P4WORDS(block),	P4WORDS(block_misc),
     P4WORDS(double),	P4WORDS(double_misc),
     P4WORDS(exception), P4WORDS(cdecl),
     P4WORDS(environ),
     P4WORDS(facility),	P4WORDS(facility_mix),
     P4WORDS(file),		P4WORDS(file_misc),
     P4WORDS(header),	P4WORDS(locals),
-    P4WORDS(memory),	P4WORDS(chainlist),
+    P4WORDS(memory),
     P4WORDS(tools),	P4WORDS(tools_misc),
     P4WORDS(search),	P4WORDS(string),
     P4WORDS(forth_83),	P4WORDS(forth_usual),
     P4WORDS(misc),		P4WORDS(debug),
     P4WORDS(shell),	P4WORDS(posix),
-    P4WORDS(term),		P4WORDS(dlfcn),
+    P4WORDS(term),
     P4WORDS(signals),	P4WORDS(system),
 #if 1 && defined PFE_WITH_SPY
     P4WORDS(with_spy),
@@ -63,7 +62,6 @@ P4_LISTWORDS(forth) =
     P4_INTO ("[ANS]", 0),
     P4_LOAD ("", search),
     P4_LOAD ("", core),
-    P4_LOAD ("", block),
     P4_LOAD ("", double),
     P4_LOAD ("", exception),
     P4_LOAD ("", facility),
@@ -76,11 +74,9 @@ P4_LISTWORDS(forth) =
     P4_LOAD ("", header),
     P4_LOAD ("", cdecl),
     P4_LOAD ("", environ),
-    P4_LOAD ("", dlfcn),
     P4_LOAD ("", forth_83),
     P4_LOAD ("", forth_usual),
     P4_LOAD ("", core_misc),
-    P4_LOAD ("", block_misc),
     P4_LOAD ("", double_misc),
     P4_LOAD ("", file_misc),
     P4_LOAD ("", tools_misc),
@@ -105,7 +101,6 @@ P4_LISTWORDS(extensions) =
 {
     P4_INTO ("EXTENSIONS", "FORTH"),
     P4_LOAD ("", facility_mix),
-    P4_LOAD ("", chainlist),
     P4_LOAD ("", shell),
     P4_LOAD ("", posix),
     P4_LOAD ("", term),
@@ -113,9 +108,6 @@ P4_LISTWORDS(extensions) =
     P4_LOAD ("", your),
 #if 1 && defined PFE_WITH_SPY
     P4_LOAD ("", with_spy),
-#endif
-#if 1 && defined _K12_SOURCE
-    P4_LOAD ("", host_k12),
 #endif
 };
 P4_COUNTWORDS(extensions, "Extensions To Forth Base System");

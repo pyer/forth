@@ -32,7 +32,8 @@ extern "C" {
 /**
  * fill the session struct with precompiled options
  */
-_extern  void p4_SetOptionsDefault(p4_sessionP set, int len) ; /*{*/
+//_extern  void p4_SetOptionsDefault(p4_sessionP set, int len) ; /*{*/
+void p4_default_options(p4_sessionP set);
 
 /**
  * parse the command-line options and put them into the session-structure
@@ -41,7 +42,8 @@ _extern  void p4_SetOptionsDefault(p4_sessionP set, int len) ; /*{*/
  *
  * note, that these argc/argv are given as references! 
  */
-_extern  int p4_AddOptions (p4_sessionP set, int argc, const char** argv) ; /*{*/
+//_extern  int p4_AddOptions (p4_sessionP set, int argc, const char** argv) ; /*{*/
+int p4_set_options(p4_sessionP set, int argc, char** argv);
 
 /**
  * initalize the session struct
@@ -56,11 +58,6 @@ _extern  int p4_SetOptions (p4_sessionP set, int len, int argc, const char** arg
  * => p4_SetOptions , => p4_AddOptions
  */
 _extern  int p4_FreeOptions (int returncode, p4_sessionP set) ; /*{*/
-
-/**
- * set prelinked-modules-table
- */
-_extern  int p4_SetModules (p4_sessionP set, p4Words* modules) ; /*{*/
 
 _extern  p4_sessionP p4_NewSessionOptions (int extra) ; /*{*/
 
