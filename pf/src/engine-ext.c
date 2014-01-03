@@ -43,7 +43,7 @@ extern const p4Words
 #if 1 && defined _K12_SOURCE
     P4WORDS(host_k12),
 #endif
-    P4WORDS(option),
+//    P4WORDS(option),
     P4WORDS(useful),    P4WORDS(your);
 
 extern FCode (p4_interpret_next);
@@ -84,7 +84,7 @@ P4_LISTWORDS(forth) =
     P4_LOAD ("", debug),
     P4_LOAD ("", system),
     P4_INTO ("EXTENSIONS", "FORTH"),
-    P4_LOAD ("", option),
+//    P4_LOAD ("", option),
     P4_LOAD ("", signals),
     /* experimental extras for a compiled interpret-loop */
     P4_SXco ("INTERPRET-NEXT", p4_interpret_next),
@@ -129,33 +129,5 @@ P4_COUNTWORDS(extensions, "Extensions To Forth Base System");
  * and execute it as if it were a => VOCABULARY
  */
 
-/* --------------------------------------------------------------- *
- * some old cruft
- */
-
-#ifdef P4_MODULES
-
-#include "lined.h"
-
-void*
-p4_lined_executes (void* a)
-{
-    void* R = PFE.accept_lined.executes;
-    PFE.accept_lined.executes = a;
-    return R;
-}
-
-void* p4_wait_for_stdin (void* a)
-{
-    void* R = PFE.wait_for_stdin;
-    PFE.wait_for_stdin = a;
-    return R;
-}
-
-#endif /* P4_MODULES */
-
 /*@}*/
-
-
-
 

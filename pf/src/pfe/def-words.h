@@ -251,21 +251,6 @@ typedef union p4_ExecToken
    
 #define P4_LOADSTRUCT(NAME) P4CAT3(p4_,NAME,_LoadList)
 #define P4_LOADLIST(NAME) const void* P4_LOADSTRUCT(NAME) []
-   
-#ifdef MODULE        
-#define P4_MODULE_LIST(name) \
-        void* p4_LTX_p4_MODULE(void) \
-        {                       \
-           return (void*) &P4WORDS(name); \
-        }
-#else
-#define P4_MODULE_LIST(name) \
-        void* name##_LTX_p4_MODULE(void) \
-        {                       \
-           return (void*) &P4WORDS(name); \
-        }
-#endif
-
 
 /*@}*/
 #endif 

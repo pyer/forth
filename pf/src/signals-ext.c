@@ -499,10 +499,6 @@ _export void
 p4_install_signal_handlers (void)
 {
     int i, j;
-    static const p4_char_t use_signals[] = "signals";
-
-    if (p4_search_option_value (use_signals, sizeof (use_signals) - 1, 
-                                P4_TRUE, PFE.set))
     for (i = 0; i < DIM (siginfo); i++)
     {
         /* some systems may have more than one name for the same signal,

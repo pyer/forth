@@ -115,6 +115,22 @@ extern P4_CODE (p4_new_ahead);
  */
 extern P4_CODE (p4_bye);
 
+/** CS-PICK ( 2a 2b 2c ... n -- 2a 2b 2c ... 2a )
+ * pick a value in the compilation-stack - note that the compilation
+ * stack _can_ be seperate in some forth-implemenations. In PFE
+ * the parameter-stack is used in a double-cell fashion, so CS-PICK
+ * would 2PICK a DP-mark and a COMP-magic, see => PICK
+ */
+extern P4_CODE (p4_cs_pick);
+
+/** CS-ROLL ( 2a 2b 2c ... n -- 2b 2c ... 2a )
+ * roll a value in the compilation-stack - note that the compilation
+ * stack _can_ be seperate in some forth-implemenations. In PFE
+ * the parameter-stack is used in a double-cell fashion, so CS-ROLL
+ * would 2ROLL a DP-mark and a COMP-magic, see => ROLL
+ */
+extern P4_CODE (p4_cs_roll);
+
 /** FORGET ( "word" -- )
  simulate:
    : FORGET  [COMPILE] '  >NAME (FORGET) ; IMMEDIATE
@@ -137,8 +153,69 @@ extern P4_CODE (p4_bracket_else);
  */
 extern P4_CODE (p4_bracket_if);
 
+/** ASSEMBLER ( -- )
+ * set the => ASSEMBLER-WORDLIST as current => CONTEXT
+ */
+extern P4_CODE (p4_assembler);
+
+/** CODE ( "name" -- )
+ * => CREATE a new name and put PFA adress into the CFA place. 
+ *
+ * NOTE: this description (PFA into CFA) is only correct for traditional
+ * indirect threaded code (ITC). The other variants use a block info
+ * in the CFA - there we will start a normal colon word which is cut
+ * off immediately by a => ;CODE directive to enter the machine-level.
+ *
+ * BE AWARE:
+ * The TOOLS-EXT will not provide an => END-CODE or any other word in the
+ * => ASSEMBLER wordlist which is required to start any useful assembler 
+ * programming. After requiring ASSEMBLER-EXT you will see a second "CODE"
+ * in the => EXTENSIONS wordlist that will also provide an optimized execution
+ * than the result of this standard-forth implemenation.
+ */
+extern P4_CODE (p4_create_code);
+
+/** ;CODE ( -- )
+ * Does end the latest word (being usually some DOES> part) and enters
+ * machine-level (in EXEC-mode). 
+ *
+ * BE AWARE:
+ * The TOOLS-EXT will not provide an => END-CODE or any other word in the
+ * => ASSEMBLER wordlist which is required to start any useful assembler 
+ * programming. After requiring ASSEMBLER-EXT you will see a second ";CODE"
+ * in the => EXTENSIONS wordlist that will also provide an optimized execution
+ * than the result of this standard-forth implemenation.
+ *
+ * The Standard-Forth implementation will actually compile a derivate of
+ * => BRANCH into the dictionary followed by =>";". The compiled word
+ * will not jump to the target adress (following the execution token)
+ * but it will call the target adress via the host C stack. The target
+ * machine level word (C domain) will just return here for being
+ * returned (Forth domain). Hence => END-CODE may be a simple RET, comma!
+ */
+extern P4_CODE (p4_semicolon_code_execution);
+
+extern P4_CODE (p4_semicolon_code);
+
+/** END-CODE ( "name" -- )
+ * call => PREVIOUS and  add PROC LEAVE assembler snippet as needed
+ * for the architecture -  usually includes bits to "return from
+ * subroutine". Remember that not all architectures are support and
+ * PFE usually does only do variants of call-threading with a separate
+ * loop for the inner interpreter that does "call into subroutine".
+ * 
+ * Some forth implementations do "jump into routine" and the PROC
+ * LEAVE part would do "jump to next routine" also known as 
+ * next-threading. The sbr-call-threading is usually similar to the
+ * native subroutine-coding of the host operating system. See => CODE
+ * 
+ * On some machine types, this word is NOT DEFINED!
+ */
+extern P4_CODE (p4_end_code);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
 
 #endif

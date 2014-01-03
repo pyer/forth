@@ -30,8 +30,8 @@
 #include <pfe/exception-sub.h>
 #include <pfe/memory-sub.h>
 #include <pfe/misc-ext.h>
-#include <pfe/option-ext.h>
-#include <pfe/option-set.h>
+//#include <pfe/option-ext.h>
+//#include <pfe/option-set.h>
 #include <pfe/search-order-ext.h>
 #include <pfe/signals-ext.h>
 #include <pfe/tools-sub.h>

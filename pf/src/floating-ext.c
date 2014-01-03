@@ -1111,21 +1111,10 @@ static FCode_RT(floating_deinit)
     }
 }
 
-#ifndef FLT_STACK_SIZE          /* USER-CONFIG: --fp-stack-size */
-#define	FLT_STACK_SIZE	0	/* 0 -> P4_KB*1024 / 16 */
-#endif
-
-#ifndef FLOATING_HEADROOM       /* USER-CONFIG: */
-#define FLOATING_HEADROOM 2     /* F-stack underflow does no harm for these */
-#endif
 
 static FCode(floating_init)
 {
-    p4ucell flt_stack_size =
-	p4_search_option_value ((const p4_char_t*) "/fp-stack", 9,
-				FLT_STACK_SIZE ? FLT_STACK_SIZE
-				: (PFE_set.total_size / 32) / sizeof(double),
-				PFE.set);
+    p4ucell flt_stack_size = (PFE_set.total_size / 32) / sizeof(double);
 
     if (flt_stack_size < 6) /* ANS Forth (dpans94), section 12.3.3 : */
 	flt_stack_size = 6; /* The size of a floating-point stack
@@ -1136,9 +1125,8 @@ static FCode(floating_init)
 			    (void**) &PFE.fstack, (void**) &PFE.f0)
 	) p4_throw (P4_ON_DICT_OVER); /** FIXME: no good idea to throw here */
 
-    PFE.f0 -= FLOATING_HEADROOM;
-
-    FP = PFE.f0; /* same as abort_float above. Is that a rule? askmee */
+    PFE.f0 -= 2;	/* F-stack underflow does no harm for these */
+    FP = PFE.f0;	/* same as abort_float above. Is that a rule? askmee */
 
     PFE.interpret[FLOATING_INTERPRET_SLOT] = PFX (interpret_float);
     PFE.abort[FLOATING_INTERPRET_SLOT] = PFX(abort_float);

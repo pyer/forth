@@ -413,10 +413,6 @@ p4_term_struct p4_term_stdio =
 /* this one is called *before* loading other things in p4_main */
 int p4_prepare_terminal ()
 {
-#   ifdef _K12_SOURCE
-#   define p4_term_ios p4_term_k12
-#   endif
-
     if (! PFE.term) 
     {
 	PFE.term = PFE_set.stdio ? &p4_term_stdio : &p4_term_ios;

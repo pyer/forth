@@ -27,18 +27,12 @@ static char* id __attribute__((unused)) =
 #include <pfe/os-string.h>
 #include <pfe/os-setjmp.h>
 
-#ifdef _K12_SOURCE
-#include <pfe/main-k12.h>
-#endif
-
-#include <pfe/option-ext.h>
 #include <pfe/double-sub.h>
 #include <pfe/debug-ext.h>
 #include <pfe/file-sub.h>
 #include <pfe/term-sub.h>
 #include <pfe/_missing.h>
 #include <pfe/exception-sub.h>
-#include <pfe/chainlist-ext.h>
 
 #include <pfe/logging.h>
 
@@ -444,17 +438,6 @@ p4_include_file (p4_File *fid)
     }
 }
 
-static const char* included_source_file_name (void)
-{
-    switch (SOURCE_ID)
-    {
-    case 0:
-    case -1:
-        return NULL;
-    default:
-        return SOURCE_FILE->name;
-    }
-}
 
 /**
  * called by INCLUDED and INCLUDE
@@ -462,48 +445,17 @@ static const char* included_source_file_name (void)
 _export int
 p4_included1 (const p4_char_t *name, int len, int throws)
 {
-    char* fn = NULL;
-    if (name[0] == '.' && name[1] == '/' && included_source_file_name ())
-    {
-        /* prepend the directory of the current include source file name
-         * to the search path for the next include file. */
-        const char* current_file = included_source_file_name();
-        const char* dirname_sep = strrchr (current_file, PFE_DIR_DELIMITER);
-        char* paths = p4_pocket ();
-        size_t inc_paths_len = p4_strlen(*P4_opt.inc_paths);
-        size_t dirname_len = dirname_sep-current_file;
-        if (dirname_len + inc_paths_len > POCKET_SIZE) dirname_len = 0;
-        memcpy (paths, current_file, dirname_len);
-        paths[dirname_len] = PFE_PATH_DELIMITER;
-        memcpy (paths+dirname_len+1, *P4_opt.inc_paths, inc_paths_len + 1 );
-        fn = p4_pocket_expanded_filename (name, len, paths, *P4_opt.inc_ext);
-    }
-    else
-    {
-        fn = p4_pocket_expanded_filename (
-                name, len, *P4_opt.inc_paths, *P4_opt.inc_ext);
-    }
-
-    File* f = p4_open_file ((p4_char_t*) fn, p4_strlen (fn), FMODE_RO);
+    File* f = p4_open_file (name, len, FMODE_RO);
     if (!f)
     {
         if (throws)
         {
-            p4_throwstr (P4_ON_FILE_NEX, fn);
+            p4_throwstr (P4_ON_FILE_NEX, (const char *)name);
         }else{
-            P4_fail2 ("- could not open '%s' (paths='%s')\n",
-                      fn, *P4_opt.inc_paths);
+            P4_fail1 ("- could not open '%s'\n", name );
             return 0;
         }
     }
-#   ifdef _K12_SOURCE
-    {
-        register struct k12_priv* k12p = P4_K12_PRIV(p4TH);
-        k12p->state = K12_EMU_NOT_LOADED;
-        /* before GetEvent, it goes _IDLE in term-k12.c FIXME: generalize!!*/
-    }
-#   endif
-
     p4_include_file (f);
     p4_close_file (f);
     return 1;
@@ -756,14 +708,10 @@ FCode (p4_cold_system)
     TIB = PFE.tib;
     BASE = 10;
     p4_DPL = -1;
-    PRECISION = p4_search_option_value(p4_lit_precision,9, 6, PFE.set);
+    PRECISION = 6;
     WORDL_FLAG = 0; /* implicitly enables HASHing */
-    if (p4_search_option_value(p4_lit_source_any_case,15,
-	  PFE_set.find_any_case, PFE.set)) WORDL_FLAG |= WORDL_NOCASE;
-    if (p4_search_option_value(p4_lit_source_upper_case,17,
-	  PFE_set.upper_case_on, PFE.set)) WORDL_FLAG |= WORDL_UPPER_CASE;
-    LOWER_CASE_FN = p4_search_option_value(p4_lit_lower_case_filenames,20,
-      PFE_set.lower_case_fn, PFE.set);
+    WORDL_FLAG |= WORDL_NOCASE;
+    WORDL_FLAG |= WORDL_UPPER_CASE;
     FLOAT_INPUT = P4_opt.float_input;
     PFE.setjmp_fenv_save = (p4_setjmp_fenv_save_func_t)(PFX(p4_noop));
     PFE.setjmp_fenv_load = (p4_setjmp_fenv_load_func_t)(PFX(p4_noop));
@@ -828,32 +776,9 @@ FCode (p4_boot_system)
     RESET_ORDER = P4_TRUE;
     REDEFINED_MSG = P4_FALSE;
     {
-#ifndef MODULE0
-#define MODULE0 extensions
-#endif
-        extern const p4Words P4WORDS (MODULE0);
+        extern const p4Words P4WORDS (extensions);
+        p4_load_words (&P4WORDS (extensions), ONLY, 0);
 
-#ifdef MODULE1
-        extern const p4Words P4WORDS (MODULE1);
-#endif
-#ifdef MODULE2
-        extern const p4Words P4WORDS (MODULE2);
-#endif
-#ifdef MODULE3
-        extern const p4Words P4WORDS (MODULE3);
-#endif
-
-        p4_load_words (&P4WORDS (MODULE0), ONLY, 0);
-
-#ifdef MODULE1
-        p4_load_words (&P4WORDS (MODULE1), ONLY, 0);
-#endif
-#ifdef MODULE2
-        p4_load_words (&P4WORDS (MODULE2), ONLY, 0);
-#endif
-#ifdef MODULE3
-        p4_load_words (&P4WORDS (MODULE3), ONLY, 0);
-#endif
 	/* should be replaced by p4_load_words someday... fixme: */
         if (PFE.set->loadlist[0])
             p4_load_words (PFE.set->loadlist[0], ONLY, 0);
@@ -869,21 +794,7 @@ FCode (p4_boot_system)
     quit_system ();
 
     REDEFINED_MSG = P4_FALSE;
-    {
-	static const p4_char_t p4_lit_boot_file[] = "boot-file";
-
-	register const char* file;
-#       ifndef PFE_BOOT_FILE /* USER-CONFIG: --boot-file=<included-file> */
-#       define PFE_BOOT_FILE 0
-#       endif
-	if ((file = (char*) p4_search_option_string (
-	    p4_lit_boot_file, 9, PFE_BOOT_FILE, PFE.set)))
-	{
-	    p4_included1 ((const p4_char_t*) file, p4_strlen (file), 0);
-	}
-    }
-
-    /*  read_help_index (PFE_PKGHELPDIR, "index"); */
+    p4_included1 ((const p4_char_t*) PFE_BOOT_FILE, p4_strlen (PFE_BOOT_FILE), 0 );
 
     /* According to the ANS Forth description, the order after BOOT must
      * include the FORTH-WORDLIST, and the CURRENT definition-wordlist

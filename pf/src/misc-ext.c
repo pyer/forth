@@ -569,10 +569,6 @@ FCode (p4_dot_status)
 {
     FX (p4_cr);
     FX (p4_dot_memory);
-    p4_outf ("\nsearch path for binary modules:   %s", *P4_opt.lib_paths);
-    p4_outf ("\nsearching for help files in:      %s", PFE_PKGHELPDIR);
-    p4_outf ("\nsearch path for source files:     %s", *P4_opt.inc_paths);
-    p4_outf ("\nextensions for source files:      %s", *P4_opt.inc_ext);
     FX (p4_cr);
 /*  p4_outf ("\nmaximum number of open files:     %u", P4_opt.max_files); */
 /*  p4_outf ("\nmaximum simultaneous S\" pockets   %u", P4_opt.pockets);  */
@@ -1212,7 +1208,6 @@ P4_LISTWORDS (misc) =
     P4_FXco ("ACCESS-ARRAY",	p4_access_array),
 
     P4_FXco (".STATUS",		p4_dot_status),
-    P4_xOLD ("SHOW-STATUS",	".STATUS"),
 
     /* NOTE: the newer "TO"-implementation is able to set DVaLs */
     P4_DVaL ("UPPER-CASE?",	wordl_flag), /* will be bool-VaL */

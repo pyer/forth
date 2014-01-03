@@ -57,13 +57,6 @@ static char* id __attribute__((unused)) =
 #define ___ {
 #define ____ }
 
-#ifndef STACK_SIZE              /* USER-CONFIG: */
-#define	STACK_SIZE	0	/* 0 -> P4_KB*1024 / 32 + 256 */
-#endif
-#ifndef RET_STACK_SIZE          /* USER-CONFIG: */
-#define	RET_STACK_SIZE	0	/* 0 -> P4_KB*1024 / 64 + 256 */
-#endif
-
 #ifndef ORDER_LEN               /* USER-CONFIG: */
 #define ORDER_LEN 64            /* maximum wordlists in search order */
 #endif
@@ -115,11 +108,6 @@ _export p4_threadP p4_main_threadP = NULL;
 static int
 p4_run_boot_system (p4_threadP th) /* main_init */
 {
-#  ifdef VXWORKS
-    extern int taskVarAdd (int, int*);
-    extern int taskIdSelf ();
-    taskVarAdd (taskIdSelf (), (int*) &p4_current);
-#  endif
     p4_current = th;
 
 #  ifdef PFE_USE_THREAD_BLOCK
@@ -215,37 +203,12 @@ p4_run_boot_system (p4_threadP th) /* main_init */
 
     /* _______________ dictionary block __________________ */
 
-# ifdef USE_MMAP
-    if ((s = p4_search_option_string ("map-file", 8, 0, PFE.set)))
-    {
-        p4ucell l = p4_search_option_value ("map-base", 8, 0, PFE.set);
-	PFE.mapfile_fd = p4_mmap_creat (s, l, PFE_set.total_size);
-	if (! PFE.mapfile_fd)
-	{
-	    P4_fail1 ("[%p] mapfile failed", p4TH);
-	}else{
-	    P4_info3 ("[%p] mapped at %8p len %d",
-		      p4TH, PFE_MEM, PFE_set.total_size);
-	}
-    }
-# endif
-#define p4_search_option_value_static(__option,__default,__wordlist) \
-        p4_search_option_value( \
-          (p4_char_t*) __option, sizeof(__option)-1, __default, __wordlist)
-#define p4_search_option_string_static(__option,__default,__wordlist) \
-        p4_search_option_string( \
-          (p4_char_t*) __option, sizeof(__option)-1, __default, __wordlist)
-#define p4_lookup_option_string_static(__option,__default,__wordlist) \
-        p4_lookup_option_string( \
-          (p4_char_t*) __option, sizeof(__option)-1, __default, __wordlist)
     if (! PFE_MEM)
     {
 #      ifndef P4_MIN_KB
 #      define P4_MIN_KB 60
 #      endif
-        unsigned long total_size = p4_search_option_value_static("/total",
-	    PFE_set.total_size, PFE.set);
-        if (total_size < P4_MIN_KB*1024) total_size = P4_MIN_KB*1024;
+        unsigned long total_size = P4_MIN_KB*1024;
 
         PFE_MEM = p4_xcalloc (1, (size_t) total_size);
         if (PFE_MEM)
@@ -266,50 +229,31 @@ p4_run_boot_system (p4_threadP th) /* main_init */
     }
 
     /* ________________ initialize dictionary _____________ */
+puts("1");
 
     PFE.dict = PFE_MEM;
     PFE.dictlimit = PFE.dict + PFE_set.total_size;
 
-    ___ register int v; /* FIXME: we should update the option-ext entries in
-                         * the cases where we clamp the value to sane ranges*/
-    v = p4_search_option_value_static ("#pockets", POCKETS, PFE.set);
-    if (v < 0) v = POCKETS; if (v < 1) v = 1;
-    p4_dict_allocate (v, sizeof(p4_pocket_t), sizeof(char),
+    p4_dict_allocate (POCKETS, sizeof(p4_pocket_t), sizeof(char),
                       (void**) & PFE.pockets_ptr, (void**) & PFE.pockets_top);
-    v = p4_search_option_value_static ("/history", HISTORY_SIZE, PFE.set);
-    if (v < 0) v = HISTORY_SIZE;
-    p4_dict_allocate (v, sizeof(char), sizeof(char),
+    p4_dict_allocate (HISTORY_SIZE, sizeof(char), sizeof(char),
                       (void**) & PFE.history, (void**) & PFE.history_top);
-    v = p4_search_option_value_static ("#files", MAX_FILES, PFE.set);
-    if (v < 0) v = MAX_FILES; if (v < 4) v = 4;
-    p4_dict_allocate (v, sizeof(File), PFE_ALIGNOF_CELL,
+    p4_dict_allocate (MAX_FILES, sizeof(File), PFE_ALIGNOF_CELL,
                       (void**) & PFE.files, (void**) & PFE.files_top);
-    v = p4_search_option_value_static ("/tib", TIB_SIZE, PFE.set);
-    if (v < 0) v = TIB_SIZE; if (v < 64) v = 64;
-    p4_dict_allocate (v, sizeof(char), sizeof(char),
+    p4_dict_allocate (TIB_SIZE, sizeof(char), sizeof(char),
                       (void**) & PFE.tib, (void**) & PFE.tib_end);
-    ____;
 
-    if (! PFE_set.ret_stack_size)
-        PFE_set.ret_stack_size =
-            p4_search_option_value_static ("return-stack-cells",
-                RET_STACK_SIZE ? RET_STACK_SIZE
-                : (PFE_set.total_size / 64 + 256) / sizeof(p4cell), PFE.set);
+    PFE_set.ret_stack_size = (PFE_set.total_size / 64 + 256) / sizeof(p4cell);
     p4_dict_allocate (PFE_set.ret_stack_size, sizeof(p4xt*),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.rstack, (void**) & PFE.r0);
 
-    if (! PFE_set.stack_size)
-        PFE_set.stack_size =
-            p4_search_option_value_static ("stack-cells",
-                STACK_SIZE ? STACK_SIZE
-                : (PFE_set.total_size / 32 + 256)  / sizeof(p4cell), PFE.set);
+    PFE_set.stack_size = (PFE_set.total_size / 32 + 256)  / sizeof(p4cell); 
     p4_dict_allocate (PFE_set.stack_size, sizeof(p4cell),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.stack, (void**) & PFE.s0);
 
-    PFE_set.wordlists =
-        p4_search_option_value_static ("wordlists", ORDER_LEN, PFE.set);
+    PFE_set.wordlists = ORDER_LEN;
     p4_dict_allocate (PFE_set.wordlists+1, sizeof(void*), sizeof(void*),
                       (void**) & PFE.context, (void**) 0);
     p4_dict_allocate (PFE_set.wordlists, sizeof(void*), sizeof(void*),
@@ -322,16 +266,11 @@ p4_run_boot_system (p4_threadP th) /* main_init */
 	p4_longjmp_exit ();
     }
 
-    PFE.set->inc_ext   = p4_lookup_option_string_static (
-        "INC-EXT",     (const char**) & empty, PFE.set);
-    PFE.set->inc_paths = p4_lookup_option_string_static (
-        "INC-PATH",    (const char**) & empty, PFE.set);
-    PFE.set->lib_paths = p4_lookup_option_string_static (
-        "LIB-PATH",    (const char**) & empty, PFE.set);
-
     /*  -- cold boot stage -- */
     PFE_VM_p4TH(p4_current);
+puts("2");
     FX (p4_cold_system);
+puts("2a");
     init_accept_lined ();
 
     /* -------- warm boot stage ------- */
@@ -344,85 +283,9 @@ p4_run_boot_system (p4_threadP th) /* main_init */
 
     PFE_VM_SAVE(th);
     return PFE.exitcode;
+puts("3");
 }
 
-
-
-
-/* wrapping a catch domain around p4_script_files above. The lower
- * routine is also called from COLD which does run EMPTY followed
- * by re-including the SCRIPT-FILE to re-initialize the system */
-static int p4_Run_script_files(p4_Thread* th);
-static int p4_run_script_files(p4_Thread* th)
-{
-    switch (p4_setjmp (th->loop))
-    {           /* classify unhandled throw codes */
-    case 'A':
-    case 'Q':	P4_fatal ("Script File Throw/Quit");
-        {   extern FCode(p4_come_back); /*:debug-ext:*/
-#         ifdef P4_RP_IN_VM
-            if (p4_R0) th->rp = RP = p4_R0; /* quit_system */
-            FX (p4_come_back);
-#         endif
-        }
-        return -1;
-    default:
-    	P4_warn ("Script File Kill");
-    	/*fallthrough*/
-    case 'X':
-    	P4_info ("Script File Exit/Bye");
-    	return th->exitcode;
-    case 0:     break;
-    }
-    return p4_Run_script_files (th);
-}
-
-/* boot_includes
- * This routine is ususally run right after p4_boot_system. Perhaps
- * some other boot routines have run, and then script-files shall
- * be included - we set the environment => MARKER => EMPTY in this
- * routine so you can always go back to the dictionary state just
- * before this routine. That is actually done in => COLD for example.
- */
-static FCode(p4_run_script_files)
-{
-    register char const * s;
-    {
-        register p4_Wordl* old = CURRENT; CURRENT = PFE.environ_wl;
-        FX_PUSH("EMPTY"); FX_PUSH(5); FX(p4_paren_marker);
-        CURRENT = old;
-    }
-
-    /* USER-CONF --load-image=<file>            (alias --image-file=<name>) */
-    s = (const char*) p4_search_option_string_static ("image-file",
-	0, PFE.set); /* gforth's */
-    s = (const char*) p4_search_option_string_static ("load-image",
-        s, PFE.set); /* pfe's */
-    if (s) { P4_fail2 ("[%p] load wordset image-file not implemented: %s",
-                       p4TH, s); }
-
-#  if 0
-    /* already loaded during p4_boot_system */
-    s = (const char*) p4_search_option_string_static ("boot-file",
-        0, PFE.set);
-    if (s && *s) { p4_included1 (s, p4_strlen(s), 0); }
-#  endif
-
-    /* process the boot command: */
-    s = (const char*) p4_search_option_string_static ("boot-init",
-      0, PFE.set);
-    if (s && *s) { p4_evaluate ((const p4_char_t*) s, p4_strlen(s)); }
-
-    /* Include file from command line: */
-    s = (const char*) p4_search_option_string_static ("script-file",
-      0, PFE.set);
-    if (s && *s) { p4_included1 ((const p4_char_t*) s, p4_strlen(s), 0); }
-
-    /* possibly subselect a section from that script */
-    s = (const char*) p4_search_option_string_static ("script-init",
-      0, PFE.set);
-    if (s && *s) { p4_evaluate ((const p4_char_t*) s, p4_strlen(s)); }
-}
 /**
  * The run-application routine will check the various variants of
  * the pfe execution model including to start APPLICATION or to
@@ -480,16 +343,6 @@ static FCode (p4_run_application)
 }
 
 
-static int p4_Run_script_files(p4_Thread* th)
-{
-    P4_CALLER_SAVEALL;
-    PFE_VM_LOAD(th);
-    FX (p4_run_script_files);
-    PFE_VM_SAVE(th);
-    P4_CALLER_RESTORE;
-    return th->exitcode;
-}
-
 static int p4_Run_application(p4_Thread* th)
 {
     P4_CALLER_SAVEALL;
@@ -526,7 +379,6 @@ p4_Exec(p4_threadP th)
     auto volatile int retval;
     P4_CALLER_SAVEALL;
     retval =               p4_run_boot_system(th);
-    if (! retval) retval = p4_run_script_files(th);
     if (! retval) retval = p4_run_application(th);
     if (1 /* always */)    p4_atexit_cleanup ();
     P4_CALLER_RESTORE;

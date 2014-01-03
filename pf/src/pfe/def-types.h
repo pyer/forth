@@ -263,10 +263,6 @@ struct p4_Session
     p4ucelll	total_size;
     p4ucelll	stack_size;
     p4ucelll	ret_stack_size;
-    p4ucelll	unused_max_files; /* use option_value "#files" */
-    p4ucelll	unused_pockets;   /* use option_value "#pockets" */
-    /* quick access to option-ext variables... (if any) */
-    char**      unused_boot_include; /* use option_string "SCRIPT-FILE" */
     /* we keep the following entries only to speed up runtime processing: */
     char const** inc_paths;     /* usually points to "INC-PATH" */
     char const** inc_ext;       /* usually points to "INC-EXT" */
@@ -276,12 +272,8 @@ struct p4_Session
     /* for VMs */
     int     cpus;          /* how many cpus do we have in this tread */
 
-    char const** unused_prefix;      /* use option_string("PREFIX-DIR") */
     char ** boot_name;          /* points to argv[0] usually... */
-    char const** unused_bootcommand; /* use option_string("BOOT-INIT") */
     char const** optv;
-    p4cell       unused_heap;        /* obsoleted bitfield */
-
     p4ucell     optc;
     unsigned    wordlists;       /* p4ucell might be 64bit (16bit is okay) */
     void*       modules;         /* p4Words* : dl-internal / dl-ext */
@@ -488,9 +480,6 @@ struct p4_Thread
 
 /* go at quoting... */
     p4_char_t quoted_parse;
-    p4_char_t unused_flag1;
-    p4_char_t unused_flag2;
-    p4_char_t unused_flag3;
 
     struct {
 	const p4_char_t* ptr;

@@ -135,9 +135,6 @@
 #define PFE_WITH_FFA    1       /* use seperate FlagField */
 #endif
 
-#ifndef P4_MODULES
-//#define P4_MODULES 1            /* use shared object modules */
-#endif                  
 #ifndef P4_STDC
 #define P4_STDC 1               /* some words from the C-language family */
 #endif

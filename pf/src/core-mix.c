@@ -132,6 +132,13 @@ FCode (p4_version)
     p4_outs (p4_version_string ());
 }
 
+/** .COPYRIGHT ( -- )
+ */
+FCode (p4_copyright)
+{
+    p4_outs (p4_copyright_string ());
+}
+
 /* _______________________________________________________________________ */
 /* parse and place at HERE */
 
@@ -319,6 +326,7 @@ P4_LISTWORDS (core_misc) =
     P4_FXco ("UMAX",		p4_u_max),
 
     /* forth distributor info */
+    P4_FXco (".COPYRIGHT",	p4_copyright),
     P4_FXco (".VERSION",	p4_version),
     P4_FXco (".LICENSE",	p4_license),
     P4_FXco (".WARRANTY",	p4_warranty),

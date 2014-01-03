@@ -428,10 +428,6 @@
 #define STDC_HEADERS 1
 #define PFE_STDC_HEADERS  1
 
-/* which terminal driver to use as default */
-#define TERM_DEF 6
-#define PFE_TERM_DEF 6
-
 /* whether call-threading feature is enabled */
 /* #undef WITH_CALL_THREADING */
 
@@ -444,15 +440,6 @@
 /* whether float feature is enabled */
 #define WITH_FLOAT 1
 #define PFE_WITH_FLOAT 1
-
-/* whether modules feature is enabled */
-//#define WITH_MODULES 1
-
-/* whether nosmart feature is enabled */
-/* #undef WITH_NOSMART */
-
-/* whether no-completion feature is enabled */
-/* #undef WITH_NO_COMPLETION */
 
 /* "--with-regs=level" */
 #define WITH_REGS 1

@@ -72,20 +72,6 @@ typedef struct			/* describes the set of words */
 }
 p4Words;
 
-#ifdef MODULE /* shall change to latter sometimes soon... */
-#define P4_MODULE_LIST(name) \
-        void* p4_LTX_p4_MODULE () \
-        {               	 \
-          return (void*) &P4WORDS (name); \
-        }
-#else
-#define P4_MODULE_LIST(name) \
-        void* name##_LTX_p4_MODULE () \
-        {               	 \
-          return (void*) &P4WORDS (name); \
-        }
-#endif
-
 #if defined HOST_CPU_I386 || defined HOST_CPU_I486 \
  || defined HOST_CPU_I586 || defined HOST_CPU_I686
 #  define P4_REGTH "%ebx"
