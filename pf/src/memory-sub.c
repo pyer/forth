@@ -39,10 +39,6 @@ static char* id __attribute__((unused)) =
 #include <unistd.h>
 #endif
 
-#ifdef USE_MMAP 
-#include <sys/mman.h>
-#endif 
-
 #include <pfe/logging.h>
 
 _export void *
@@ -116,80 +112,4 @@ p4_dict_allocate (int items, int size, int align,
     if (memtop < PFE.dp + 256) return 0; /* error condition */
     return (PFE.dictlimit = memtop);
 }
-
-/* ------------------------------------------------------------------ *
- *   virtual alloc
- */
-
-#ifdef USE_MMAP
-
-#ifndef MAP_FAILED
-#define MAP_FAILED ((void*) -1)
-#endif
-
-_export int 
-p4_mmap_creat(char* name, void* addr, long size)
-{
-    int fd;
-    if (! addr || size < 16)
-    {
-	P4_warn1 ("[%p], use the function only with args != 0 !!!", p4TH);
-	return 0;
-    }
-    fd = open (PFE_set.mapfile, O_RDWR|O_CREAT|O_TRUNC, 0660);
-    if (fd == -1)
-    {
-	P4_info3 ("[%p] %s: could not open: %s",
-		  p4TH, PFE_set.mapfile, strerror(errno));
-	return 0;
-    }else{
-	register void* done;
-
-	/* sparse write first to ensure all mmap-handling 
-	   is done now. Some systems delay the actual mm-inits
-	   which we don't like to see here.
-	*/
-	if (lseek (fd, size-3, SEEK_SET) != size-3) { close(fd); return 0; }
-	write (fd, "END", 3);
-
-	done = MAP_FAILED;
-	if (addr)
-	{
-	    done = mmap (addr, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	    if (done == MAP_FAILED)
-	    {
-		P4_fail4 ("[%p] %s: mmap failed for addr %8p : %s",
-			  p4TH, name, addr, strerror(errno));
-	    }
-	}
-	if (done == MAP_FAILED)
-	{
-	    done = mmap (0, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	    if (done == MAP_FAILED)
-	    {
-		P4_fail3 ("[%p] %s: mmap failed anyway : %s",
-			  p4TH, name, strerror(errno));
-	    }
-	}
-	if (done == MAP_FAILED)
-	{
-	    close (fd);
-	    return 0;
-	}else{
-	    P4_info3 ("[%p] mapped at %8p len %ld",
-		      p4TH, PFE_MEM, size);
-	    return fd;
-	}
-    }
-}
-
-_export void
-p4_mmap_close(int fd, void* addr, long size)
-{
-    munmap (addr, size);
-    close (fd);
-    P4_info1 ("[%p] unmapped", p4TH);
-}
-
-#endif
 

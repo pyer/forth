@@ -570,8 +570,8 @@ FCode (p4_dot_status)
     FX (p4_cr);
     FX (p4_dot_memory);
     FX (p4_cr);
-/*  p4_outf ("\nmaximum number of open files:     %u", P4_opt.max_files); */
-/*  p4_outf ("\nmaximum simultaneous S\" pockets   %u", P4_opt.pockets);  */
+    p4_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
+    p4_outf ("\nmaximum simultaneous S\" pockets   %u", P4_POCKETS);
     p4_outf ("\ndictionary threads configured     %u", 1<<LD_THREADS);
     p4_outf ("\nmaximum wordlists in search order %u", P4_opt.wordlists);
     FX (p4_cr);

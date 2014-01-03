@@ -112,17 +112,6 @@
 #define PFE_HAVE_STRINGIZE 1   /* just make it the default */
 #endif 
 
-#if defined _K12_SOURCE
-# ifndef PFE_WITH_SPY   /* use always in k12xx environment */
-# define PFE_WITH_SPY 1
-# endif
-#endif
-
-/* some options */
-#ifndef P4_KB           /* size of system altogether in KBytes */
-#define P4_KB           1024
-#endif
-
 #if !defined P4_C_QUOTE && !defined P4_S_QUOTE
 #define P4_C_QUOTE 1            /* quote means c_quote */
 #endif

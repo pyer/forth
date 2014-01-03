@@ -413,11 +413,6 @@ FCode (p4_rename_file)
     *SP = _P4_rename (oldnm, newnm) ? PFE_io_errno : 0;
 }
 
-static FCode (p__max_files)
-{
-    FX_PUSH (PFE.files_top - PFE.files); /* in items, div sizeof(p4_File) */
-}
-
 
 /** R/O ( -- readonly-mode# ) [ANS]
  * a bitmask for => OPEN-FILE ( => R/O => R/W => W/O => BIN )
@@ -463,7 +458,6 @@ P4_LISTWORDS (file) =
 
     P4_INTO ("ENVIRONMENT", 0 ),
     P4_OCON ("FILE-EXT",	 1994 ),
-    P4_FXCO ("MAX-FILES",	 p__max_files),
     
 };
 P4_COUNTWORDS (file, "File-access + extensions");

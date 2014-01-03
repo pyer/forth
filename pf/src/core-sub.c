@@ -446,7 +446,7 @@ _export int
 p4_match (const p4char *pattern, const p4char *str, int len, int ic)
 {
     /* RENAME: p4_wild_match - move near p4_wild_words - possibly export */
-    short preprocessed[POCKET_SIZE], *p = preprocessed;
+    short preprocessed[P4_POCKET_SIZE], *p = preprocessed;
 
     /* preprocess pattern, remove `\' */
     for (;;)

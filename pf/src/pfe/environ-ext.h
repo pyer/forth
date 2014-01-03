@@ -86,9 +86,7 @@ extern P4_CODE (p4_environment_Q);
  * level implementation of floating-ext then that implementation might
  * have registered a hint "floating-ext" in the environment-wordlist.
  * This extra-hint will inhibit loading of the binary module even if
- * it exists and not been loaded so far. The => LOADM however will
- * not check the => ENVIRONMENT-WORDLIST and only check its loadlist
- * of binary wordset modules in the system.
+ * it exists and not been loaded so far.
  *
  * It is therefore recommended to use => NEEDS instead of => LOADM
  * unless you know you want the binary module, quickly and uncondtionally.

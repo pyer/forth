@@ -66,18 +66,6 @@ static char* id __attribute__((unused)) =
 
 static char const * const empty = "";
 
-/************************************************************************/
-/* Initialize memory map:                                               */
-/************************************************************************/
-
-void p4_SetDictMem (p4_threadP thread, void* dictmem, long size)
-{
-    if (!dictmem) return;
-    thread->p[P4_MEM_SLOT] = dictmem;
-    thread->moptrs = P4_MEM_SLOT;   /* _cleanup shall not free this one */
-    thread->set->total_size = size; /* or any later module mem pointer */
-}
-
 static void
 init_accept_lined (void)
 {
@@ -205,50 +193,34 @@ p4_run_boot_system (p4_threadP th) /* main_init */
 
     if (! PFE_MEM)
     {
-#      ifndef P4_MIN_KB
-#      define P4_MIN_KB 60
-#      endif
-        unsigned long total_size = P4_MIN_KB*1024;
-
-        PFE_MEM = p4_xcalloc (1, (size_t) total_size);
+        PFE_MEM = p4_xcalloc (1, (size_t) PFE_set.total_size);
         if (PFE_MEM)
         {
             P4_info3 ("[%p] newmem at %p len %lu",
-		      p4TH, PFE_MEM, total_size);
+		      p4TH, PFE_MEM, PFE_set.total_size);
         }else{
             P4_fail3 ("[%p] FAILED to alloc any base memory (len %lu): %s",
-		      p4TH, total_size,
+		      p4TH, PFE_set.total_size,
 		      strerror(errno));
-        }
-        if (total_size != PFE_set.total_size)
-        {
-            P4_info3 ("[%p] OVERRIDE total_size %lu -> %lu",
-                      p4TH, (unsigned long) PFE_set.total_size, total_size);
-            PFE_set.total_size = total_size;
         }
     }
 
     /* ________________ initialize dictionary _____________ */
-puts("1");
 
     PFE.dict = PFE_MEM;
     PFE.dictlimit = PFE.dict + PFE_set.total_size;
 
-    p4_dict_allocate (POCKETS, sizeof(p4_pocket_t), sizeof(char),
+    p4_dict_allocate (P4_POCKETS, sizeof(p4_pocket_t), sizeof(char),
                       (void**) & PFE.pockets_ptr, (void**) & PFE.pockets_top);
     p4_dict_allocate (HISTORY_SIZE, sizeof(char), sizeof(char),
                       (void**) & PFE.history, (void**) & PFE.history_top);
-    p4_dict_allocate (MAX_FILES, sizeof(File), PFE_ALIGNOF_CELL,
+    p4_dict_allocate (P4_MAX_FILES, sizeof(File), PFE_ALIGNOF_CELL,
                       (void**) & PFE.files, (void**) & PFE.files_top);
     p4_dict_allocate (TIB_SIZE, sizeof(char), sizeof(char),
                       (void**) & PFE.tib, (void**) & PFE.tib_end);
-
-    PFE_set.ret_stack_size = (PFE_set.total_size / 64 + 256) / sizeof(p4cell);
     p4_dict_allocate (PFE_set.ret_stack_size, sizeof(p4xt*),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.rstack, (void**) & PFE.r0);
-
-    PFE_set.stack_size = (PFE_set.total_size / 32 + 256)  / sizeof(p4cell); 
     p4_dict_allocate (PFE_set.stack_size, sizeof(p4cell),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.stack, (void**) & PFE.s0);
@@ -268,9 +240,7 @@ puts("1");
 
     /*  -- cold boot stage -- */
     PFE_VM_p4TH(p4_current);
-puts("2");
     FX (p4_cold_system);
-puts("2a");
     init_accept_lined ();
 
     /* -------- warm boot stage ------- */
@@ -283,7 +253,6 @@ puts("2a");
 
     PFE_VM_SAVE(th);
     return PFE.exitcode;
-puts("3");
 }
 
 /**
@@ -398,15 +367,6 @@ p4_atexit_cleanup (void)
     if (PFE.system_terminal)    /* call this once, with the first cpu */
         PFE.system_terminal ();
     p4_cleanup_terminal ();
-
-#  ifdef USE_MMAP
-    if (PFE.mapfile_fd)
-    {
-	p4_mmap_close(PFE.mapfile_fd, PFE_MEM, PFE_set.total_size);
-        PFE_MEM = 0; PFE.mapfile_fd = 0;
-        P4_info1 ("[%p] unmapped basemem", p4TH);
-    }
-#  endif
 
     { /* see if there's some memory chunk still to be freed */
         register int i;

@@ -2,11 +2,6 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 #define TARGET_OS "linux-gnu"
-/* Version of package */
-#ifndef PFE_VERSION
-#define PFE_VERSION  "1.0.0"
-#endif
-
 
 /* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
 #define BYTEORDER 1234

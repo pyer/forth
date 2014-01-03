@@ -98,10 +98,6 @@
 # define LD_THREADS    	P4_THREADS_SHIFT
 # define LD_LOCALS     	P4_LOCALS_SHIFT
 
-# define MAX_FILES	P4_MAX_FILES
-# define POCKETS	P4_POCKETS
-# define POCKET_SIZE	P4_POCKET_SIZE
-
 # define MIN_HOLD	P4_MIN_HOLD
 # define MIN_PAD	P4_MIN_PAD
 
@@ -279,9 +275,6 @@ struct p4_Session
     void*       modules;         /* p4Words* : dl-internal / dl-ext */
     p4ucell     padding[4];      /* padding cells for binary compatibility */
 
-    /* additional loadlists for p4_initialize_system */
-    void * loadlist[4];
-
     /* newstyle options support via option-ext */
     struct
     {
@@ -298,10 +291,8 @@ struct p4_Session
 #endif
 
 #define P4_MEM_SLOT (P4_MOPTRS-1)
-#define P4_FIG_SLOT (P4_MOPTRS-3)
 
    /* there's nothing good in this solution... *FIXME*/
-#define PFE_FIG (PFE.p[P4_FIG_SLOT])
 #define PFE_MEM (PFE.p[P4_MEM_SLOT])
 
 struct p4_Thread
@@ -340,7 +331,6 @@ struct p4_Thread
     p4_jmp_buf loop;       /* QUIT and ABORT do a THROW which longjmp() */
        			   /* here thus C-stack gets cleaned up too */
 /*Options*/
-    int nr;                 /* this cpu's id (mostly an optional feature)*/
     p4_Session* set;        /* contains cpu-pointers */
 #define P4_opt  (*PFE.set)
 #define PFE_set (*PFE.set)

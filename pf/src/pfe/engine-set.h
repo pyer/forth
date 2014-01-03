@@ -25,9 +25,6 @@ extern "C" {
 #endif
 
 
-void p4_SetDictMem (p4_threadP thread, void* dictmem, long size);
-
-
 extern P4_CODE(p4_script_files);
 
 _extern  p4_threadP p4_main_threadP ; /*=*/

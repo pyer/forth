@@ -524,15 +524,10 @@ FCode (p4_closeall_files)
  */
 FCode (p4_ok)
 {
-    if (!STATE)
-    {
+//    if (!STATE)
+//    {
         p4_outs ("ok");
-        if (PFE.nr) {
-            p4_outc ('-');
-            p4_outc ('0' + PFE.nr % 10);
-        }
-        FX (p4_space);
-    }
+//    }
 }
 
 /*
@@ -770,26 +765,13 @@ FCode (p4_cold_system)
  */
 FCode (p4_boot_system)
 {
-    if (PFE.nr) { printf (" CPU%i ", PFE.nr); }
-
     /* Action of COLD ABORT and QUIT, but don't enter the interactive QUIT */
     RESET_ORDER = P4_TRUE;
     REDEFINED_MSG = P4_FALSE;
     {
         extern const p4Words P4WORDS (extensions);
         p4_load_words (&P4WORDS (extensions), ONLY, 0);
-
-	/* should be replaced by p4_load_words someday... fixme: */
-        if (PFE.set->loadlist[0])
-            p4_load_words (PFE.set->loadlist[0], ONLY, 0);
-        if (PFE.set->loadlist[1])
-            p4_load_words (PFE.set->loadlist[1], ONLY, 0);
-        if (PFE.set->loadlist[2])
-            p4_load_words (PFE.set->loadlist[2], ONLY, 0);
-        if (PFE.set->loadlist[3])
-            p4_load_words (PFE.set->loadlist[3], ONLY, 0);
     }
-
     abort_system ();
     quit_system ();
 

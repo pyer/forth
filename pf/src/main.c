@@ -13,13 +13,6 @@
  *  Process command line, get memory and start up the interpret loop of PFE
  */
 /*@{*/
-/*
-#if defined ARM
-#include "include/config_arm.h"
-#else
-#include "include/config_x86.h"
-#endif
-*/
 #include <pfe/def-config.h>
 
 #define _P4_SOURCE 1
@@ -35,6 +28,7 @@
 #include <sys/resource.h>
 #endif
 
+#define TOTAL_SIZE (1024*1024) /* the shorthand for default-computations */
 
 /************************************************************************/
 /* Analyze command line options:                                        */
@@ -63,7 +57,6 @@
 #define	TEXT_ROWS	25	/* the screen size */
 #endif
 
-#define TOTAL_SIZE (P4_KB*1024) /* the shorthand for default-computations */
 
 #ifdef _K12_SOURCE
 #undef  LOWER_CASE_ON
@@ -81,14 +74,14 @@ p4_SetOptionsDefault(p4_sessionP set, int len)
 void p4_default_options(p4_sessionP set)
 {
     if (! set) return;
+    int len = sizeof(*set);
 
-    p4_memset(set, 0, sizeof(*set));
+    p4_memset(set, 0, len);
 
     /* newstyle option-ext support */
     set->opt.dict = set->opt.space;
     set->opt.dp = set->opt.dict;
     set->opt.last = 0;
-    int len = sizeof(*set);
     set->opt.dictlimit = ((p4char*)set) + len;
 
     set->argv = 0;
@@ -117,14 +110,16 @@ void p4_default_options(p4_sessionP set)
     set->rows = TEXT_ROWS;
     set->total_size = TOTAL_SIZE;
     /* TOTAL_SIZE dependent defaults are moved to dict_allocate */
-    set->stack_size = 0;
-    set->ret_stack_size = 0;
+    //set->stack_size = (set->total_size / 32 + 256)  / sizeof(p4cell); 
+    set->stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
+    //set->ret_stack_size = (set->total_size / 64 + 256) / sizeof(p4cell);
+    set->ret_stack_size = (TOTAL_SIZE / 64 + 256) / sizeof(p4cell);
 
     /*set->boot_include = 0;*/
     set->cpus = P4_MP;
 }
 
-static char memory[P4_KB*1024]; /* BSS */
+static char memory[TOTAL_SIZE]; /* BSS */
 struct p4_Thread* p4TH;
 
 int main (int argc, char** argv)
@@ -136,9 +131,6 @@ int main (int argc, char** argv)
 //    if ((i=p4_set_options (&session, argc, argv))) return i-1;
     thread = (p4_Thread*) memory;
     p4_memset (thread, 0, sizeof(p4_Thread));
-
-    /* how to override the size of the dict if the user did use an option? */
-//    p4_SetDictMem(thread, memory+sizeof(p4_Thread), 0);
     thread->set = &session;
     return p4_Exec (thread); 
 }

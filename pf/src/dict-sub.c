@@ -685,7 +685,7 @@ p4_complete_word (const p4_char_t *in, int len, char *out_pocket, int display)
         }
     }
     if (cnt)
-        p4_store_c_string (s, m, out_pocket, POCKET_SIZE);
+        p4_store_c_string (s, m, out_pocket, P4_POCKET_SIZE);
     if (display && !len)
     { p4_outf (" %i words ", cnt); }
     return cnt;

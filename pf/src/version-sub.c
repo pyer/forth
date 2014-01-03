@@ -24,27 +24,8 @@ static char* id __attribute__((unused)) =
 
 #include <pfe/pfe-sub.h>
 #include <pfe/def-macro.h>
+#include <include/version.h>
 
-#ifdef HAVE__VERSION_H
-# include "_version.h"
-# ifndef MAKETIME
-# warning MAKETIME not declared in _version.h
-# else  /* omit next-following include-statement */
-# undef HAVE_VERSION_H
-# endif
-#endif
-
-#ifdef HAVE_VERSION_H
-# undef VXWORKS_VERSION
-# include "version.h"
-# ifdef VXWORKS_VERSION
-# warning cpp found VX_Include<CPU>/version.h before Release/<TARGET>/version.h
-# endif
-# ifndef MAKETIME
-# warning MAKETIME not declared in version.h
-# endif
-#endif
- 
 #ifndef MAKETIME
 #define MAKETIME __TIME__
 #endif

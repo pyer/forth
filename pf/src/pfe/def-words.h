@@ -13,7 +13,7 @@
  *
  *  @description
  *         here are the macros that are used to build the various
- *         symbols tables, including wordsets and loadlists.
+ *         symbols tables, including wordsets.
  */
 /*@{*/
 

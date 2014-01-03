@@ -25,9 +25,6 @@
 extern "C" {
 #endif
 
-
-
-
 _extern  P4_GCC_CONST const char* p4_version_string(void) ; /*{*/
 
 _extern  P4_GCC_CONST const char* p4_copyright_string(void) ; /*{*/
