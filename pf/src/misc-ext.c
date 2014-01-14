@@ -1261,8 +1261,6 @@ P4_LISTWORDS (misc) =
 
     /* show online help: */
     P4_FXco ("HELP",		p4_help),
-  /** the application to be called, options like => ARGC => ARGV */
-    P4_DVaR ("APPLICATION",	application),
 
     /** task system hooks */
     P4_FXco ("ARGC",		p4_argc),

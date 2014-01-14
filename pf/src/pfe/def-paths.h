@@ -37,12 +37,6 @@
 #if PFE_PATH_STYLE & 16	
 /* MS-DOS like file and path names */
 
-#if defined HOST_OS_WATCOM
-# define _STR_(X) #X
-#else
-# define _STR_(X) P4STRING(X)
-#endif
-
 # define PFE_PATH_DELIMITER	';'
 # define PFE_DIR_DELIMITER	'\\'
 # define PFE_DIR_DELIMSTR       "\\"

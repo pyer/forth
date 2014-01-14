@@ -29,6 +29,7 @@ static char* id __attribute__((unused)) =
 
 #include <pfe/double-sub.h>
 #include <pfe/debug-ext.h>
+#include <pfe/floating-ext.h>
 #include <pfe/file-sub.h>
 #include <pfe/term-sub.h>
 #include <pfe/_missing.h>
@@ -236,7 +237,6 @@ FXCode (p4_interpret_find_word) /* hereclean */
     if (! nfa) return (p4cell) nfa; /* quick path, even alias null-return */
 
     xt = p4_name_from (nfa);
-    p4_check_deprecated (nfa);
     if (! STATE || P4_NFA_xIMMEDIATE(nfa))
     {
 	p4_call (xt);           /* execute it now */
@@ -325,39 +325,19 @@ static unsigned FXCode (p4_interpret_next_word);
  */
 FCode (p4_interpret)
 {
-    /* HACK: until proper initialization bindings, we do init'
-     * the interpret-vectors right in here. This *will* go away.
-     */
-    if (! PFE.interpret[3])
-    {
-	/* PFE.interpret[6] = PFX (p4_interpret_dstrings); */
-	/* PFE.interpret[5] = PFX (p4_interpret_locals); */
-	PFE.interpret[4] = PFX (p4_interpret_find_word);
-	PFE.interpret[3] = PFX (p4_interpret_number_word);
-	/* PFE.interpret[2] = PFX (p4_interpret_float); */
-	/* PFE.interpret[1] = PFX (p4_interpret_smart); */
-    }
-
     PFE.last_here = PFE.dp;
-    if (PFE.interpret_compiled)
-	p4_simple_execute (PFE.interpret_loop);
-    else
-	FX (p4_interpret_loop);
+    FX (p4_interpret_loop);
 }
 
 static FCode (p4_interpret_loop)
 {
-    register int i;
     for (;;)
     {
     again:
 	if (! FX (p4_interpret_next_word)) return;
-	i = DIM (PFE.interpret);
-	while ( i-- )
-	{
-	    if (! PFE.interpret[i]) continue;
-	    if (PFE.interpret[i] (FX_VOID)) goto again;
-	}
+
+	if (FX (p4_interpret_find_word)) goto again;
+	if (FX (p4_interpret_number_word)) goto again;
         p4_throw (P4_ON_UNDEFINED);
     }
 }
@@ -533,8 +513,7 @@ FCode (p4_ok)
 /*
  * things => QUIT has to initialize
  */
-static void
-quit_system (P4_VOID)
+static void quit_system (void)
 {
 #  ifdef P4_RP_IN_VM
     CSP = (p4cell*) RP;         /* come_back marker */
@@ -549,12 +528,11 @@ quit_system (P4_VOID)
 /*
  * things => ABORT has to initialize
  */
-static void
-abort_system (P4_VOID)
+static void abort_system (void)
 {
     SP = p4_S0;				/* stacks */
-    if (PFE.abort[2]) { (PFE.abort[2]) (FX_VOID); } /* -> floating */
-    if (PFE.abort[3]) { (PFE.abort[3]) (FX_VOID); } /* -> dstrings */
+//    if (PFE.abort[2]) { (PFE.abort[2]) (FX_VOID); } /* -> floating */
+//    if (PFE.abort[3]) { (PFE.abort[3]) (FX_VOID); } /* -> dstrings */
     if (p4_RESET_ORDER)  { FX (p4_reset_order); }   /* reset search order */
     FX (p4_decimal);			/* number i/o base */
     FX (p4_standard_io);		/* disable i/o redirection */
@@ -580,8 +558,7 @@ FCode (p4_paren_abort)
 /**
  * the outer interpreter, in PFE the jumppoint for both => ABORT and => QUIT
  */
-_export int
-p4_interpret_loop (P4_VOID)
+_export int p4_interpret_loop (void)
 {
     register int err;
     p4_setjmp_fenv_save(& PFE.loop_fenv);
@@ -611,7 +588,6 @@ p4_interpret_loop (P4_VOID)
          }
 
      case 'X': /* exit / bye */
-         /* -> PFE.atexit_cleanup (); */
          return 0;
     }
     return err;

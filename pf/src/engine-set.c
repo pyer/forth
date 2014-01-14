@@ -50,6 +50,7 @@ static char* id __attribute__((unused)) =
 #include <pfe/_missing.h>
 
 #include <pfe/option-ext.h>
+#include <pfe/floating-ext.h>
 #include <pfe/logging.h>
 
 #include <pfe/def-restore.h>
@@ -66,8 +67,7 @@ static char* id __attribute__((unused)) =
 
 static char const * const empty = "";
 
-static void
-init_accept_lined (void)
+static void init_accept_lined (void)
 {
     extern void (*p4_fkey_default_executes[10]) (int);
 
@@ -79,32 +79,73 @@ init_accept_lined (void)
     PFE.accept_lined.caps = PFE_set.caps_on != 0;
 }
 
+/**
+ * fill the session struct with precompiled options
+ */
+void p4_default_options(p4_sessionP set)
+{
+    if (! set) return;
+    int len = sizeof(*set);
+
+    p4_memset(set, 0, len);
+
+    /* newstyle option-ext support */
+    set->opt.dict = set->opt.space;
+    set->opt.dp = set->opt.dict;
+    set->opt.last = 0;
+    set->opt.dictlimit = ((p4char*)set) + len;
+
+    set->argv = 0;
+    set->argc = 0;
+    set->optv = 0;
+    set->optc = 0;
+    set->boot_name = 0;
+    set->isnotatty = 0;
+    set->stdio = 0;
+    set->caps_on = 0;
+    set->find_any_case = 1;
+    set->lower_case_fn = 1;
+    set->upper_case_on = 1;
+#  ifndef P4_NO_FP
+    set->float_input = 1;
+#  else
+    set->float_input = 0;
+#  endif
+    set->license = 0;
+    set->warranty = 0;
+    set->quiet = 0;
+    set->verbose = 0;
+    set->debug = 0;
+    set->cols = TEXT_COLS;
+    set->rows = TEXT_ROWS;
+    set->total_size = TOTAL_SIZE;
+    /* TOTAL_SIZE dependent defaults are moved to dict_allocate */
+    //set->stack_size = (set->total_size / 32 + 256)  / sizeof(p4cell); 
+    set->stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
+    //set->ret_stack_size = (set->total_size / 64 + 256) / sizeof(p4cell);
+    set->ret_stack_size = (TOTAL_SIZE / 64 + 256) / sizeof(p4cell);
+    //set->float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
+    set->float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
+
+    set->cpus = P4_MP;
+}
+
 /************************************************************************/
 /* Here's main()                                                        */
 /************************************************************************/
 
-static void p4_atexit_cleanup (void);
-
-/* distinct for each tread ! */
-_export p4_threadP p4_main_threadP = NULL;
-
-#define p4_current p4_main_threadP
-
 /**
  * note the argument
  */
-static int
-p4_run_boot_system (p4_threadP th) /* main_init */
+int p4_init_boot_system (p4_threadP th) /* main_init */
 {
-    p4_current = th;
-
 #  ifdef PFE_USE_THREAD_BLOCK
 #  define PFE_VM_p4TH(_th_)
 #  else
 #  define PFE_VM_p4TH(_th_)    p4TH = _th_
 #  endif
 
-    PFE_VM_p4TH(p4_current);
+    PFE_VM_p4TH(th);
 
 #  ifdef PFE_HAVE_LOCALE_H
     setlocale (LC_ALL, "C");
@@ -135,7 +176,7 @@ p4_run_boot_system (p4_threadP th) /* main_init */
     }
 
     /* ............................................................*/
-    PFE_VM_p4TH(p4_current);
+    PFE_VM_p4TH(th);
 
 #  if !defined __WATCOMC__
     if (! isatty (STDIN_FILENO))
@@ -163,14 +204,8 @@ p4_run_boot_system (p4_threadP th) /* main_init */
             PFE_set.isnotatty = P4_TTY_ISPIPE;
 #          endif
 	}
-
-	if (PFE_set.bye)
-            PFE_set.isnotatty = P4_TTY_NOECHO;
-        else
-	{
-	    p4_interactive_terminal ();
-	    PFE.system_terminal = &p4_system_terminal;
-	}
+	p4_interactive_terminal ();
+	PFE.system_terminal = &p4_system_terminal;
     }
 
     if (PFE_set.isnotatty == P4_TTY_ISPIPE && ! PFE.term)
@@ -186,8 +221,6 @@ p4_run_boot_system (p4_threadP th) /* main_init */
         PFE.rows = PFE_set.rows;
     if (PFE.cols == 0)
         PFE.cols = PFE_set.cols;
-
-    p4TH->atexit_cleanup = &p4_atexit_cleanup;
 
     /* _______________ dictionary block __________________ */
 
@@ -237,20 +270,20 @@ p4_run_boot_system (p4_threadP th) /* main_init */
 	PFE.exitcode = 3;
 	p4_longjmp_exit ();
     }
+    return PFE.exitcode;
+}
 
+int p4_run_boot_system (p4_threadP th)
+{
     /*  -- cold boot stage -- */
-    PFE_VM_p4TH(p4_current);
+    PFE_VM_p4TH(th);
     FX (p4_cold_system);
     init_accept_lined ();
 
     /* -------- warm boot stage ------- */
     FX (p4_boot_system);
-    PFE_VM_p4TH(p4_current);
 
-    /* FX (p4_boot_files); complete boot with it */
-    /* FX (p4_script_files); complete application */
-    /* FX (p4_main_loop); usually run as application */
-
+    PFE_VM_p4TH(th);
     PFE_VM_SAVE(th);
     return PFE.exitcode;
 }
@@ -265,8 +298,7 @@ p4_run_boot_system (p4_threadP th) /* main_init */
  * THROW-code that jumps to the CATCH-domain of that mainloop.
  * (the EXITCODE of this routine can be set by the forth application)
  */
-static int p4_Run_application(p4_Thread* th);
-static int p4_run_application(p4_Thread* th) /* main_loop */
+int p4_run_application(p4_Thread* th) /* main_loop */
 {
     th->exitcode = 0;
     switch (p4_setjmp (th->loop))
@@ -288,41 +320,13 @@ static int p4_run_application(p4_Thread* th) /* main_loop */
     	return th->exitcode;
     case 0:     break;
     }
-    return p4_Run_application (th);
-}
-
-static FCode (p4_run_application)
-{
-    /* If it's a turnkey-application, start it: */
-    if (APPLICATION)
-    {
-        p4_call_loop (APPLICATION);
-        return;
-    }
-
-    /* If running in a pipe, process commands from stdin: */
-    if (PFE_set.stdio)
-    {
-        p4_include_file (PFE.stdIn);
-        return;
-    }
-
-    if (! PFE_set.bye)
-	p4_interpret_loop (); /* will catch QUIT, ABORT .. and BYE */
-}
-
-
-static int p4_Run_application(p4_Thread* th)
-{
     P4_CALLER_SAVEALL;
     PFE_VM_LOAD(th);
-    FX (p4_run_application);
+    p4_interpret_loop();
     PFE_VM_SAVE(th); /* ... */
     P4_CALLER_RESTORE;
     return th->exitcode;
 }
-
-
 
 /**
  * init and execute the previously allocated forth-machine,
@@ -342,48 +346,19 @@ static int p4_Run_application(p4_Thread* th)
  * application has broken down or it blocks hard on some hardware
  * then we can still run cleanup code in a new forthish context.
  */
-_export int
-p4_Exec(p4_threadP th)
-{
-    auto volatile int retval;
-    P4_CALLER_SAVEALL;
-    retval =               p4_run_boot_system(th);
-    if (! retval) retval = p4_run_application(th);
-    if (1 /* always */)    p4_atexit_cleanup ();
-    P4_CALLER_RESTORE;
-    return retval;
-}
-
-
-static void
-p4_atexit_cleanup (void)
+void p4_atexit_cleanup (void)
 {
     extern void p4_cleanup_terminal (void);
     P4_enter ("atexit cleanup");
-
-    PFE.atexit_running = 1;
     p4_forget ((FENCE = PFE_MEM));
 
     if (PFE.system_terminal)    /* call this once, with the first cpu */
         PFE.system_terminal ();
     p4_cleanup_terminal ();
-
-    { /* see if there's some memory chunk still to be freed */
-        register int i;
-        register int moptrs = PFE.moptrs ? PFE.moptrs : P4_MOPTRS;
-        for ( i=0; i < moptrs; i++) {
-            if (PFE.p[i]) {
-                P4_info3 ("[%p] free %d. %p", p4TH, i, PFE.p[i]);
-                p4_xfree (PFE.p[i]); PFE.p[i] = 0;
-            }
-        }
-    }
-
     P4_leave ("atexit cleanup done");
 }
 
 /*@}*/
-
 /*
  * Local variables:
  * c-file-style: "stroustrup"

@@ -98,13 +98,6 @@
   #define P4_MAX_DATA_MSTR  P4_MAX_MCOUNT
 #endif
 
-#ifndef P4_STR_BUFFER_SIZE       /* USER-CONFIG */
-#define P4_STR_BUFFER_SIZE 4096  /* initial string buffer size in bytes */
-#endif
-#ifndef P4_MAX_SFRAMES           /* USER-CONFIG */
-#define P4_MAX_SFRAMES 4         /* initial max number of string frames */
-#endif
-
 typedef P4_TYPEOF_MCOUNT p4_MCount;  /* string count */
 
 #define P4_SIZEOF_MCOUNT       (sizeof(p4_MCount))

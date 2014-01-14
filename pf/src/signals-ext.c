@@ -119,18 +119,10 @@ typedef struct			/* all we need to know about a signal */
  * so actually, this can not be helped. You have to live with these warning
  * messages.
  */
-#ifdef PFE_OLD_STRINGIZE
-# ifdef PFE_HAVE_SYS_SIGLIST
-# define SIG(NM,CL,MSG)		{ NM, CL, "NM", SIG_DFL }
-# else
-# define SIG(NM,CL,MSG)		{ NM, CL, "NM", MSG, SIG_DFL }
-# endif
+#ifdef PFE_HAVE_SYS_SIGLIST
+#define SIG(NM,CL,MSG)		{ NM, CL, #NM, SIG_DFL }
 #else
-# ifdef PFE_HAVE_SYS_SIGLIST
-# define SIG(NM,CL,MSG)		{ NM, CL, #NM, SIG_DFL }
-# else
-# define SIG(NM,CL,MSG)		{ NM, CL, #NM, MSG, SIG_DFL }
-# endif
+#define SIG(NM,CL,MSG)		{ NM, CL, #NM, MSG, SIG_DFL }
 #endif
 
 /*

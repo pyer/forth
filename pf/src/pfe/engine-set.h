@@ -24,6 +24,14 @@
 extern "C" {
 #endif
 
+/************************************************************************/
+int p4_init_boot_system (p4_threadP th);
+int p4_run_boot_system (p4_threadP th);
+int p4_run_application(p4_Thread* th);
+void p4_atexit_cleanup (void);
+
+void p4_default_options(p4_sessionP set);
+/************************************************************************/
 
 extern P4_CODE(p4_script_files);
 

@@ -92,7 +92,6 @@ P4_LISTWORDS (misc_check) =
     P4_STKi ("STANDARD-I/O",	"--"),
 
     P4_STKi ("HELP",		"<name> --"),
-    P4_STKi ("APPLICATION",	"app-xt* --"),
     P4_STKi ("ARGC",		"-- argc#"),
     P4_STKi ("ARGV",		"argn# --- arg-ptr arg-len"),
     P4_STKi ("EXITCODE",	"-- exitcode#*"),

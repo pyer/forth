@@ -222,16 +222,16 @@ typedef struct p4_Session* 	p4_sessionP;
 typedef struct p4_Thread*  	p4_threadP;
 typedef struct _p4_term_struct  p4_term_struct;
 
-typedef struct p4_Dictionary    p4_Dictionary;
+//typedef struct p4_Dictionary    p4_Dictionary;
 
-struct p4_Dictionary
-{
-    p4_namebuf_t* last; /* PFE.last -> PFE.dict.last */
-    p4_namebuf_t* link;  /* PFE.link -> PFE.dict.link */
-    p4_byte_t* here;     /* PFE.dp   -> PFE.dict.here */
-    p4_byte_t* base;     /* PFE.dict -> PFE.dict.base */
-    p4_byte_t* limit;    /* PFE.dictlimit -> PFE.dict.limit */
-};
+//struct p4_Dictionary
+//{
+//    p4_namebuf_t* last; /* PFE.last -> PFE.dict.last */
+//    p4_namebuf_t* link;  /* PFE.link -> PFE.dict.link */
+//    p4_byte_t* here;     /* PFE.dp   -> PFE.dict.here */
+//    p4_byte_t* base;     /* PFE.dict -> PFE.dict.base */
+//    p4_byte_t* limit;    /* PFE.dictlimit -> PFE.dict.limit */
+//};
 
 
 #define P4_TTY_ISPIPE 1 /* filter mode: standard input is not a tty */
@@ -252,13 +252,13 @@ struct p4_Session
 		quiet:1,	/* no messages */
 		verbose:1,	/* more messages */
 		debug:1,	/* enable a few more outputs */
-                bye:1,          /* don't enter the mainloop (non-interact..) */
                 upper_case_on:1,/* make lower case words find upper case */
                 lastbit:1;      /* last bit */
     int	cols, rows;	/* size of screen */
     p4ucelll	total_size;
     p4ucelll	stack_size;
     p4ucelll	ret_stack_size;
+    p4ucelll	float_stack_size;
     /* we keep the following entries only to speed up runtime processing: */
     char const** inc_paths;     /* usually points to "INC-PATH" */
     char const** inc_ext;       /* usually points to "INC-EXT" */
@@ -286,21 +286,24 @@ struct p4_Session
     } opt; /* must be last in this structure !! */
 };
 
+/*
 #ifndef P4_MOPTRS
 #define P4_MOPTRS 128
 #endif
 
 #define P4_MEM_SLOT (P4_MOPTRS-1)
-
+*/
    /* there's nothing good in this solution... *FIXME*/
-#define PFE_MEM (PFE.p[P4_MEM_SLOT])
+//#define PFE_MEM (PFE.p[P4_MEM_SLOT])
+#define PFE_MEM (PFE.dictfence)
 
 struct p4_Thread
 {
-    void* p[P4_MOPTRS];
+    //void* p[P4_MOPTRS];
     /* p4_cleanup() will automatically free this field, so the base
        memory *must* be the last pointer in the field.
     */
+    void* dictfence;
     p4_byte_t *dp;		/* actual top of the dictionary */
 
     p4_byte_t* dict;		/*  dictionary */
@@ -398,8 +401,6 @@ struct p4_Thread
 /* main-sub / dict-sub */
     int exitcode;
     void (*system_terminal)(void);
-    void (*atexit_cleanup)(void);    /* free this thread */
-    int atexit_running;              /* p4_atexit_cleanup called... */
     p4_Wordl *atexit_wl;	     /* atexit dictionary holder */
     p4_byte_t* volatile forget_dp;   /* temporary of forget */
 
@@ -435,14 +436,8 @@ struct p4_Thread
 /* support.c/xception */
     p4code throw_cleanup;
 
-/* mapfile variables */
-    int    mapfile_fd;
-
-/* p4_query hook */
-/*  int (*query_hook)(int); // please use lined.h:lined->intercept */
-
 /* main-mmap -> main-sub */
-    int moptrs;
+//    int moptrs;
 
 /* new forth-wordlist mechanism */
     p4_Wordl* forth_wl;
@@ -475,8 +470,6 @@ struct p4_Thread
 	const p4_char_t* ptr;
 	unsigned len;          /* p4ucell is 8byte on x86_64 but */
     } word;                    /* parsing is not exceeding 16bit anyway */
-
-    p4xt application;		/* word to run initially or 0 */
 
     p4_byte_t* last_here;      /* set in interpret and used in abort */
 
@@ -528,7 +521,6 @@ struct p4_Thread
 # define p4_DFCURRENT   (PFE.dfcurrent)
 # define p4_ONLY	(PFE.context[PFE_set.wordlists])
 # define p4_CURRENT	(PFE.current)
-# define p4_APPLICATION	(PFE.application)
 
 #ifdef _P4_SOURCE
 # define DP		p4_DP
@@ -542,7 +534,6 @@ struct p4_Thread
 # define DEFAULT_ORDER	p4_DFORDER
 # define ONLY		p4_ONLY
 # define CURRENT	p4_CURRENT
-# define APPLICATION	p4_APPLICATION
 #endif
 
 /* use as p4_setjmp_fenv_save(& thread->loop_fenv) */

@@ -153,11 +153,11 @@ p4_systemf (const char *s,...)
     va_start (p, s);
     vsprintf (buf, s, p);
     va_end (p);
-    if (! PFE_set.bye) p4_system_terminal ();
+    p4_system_terminal ();
     p4_swap_signals ();
     r = system (buf);
     p4_swap_signals ();
-    if (! PFE_set.bye) p4_interactive_terminal ();
+    p4_interactive_terminal ();
     p4_dot_normal ();
     return r;
 }

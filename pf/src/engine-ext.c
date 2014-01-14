@@ -44,7 +44,7 @@ extern const p4Words
     P4WORDS(host_k12),
 #endif
 //    P4WORDS(option),
-    P4WORDS(useful),    P4WORDS(your);
+    P4WORDS(your);
 
 extern FCode (p4_interpret_next);
 extern FX_DEF_COMPILES (p4_interpret_next);
@@ -86,14 +86,6 @@ P4_LISTWORDS(forth) =
     P4_INTO ("EXTENSIONS", "FORTH"),
 //    P4_LOAD ("", option),
     P4_LOAD ("", signals),
-    /* experimental extras for a compiled interpret-loop */
-    P4_SXco ("INTERPRET-NEXT", p4_interpret_next),
-    P4_SXco ("INTERPRET-FIND", p4_interpret_find),
-    P4_SXco ("INTERPRET-NUMBER", p4_interpret_number),
-    P4_SXco ("INTERPRET-NOTHING", p4_interpret_nothing),
-    P4_SXco ("INTERPRET-UNDEFINED", p4_interpret_undefined),
-    P4_DVaR ("INTERPRET-COMPILED", interpret_compiled),
-    P4_DVaR ("INTERPRET-LOOP", interpret_loop),
 };
 P4_COUNTWORDS(forth, "Forth Base system");
 
@@ -104,7 +96,6 @@ P4_LISTWORDS(extensions) =
     P4_LOAD ("", shell),
     P4_LOAD ("", posix),
     P4_LOAD ("", term),
-    P4_LOAD ("", useful),
     P4_LOAD ("", your),
 #if 1 && defined PFE_WITH_SPY
     P4_LOAD ("", with_spy),

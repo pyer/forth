@@ -131,7 +131,7 @@ _extern  void p4_unnest_input (p4_Iframe *p) ; /*{*/
 /** 
  * the outer interpreter, in PFE the jumppoint for both => ABORT and => QUIT
  */
-_extern  int p4_interpret_loop (P4_VOID) ; /*{*/
+_extern  int p4_interpret_loop (void) ; /*{*/
 
 #ifdef __cplusplus
 } /* extern "C" */

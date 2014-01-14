@@ -1,7 +1,5 @@
-." include pf.4th"
-cr
-: hello ." Hello world !" ;
-
-hello
 .version
 .copyright
+cr
+: hello ." Hello world !" cr ;
+hello

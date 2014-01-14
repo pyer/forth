@@ -98,8 +98,10 @@ FCode (p4_dot_s)
     int i;
     
     int dd = p4_S0 - SP;
+//printf("dd=%d\n",dd);
 #  ifndef P4_NO_FP
     int fd = p4_F0 - FP;
+//printf("fd=%d\n",fd);
     
     if (fd == 0)
 #  endif

@@ -98,11 +98,6 @@ FCode (p4_cr_show_input)
 	p4_emits (PFE.word.len+1, '^'); /* mark the word */
     }
 
-# ifdef _K12_SOURCE
-    if (len > 70) len = 70;
-    if (PFE.tib) p4_strncpy (PFE.tib, str, len);
-# endif
-
     p4_outs (" ");
 }
 
@@ -271,20 +266,6 @@ p4_catch (p4xt xt)
     return returnvalue;
 }
 
-#ifdef _K12_SOURCE
-extern void trcStack(int); /* show stack trace */
-extern int taskIdSelf();
-extern int taskPriorityGet(int, int*);
-extern int taskDelay(int);
-extern int taskSpawn(char*, int, int, int, void*, int, ...);
-static int spawn_trcStack(int taskprio, int taskid)
-{
-    if (taskprio > 0) taskprio--;
-    taskDelay(1); /* 1 x sched_yield */
-    taskSpawn(0, taskprio, 0, 8192, (void*)trcStack, taskid);
-    return 0;
-}
-#endif
 
 _export void
 p4_throw (int id)
@@ -308,26 +289,6 @@ p4_throws (int id, const p4_char_t* description, int len)
     p4_Except *frame = PFE.catchframe;
     char msg[256];
     char* addr = (char*) description;
-
-    if (PFE.atexit_running)
-    {
-        if (addr && len)
-            show_error (addr, len);
-        p4_longjmp_exit ();
-    }
-
-#ifdef _K12_SOURCE
-    {
-        int taskid, taskprio;
-        if (p4_LogMask & P4_LOG_DEBUG)
-        { /* if any debug-channel used */
-            taskPriorityGet((taskid= taskIdSelf()), &taskprio);
-            taskSpawn(0, taskprio, 0, 8192,
-              (void*)spawn_trcStack, taskprio, taskid);
-            taskDelay(2); /* 2 x sched_yield */
-        }
-    }
-#endif
 
     if (PFE.throw_cleanup)
     {

@@ -1151,6 +1151,46 @@ static FCode(floating_init)
 }
 
 
+FCode(p4_floating_init)
+{
+    p4ucell flt_stack_size = (PFE_set.total_size / 32) / sizeof(double);
+puts("p4_floating_init");
+
+    if (flt_stack_size < 6) /* ANS Forth (dpans94), section 12.3.3 : */
+	flt_stack_size = 6; /* The size of a floating-point stack
+			       shall be at least 6 items. */
+
+    if (! p4_dict_allocate (flt_stack_size, sizeof(double),
+			    PFE_ALIGNOF_DFLOAT,
+			    (void**) &PFE.fstack, (void**) &PFE.f0)
+	) p4_throw (P4_ON_DICT_OVER); /** FIXME: no good idea to throw here */
+
+    PFE.f0 -= 2;	/* F-stack underflow does no harm for these */
+    FP = PFE.f0;	/* same as abort_float above. Is that a rule? askmee */
+
+    PFE.interpret[FLOATING_INTERPRET_SLOT] = PFX (interpret_float);
+    PFE.abort[FLOATING_INTERPRET_SLOT] = PFX(abort_float);
+    PFE.setjmp_fenv_save = floating_setjmp_fenv_save;
+    PFE.setjmp_fenv_load = floating_setjmp_fenv_load;
+/*  PFE.decompile[FLOATING_INTERPRET_SLOT] = decompile_floating; */
+    p4_forget_word ("deinit:floating:%i", FLOATING_INTERPRET_SLOT,
+		    PFX(floating_deinit), FLOATING_INTERPRET_SLOT);
+
+
+    {   /* HACK: FIXME: verrrry experimental FLOAT-NUMBER? activate */
+	void* old_DP = PFE.dp;
+	PFE.dp = (p4_byte_t*) PFE.interpret_compile_float;
+	PFE.state = P4_TRUE;
+	FX_PUSH (PFE.interpret_compile_resolve);
+	FX_PUSH (P4_DEST_MAGIC);
+	FX (p4_interpret_float); // compiles...
+	FX_2DROP;
+	PFE.state = P4_FALSE;
+	PFE.dp = old_DP;
+    }
+}
+
+
 extern p4Words P4WORDS(floating_misc);
 
 P4_LISTWORDS (floating) =

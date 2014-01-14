@@ -177,6 +177,8 @@ extern P4_CODE (p4_f_tanh);
 
 extern P4_CODE (p4_interpret_float);
 
+extern P4_CODE (p4_floating_init);
+
 /**
  * return double float-aligned address
  */

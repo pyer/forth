@@ -21,6 +21,13 @@
 /*@{*/
 
 
+#ifndef TEXT_COLS               /* USER-CONFIG: */
+#define	TEXT_COLS	80	/* used only in case p4th fails determining */
+#endif
+#ifndef TEXT_ROWS               /* USER-CONFIG: */
+#define	TEXT_ROWS	25	/* the screen size */
+#endif
+
 enum _p4_key_codes			/* The function keys known to p4th */
 {
     P4_KEY_k1 = 0x100,		/* function keys F1 through F10 */

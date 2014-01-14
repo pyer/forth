@@ -14,6 +14,8 @@
 #include "include/config_x86.h"
 #endif
 
+#define TOTAL_SIZE (1024*1024) /* the shorthand for default-computations */
+
 #include <pfe/def-gcc.h>
 
 #ifndef _pfe_const
@@ -108,7 +110,7 @@
 # endif
 #endif
 
-#if !defined PFE_HAVE_STRINGIZE && !defined PFE_OLD_STRINGIZE
+#if !defined PFE_HAVE_STRINGIZE
 #define PFE_HAVE_STRINGIZE 1   /* just make it the default */
 #endif 
 

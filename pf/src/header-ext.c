@@ -585,20 +585,6 @@ FCode (p4_deprecated)
 }
 P4RUNTIME1(p4_deprecated, p4_deprecated_RT);
 
-/** (CHECK-DEPRECATED) ( nfa* -- nfa* )
- * an internal function that will check a word name
- * to have any deprecation attribution - some words have
- * a (one time) message to be shown to the user, while
- * => OBSOLETED-SYNONYM will show a message and rebuild
- * itself as a normal SYNONYM. - Note that most deprecations
- * are only shown once and that they are not emitted when
- * having REDEFINED-MSG OFF.
- */
-FCode (p4_check_deprecated)
-{
-    p4_check_deprecated ((p4_namebuf_t*) *SP);
-}
-
 /** EXTERN,-DEPRECATED: ( "newname" zstring* -- )
  * compile a pointer to an extern (loader) z-string
  * to the dictionary and on execution show a deprecation
@@ -687,7 +673,6 @@ P4_LISTWORDS (header) =
     P4_RTco ("SYNONYM-OBSOLETED",	p4_obsoleted),
     P4_RTco ("(DEPRECATED:",            p4_deprecated),
     P4_RTco ("EXTERN,-DEPRECATED:",     p4_extern_deprecated),
-    P4_FXco ("(CHECK-DEPRECATED:)",     p4_check_deprecated),
     P4_RTco ("EXTERN,-LOGMESSAGE:",     p4_logmessage),
 
     P4_INTO ("FORTH", 0 ),

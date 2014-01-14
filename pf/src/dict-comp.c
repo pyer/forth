@@ -42,56 +42,6 @@ FCode_RT (p4_forget_wordset_RT)
     /* do nothing so far, PFX(forget_wordset_RT) is just a type-marker */
 }}
 
-extern int p4_slot_use (int*); /* FIXME: move to header file ? */
-extern int p4_slot_unuse (int*); /* FIXME: move to header file ? */
-
-static FCode_RT (p4_forget_slot_RT)
-{   FX_USE_BODY_ADDR {
-    int* slot = (int*)(FX_POP_BODY_ADDR[0]);
-    P4_info1 ("unuse load-slot '%i'", *slot);
-   
-    if (slot && *slot && PFE.p[*slot]) 
-    {
-        p4_xfree (PFE.p[*slot]); PFE.p[*slot] = 0;
-    }
-   
-//    p4_slot_unuse (slot);
-}}
-
-static void
-p4_load_slot_open (int* slot)
-{
-//    int e;
-    if (!slot) return;
-/*
-    if ((e=p4_slot_use (slot))) 
-    {
-        P4_fail2 ("load-slot %i failed : %s", *slot, strerror(-e));
-        return; 
-    }
-*/
-}
-
-static void
-p4_load_slot_init (int* slot, p4ucelll size)
-{
-    if (!slot || !*slot || size < 4)
-        return;
-
-    if (!(PFE.p)[*slot]) 
-    {
-        (PFE.p)[*slot] = p4_calloc (1, size);
-        P4_info3 ("load-slot %i size %lu alloc (%p)", 
-                  *slot, size, (PFE.p)[*slot]);
-    }else{ 
-        P4_warn2 ("load-slot %i already allocated (%p)", 
-                  *slot, (PFE.p)[*slot]);
-    }
-    
-    p4_forget_word ("(load-slot: %i)", *slot, 
-                    PFX (p4_forget_slot_RT), (p4cell) slot);
-}
-
 static void
 p4_load_into (const p4char* vocname, int vocname_len)
 {
@@ -196,7 +146,6 @@ p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
     int k = ws->n;
     const p4Word* w = ws->w;
     char dictname[NAME_SIZE_MAX+1]; char* dn;
-    int* slot = 0;
 
     if (!wid) wid = CURRENT;
     
@@ -216,7 +165,7 @@ p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
                     PFX (p4_forget_wordset_RT), 
                     (p4cell) (ws));
 
-    ___ extern FCode (p4_vocabulary); extern FCode (p4_offset_constant);
+    ___ extern FCode (p4_vocabulary);
     ___ void* saved_input = SP = p4_save_input_tib (SP);
     
     for ( ; --k >= 0; w++)
@@ -238,13 +187,6 @@ p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	    continue;
 	case p4_NEED:
 	    FX (p4_needs_environment);
-	    continue;
-	case p4_SLOT:
-	    slot = (int*) FX_POP;    /* oops, needs a TH value */
-	    p4_load_slot_open (slot);
-	    continue;
-	case p4_SSIZ:
-	    p4_load_slot_init (slot, FX_POP);
 	    continue;
 	case p4_EXPT:
 	    FX (p4_exception_string);
@@ -345,9 +287,6 @@ p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	case p4_ICON:
 	    FX (p4_constant);
 	    break;
-	case p4_OFFS:
-	    FX (p4_offset_constant);
-	    break;
         case p4_DEPR:
             FX (p4_extern_deprecated);
             break;
@@ -412,7 +351,6 @@ static loader_t * loader (p4char c)
     static loader_t variable = { "variable", PFX(p4_variable_RT) };
     static loader_t valuevar = { "valuevar", PFX(p4_value_RT) };
     static loader_t constant = { "constant", PFX(p4_constant_RT) };
-    static loader_t offsetW = { "offset-word", PFX(p4_offset_RT) };
     static loader_t obsoleted = { "obsolete-word", PFX(p4_obsoleted_RT) };
     static loader_t unknown = { "unknown-typecode", 0 };
 
@@ -435,7 +373,6 @@ static loader_t * loader (p4char c)
     case p4_IVAL: return & valuevar;
     case p4_OCON: 
     case p4_ICON: return & constant;
-    case p4_OFFS: return & offsetW;
     case p4_iOLD: 
     case p4_xOLD: return & obsoleted ;
     default:	  return & unknown;
@@ -473,7 +410,6 @@ const p4xcode* p4_to_code(p4xt xt)
     static p4xcode variable =   PFX(p4_variable_RT);
     static p4xcode value =      PFX(p4_value_RT);
     static p4xcode constant =   PFX(p4_constant_RT);
-    static p4xcode offset =     PFX(p4_offset_RT);
     static p4xcode obsoleted =  PFX(p4_obsoleted_RT);
 
     switch (*xt->type->def)
@@ -497,7 +433,6 @@ const p4xcode* p4_to_code(p4xt xt)
     case p4_IVAL:	return & value ;
     case p4_OCON:
     case p4_ICON:	return & constant ;
-    case p4_OFFS:	return & offset ;
     case p4_iOLD:
     case p4_xOLD:	return & obsoleted;
     default:
@@ -544,7 +479,6 @@ p4xcode* p4_compile_comma(p4xcode* at, p4xt xt)
     case p4_IVAL:  
     case p4_OCON:
     case p4_ICON:
-    case p4_OFFS: 
 	/* P4_fail5 ("<!word type=%c:%s xt=%p code=%p body=%p!>",
 	 *           *xt->type->def, loader(*xt->type->def)->name, xt, 
 	 *           *p4_to_code(xt), P4_TO_BODY(xt));
@@ -678,7 +612,6 @@ _export void p4_sbr_call (p4xt xt)
     case p4_IVAL:  
     case p4_OCON:
     case p4_ICON:
-    case p4_OFFS: 
 	/* P4_note5 ("<!word type=%c:%s xt=%p code=%p body=%p!>",
 	 *           *xt->type->def, loader(*xt->type->def)->name, xt, 
 	 *           *p4_to_code(xt), P4_TO_BODY(xt));

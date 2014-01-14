@@ -202,27 +202,11 @@ FCode (p4_forget_dp)
                 if (CONTEXT[i] == VOC_LINK) 
                 {
                     CONTEXT[i] = NULL;
-                    if (! PFE.atexit_running)
-                    {
-                        const p4char* nfa = VOC_LINK->nfa ? VOC_LINK->nfa 
-                            : (const p4char*) "\1?";
-                        P4_note3 ("deleted '%.*s' "
-                                  "from context search-order [%i]", 
-                                  NAMELEN(nfa), NAMEPTR(nfa), i);
-                    }
                 }
             
                 if (PFE.dforder[i] == VOC_LINK) 
                 {
                     PFE.dforder[i] = NULL;
-                    if (! PFE.atexit_running)
-                    {
-                        const p4char* nfa = VOC_LINK->nfa ? VOC_LINK->nfa 
-                            : (const p4char*) "\1?";
-                        P4_note3 ("deleted '%.*s' "
-                                  "from default search-order [%i]", 
-                                  NAMELEN(nfa), NAMEPTR(nfa), i);
-                    }
                 }
             }
         }
@@ -253,8 +237,6 @@ FCode (p4_forget_dp)
     if (CURRENT >= (p4_Wordl *) new_dp) 
     {
         if (CONTEXT[0]) CURRENT = PFE.forth_wl; /* initial CURRENT */
-        if (! PFE.atexit_running)
-            p4_throw (P4_ON_CURRENT_DELETED);  /* and still throw */
     }
 }
 
@@ -792,14 +774,3 @@ p4_preload_only (void)
  * c-file-style: "stroustrup"
  * End:
  */
-
-
-
-
-
-
-
-
-
-
-

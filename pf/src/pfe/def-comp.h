@@ -20,68 +20,28 @@
 #include <pfe/pfe-sub.h>
 #include <pfe/def-types.h>
 
-#ifndef P4STRING
-# if defined PFE_OLD_STRINGIZE
-# define P4STR(A) "A"
-# define P4CAT(A,B) A/**/B
-# define P4CAT3(A,B,C) A/**/B/**/C
-# define P4CAT4(A,B,C,D) A/**/B/**/C/**/D
-# else
-# define P4STR(A) #A
-# define P4CAT(A,B) A##B
-# define P4CAT3(A,B,C) A##B##C
-# define P4CAT4(A,B,C,D) A##B##C##D
-# endif
-#define P4STRING(A) P4STR(A)
-#endif
+#define P4CAT(A,B)    A##B
+#define P4CAT3(A,B,C) A##B##C
+#define P4CODE(X)     X##_
 
-#ifdef PFE_SUFFIX
-#define P4SUFFIX_(A,B,C) P4CAT3(A,B,C)
-#define P4SUFFIX(A,B) P4SUFFIX_(A,B,PFE_SUFFIX)
-#else
-#define P4SUFFIX(A,B) P4CAT(A,B)
-#endif
-
-#define P4CODE(X) P4CAT(X,_)
-
-/* only works in 0.31.x style !! */
-#if defined PFE_ENABLE_STACKTHREADED
-# define P4_VOID p4_Thread* p4TH
-# define P4_CALL p4_Thread* p4TH,
-# define FX_VOID p4TH
-# define FX_CALL p4TH,
-#else
-# define P4_VOID void
-# define P4_CALL
-# define FX_VOID
-# define FX_CALL
-#endif
-
-/* 0.31.x style */
-# define FXCode(X)    P4CODE(X) (P4_VOID)
-# define P4_FCODE(X)  P4CODE(X) (P4_VOID)
-# define FX_FCODE(X) (P4CODE(X) (FX_VOID))
-
-/* 0.30.x style */
-# define P4_CODE(X)  void P4CODE(X) (P4_VOID) /* delcare a primitive */
-# define FX_EXEC(X)  (P4CODE(X) (FX_VOID))
-
-/* heritage: declare a prim-function */
-# define FCode(X)  void P4CODE(X) (P4_VOID) 
+#define FX_VOID
+#define FXCode(X)        P4CODE(X) (void)
+#define P4_CODE(X)  void P4CODE(X) (void) /* delcare a primitive */
+#define FCode(X)    void P4CODE(X) (void) 
 
 #if defined _P4_SOURCE || defined __PFE_PFE_H
 # define PFX(X) P4CODE(X)
 # define FX(X)  (P4CODE(X) (FX_VOID))
-# define FX_(X) void P4CODE(X) (P4_VOID)
+# define FX_(X) void P4CODE(X) (void)
 #endif
 
 /* sbr style */
 
 #if   1 || !defined PFE_SBR_CALL_ARG_THREADING
-#define FXCode_RT(X)      P4CODE(X) (P4_VOID)
-#define  FCode_RT(X) void P4CODE(X) (P4_VOID)
-#define FXCode_XE(X)      P4CODE(X) (P4_VOID)
-#define  FCode_XE(X) void P4CODE(X) (P4_VOID)
+#define FXCode_RT(X)      P4CODE(X) (void)
+#define  FCode_RT(X) void P4CODE(X) (void)
+#define FXCode_XE(X)      P4CODE(X) (void)
+#define  FCode_XE(X) void P4CODE(X) (void)
 typedef p4code p4code_XE;
 typedef p4code p4code_RT;
 #else
@@ -184,8 +144,8 @@ struct p4_Runtime2              /* describes characteristics of CFA code */
     } run;                      /* we did not make an extra typedef for it */
 };
 
-#define P4SEMANTICS(X) P4SUFFIX(X,_Semant)
-#define P4RUNTIME_(X) P4SUFFIX(X,_Runtime)
+#define P4SEMANTICS(X) X##_Semant
+#define P4RUNTIME_(X)  X##Runtime
 
 #ifndef HOST_WIN32
 #define P4COMPILES(C,E,S,STYLE)			\

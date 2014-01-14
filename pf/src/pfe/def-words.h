@@ -21,9 +21,8 @@
 #include <pfe/def-macro.h>
 #include <pfe/def-const.h>
 
-#define P4WORDS(SET)  P4SUFFIX (SET,_LTX_p4_WORDS)
-#define P4WLIST(SET)  P4SUFFIX (SET,_LTX_p4_WLIST)
-#define P4LLIST(SET)  P4SUFFIX (SET,_LTX_p4_LLIST)
+#define P4WLIST(SET)  SET ## _LTX_p4_WLIST
+#define P4WORDS(SET)  SET ## _LTX_p4_WORDS
 
 #define extern_P4WORDS(SET) extern const p4Words P4WORDS(SET)
 
@@ -111,9 +110,6 @@ typedef union p4_ExecToken
 #define p4_iOLD 'Z'     /* immediate synonym of obsolete word */
 #define p4_xOLD 'z'     /*  ordinary synonym of obsolete word */
 
-#define p4_SLOT 's'     /* open slot */
-#define p4_SSIZ 'S'     /* init slot */
-
 #define p4_OVOC 'w'     /* explicitly create a vocabulary (normal) */
 #define p4_IVOC 'W'     /* explicitly create a vocabulary (immediate) */
 
@@ -187,9 +183,6 @@ typedef union p4_ExecToken
 #define P4_iOLD( NM, OLDNAME)   { "Z\377"NM, (p4code)OLDNAME }
 #define P4_xOLD( NM, OLDNAME)   { "z\237"NM, (p4code)OLDNAME }
 
-#define P4_SLOT( NM, SLOTVAR)   { "s\237"NM, (p4code)(SLOTVAR) }
-#define P4_SSIZ( NM, SIZE)      { "S\377"NM, (p4code)(SIZE) }
-
 #define P4_OVOC( NM, CHAIN)     { "w\237"NM, (p4code)(CHAIN) } 
 #define P4_IVOC( NM, CHAIN)     { "W\237"NM, (p4code)(CHAIN) } 
 #define P4_NEED( NM)            { "q\237"NM }
@@ -236,21 +229,6 @@ typedef union p4_ExecToken
 # endif
 
 #endif
-
-
-/* ------------------------
-   defining a load list
-   ------------------------  */
-   
-#define P4_LOAD_END  ((void*)0)   
-#define P4_LOAD_INTO ((void*)1)
-#define P4_LOAD_EXEC ((void*)2)
-#define P4_LOAD_ORDER ((void*)3)
-#define P4_LOAD_SLOT ((void*)4)
-#define P4_LOAD_MAX  ((void*)8)
-   
-#define P4_LOADSTRUCT(NAME) P4CAT3(p4_,NAME,_LoadList)
-#define P4_LOADLIST(NAME) const void* P4_LOADSTRUCT(NAME) []
 
 /*@}*/
 #endif 

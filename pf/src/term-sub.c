@@ -32,10 +32,6 @@ static char* id __attribute__((unused)) =
 #include <pfe/term-sub.h>
 #include <pfe/_missing.h>
 
-#ifdef _K12_SOURCE
-#include <pfe/term-k12.h>
-#endif
-
 #if !defined PFE_CHARSET_IBMPC && !defined PFE_CHARSET_ISO
 # if PFE_PATH_STYLE & 16
 # define PFE_CHARSET_IBMPC 1

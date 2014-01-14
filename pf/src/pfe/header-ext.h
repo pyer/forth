@@ -335,18 +335,6 @@ extern P4_CODE (p4_deprecated);
  */
 extern P4_CODE (p4_extern_deprecated);
 
-/** (CHECK-DEPRECATED) ( xt* -- xt* )
- * an internal function that will check an execution token
- * to have any deprecation attribution - some words have
- * a (one time) message to be shown to the user, while
- * => OBSOLETED-SYNONYM will show a message and rebuild
- * itself as a normal SYNONYM. - Note that most deprecations
- * are only shown once and that they are not emitted when
- * having REDEFINED-MSG OFF.
- */
-extern P4_CODE (p4_check_deprecated);
-
-
 extern P4_CODE (p4_logemssage_RT);
 
 /** (LOGMESSAGE: ( "newname" [message<closeparen>] -- )

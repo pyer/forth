@@ -77,8 +77,6 @@ _extern  p4_namebuf_t ** p4_to_link (p4xt xt) ; /*{*/
 
 _extern  p4xt p4_name_from (const p4_namebuf_t *p) ; /*{*/
 
-_extern  void p4_check_deprecated (p4_namebuf_t* nfa) ; /*{*/
-
 _extern  p4_namebuf_t * p4_to_name (p4xt c) ; /*{*/
 
 _extern  void p4_dot_name (const p4_namebuf_t *nfa) ; /*{*/

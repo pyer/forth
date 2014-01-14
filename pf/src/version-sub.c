@@ -47,7 +47,7 @@ _export P4_GCC_CONST const char* p4_copyright_string(void)
 	"\nCopyright (C) Dirk Uwe Zoller  1993 - 1995."
 	"\nCopyright (C) Tektronix, Inc.  1998 - 2003."
         "\nCopyright (C) Guido U. Draheim 2005 - 2008."
-        "\nCopyright (C) Pierre Bazonnard 2009 - 2014.\n";
+        "\nCopyright (C) Pierre Bazonnard 2013 - 2014.\n";
 }
 
 _export P4_GCC_CONST const char* p4_license_string (void)
