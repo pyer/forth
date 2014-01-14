@@ -490,7 +490,6 @@ struct p4_Thread
 /* tools-ext.c + assembler-ext.c */
     p4_Wordl* assembler_wl;
 
-    p4xt    interpret_loop;       /* compiled interpret loop */
     p4cell  interpret_compiled;   /* use it! */
     p4cell* interpret_compile_resolve;
     p4cell* interpret_compile_extra;

@@ -298,31 +298,75 @@ int p4_run_boot_system (p4_threadP th)
  * THROW-code that jumps to the CATCH-domain of that mainloop.
  * (the EXITCODE of this routine can be set by the forth application)
  */
+/**
+ * the outer interpreter, in PFE the jumppoint for both => ABORT and => QUIT
+ */
+#if defined XXXXXX
+int p5_interpret_loop (void)
+{
+    register int err;
+    p4_setjmp_fenv_save(& PFE.loop_fenv);
+    switch (err = p4_setjmp(PFE.loop))
+    {
+     case  0:  /* newloop -> do abort*/
+         /* initialize */
+     case 'A': /* do abort */
+         abort_system (FX_VOID);
+//         p4_redo_all_words (PFE.abort_wl);
+         /* -> do quit */
+     case 'Q': /* do quit */
+         quit_system (FX_VOID);
+     case 'S': /* schedule */
+				/* normal interactive QUIT */
+                                /* doing the QUERY-INTERPRET loop */
+    	 p4_setjmp_fenv_load(& PFE.loop_fenv);
+         p4_unnest_input (NULL);
+         for (;;)
+         {
+             FX (p4_ok);
+             FX (p4_cr);
+             FX (p4_query);
+             FX (p4_interpret);
+             FX (p4_Q_stack);
+         }
+
+     case 'X': /* exit / bye */
+         return 0;
+    }
+    return err;
+}
+#endif
+
+
+void abort_system (void);
+void quit_system (void);
+
 int p4_run_application(p4_Thread* th) /* main_loop */
 {
     th->exitcode = 0;
     switch (p4_setjmp (th->loop))
     {           /* classify unhandled throw codes */
-    case 'A':	P4_fatal ("Application Failure");
-    case 'Q':	P4_info ("Application Throw/Quit");
-        {    extern FCode(p4_come_back); /*:debug-ext:*/
-#         ifdef P4_RP_IN_VM
-            if (p4_R0) th->rp = RP = p4_R0; /* quit_system */
-            FX (p4_come_back);
-#         endif
-        }
-        return -1;
+    case 'A': /* do abort */
+         abort_system();
+         break;
+    case 'Q': /* do quit */
+         quit_system();
+         break;
     default:
-    	P4_warn ("Application Kill");
-    	/*fallthrough*/
-    case 'X':
-    	P4_info ("Application Exit/Bye");
     	return th->exitcode;
     case 0:     break;
     }
     P4_CALLER_SAVEALL;
     PFE_VM_LOAD(th);
-    p4_interpret_loop();
+//    p5_interpret_loop();
+         for (;;)
+         {
+             FX (p4_ok);
+             FX (p4_cr);
+             FX (p4_query);
+             FX (p4_interpret);
+             FX (p4_Q_stack);
+         }
     PFE_VM_SAVE(th); /* ... */
     P4_CALLER_RESTORE;
     return th->exitcode;

@@ -53,8 +53,6 @@ extern P4_CODE (p4_closeall_files);
  */
 extern P4_CODE (p4_ok);
 
-extern P4_CODE (p4_paren_abort);
-
 extern P4_CODE (p4_interpret_next_execution);
 
 extern P4_CODE (p4_interpret_next);
@@ -127,11 +125,6 @@ _extern  int p4_included1 (const p4_char_t *name, int len, int throws) ; /*{*/
 _extern  void p4_included (const p4_char_t* name, int len) ; /*{*/
 
 _extern  void p4_unnest_input (p4_Iframe *p) ; /*{*/
-
-/** 
- * the outer interpreter, in PFE the jumppoint for both => ABORT and => QUIT
- */
-_extern  int p4_interpret_loop (void) ; /*{*/
 
 #ifdef __cplusplus
 } /* extern "C" */

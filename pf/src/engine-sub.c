@@ -317,31 +317,6 @@ P4COMPILES (p4_interpret_number, p4_interpret_number_execution,
  *  and branch out of the loop body (usually do it => AGAIN )
  */
 
-static FCode (p4_interpret_loop);
-static unsigned FXCode (p4_interpret_next_word);
-
-/**
- * the => INTERPRET as called by the outer interpreter
- */
-FCode (p4_interpret)
-{
-    PFE.last_here = PFE.dp;
-    FX (p4_interpret_loop);
-}
-
-static FCode (p4_interpret_loop)
-{
-    for (;;)
-    {
-    again:
-	if (! FX (p4_interpret_next_word)) return;
-
-	if (FX (p4_interpret_find_word)) goto again;
-	if (FX (p4_interpret_number_word)) goto again;
-        p4_throw (P4_ON_UNDEFINED);
-    }
-}
-
 static unsigned FXCode (p4_interpret_next_word)
 {
     for (;;)
@@ -366,6 +341,28 @@ static unsigned FXCode (p4_interpret_next_word)
 	    return 0;
 	}
     }
+}
+
+static FCode (p4_interpret_loop)
+{
+    for (;;)
+    {
+    again:
+	if (! FX (p4_interpret_next_word)) return;
+
+	if (FX (p4_interpret_find_word)) goto again;
+	if (FX (p4_interpret_number_word)) goto again;
+        p4_throw (P4_ON_UNDEFINED);
+    }
+}
+
+/**
+ * the => INTERPRET as called by the outer interpreter
+ */
+FCode (p4_interpret)
+{
+    PFE.last_here = PFE.dp;
+    FX (p4_interpret_loop);
 }
 
 /**
@@ -513,7 +510,7 @@ FCode (p4_ok)
 /*
  * things => QUIT has to initialize
  */
-static void quit_system (void)
+void quit_system (void)
 {
 #  ifdef P4_RP_IN_VM
     CSP = (p4cell*) RP;         /* come_back marker */
@@ -528,7 +525,7 @@ static void quit_system (void)
 /*
  * things => ABORT has to initialize
  */
-static void abort_system (void)
+void abort_system (void)
 {
     SP = p4_S0;				/* stacks */
 //    if (PFE.abort[2]) { (PFE.abort[2]) (FX_VOID); } /* -> floating */
@@ -547,50 +544,6 @@ static void abort_system (void)
 
         PFE.dp = PFE.last_here;
     }
-}
-
-FCode (p4_paren_abort)
-{
-    abort_system (FX_VOID);
-    quit_system (FX_VOID);
-}
-
-/**
- * the outer interpreter, in PFE the jumppoint for both => ABORT and => QUIT
- */
-_export int p4_interpret_loop (void)
-{
-    register int err;
-    p4_setjmp_fenv_save(& PFE.loop_fenv);
-    switch (err = p4_setjmp(PFE.loop))
-    {
-     case  0:  /* newloop -> do abort*/
-         /* initialize */
-     case 'A': /* do abort */
-         abort_system (FX_VOID);
-//         p4_redo_all_words (PFE.abort_wl);
-         /* -> do quit */
-     case 'Q': /* do quit */
-         quit_system (FX_VOID);
-     case 'S': /* schedule */
-				/* normal interactive QUIT */
-                                /* doing the QUERY-INTERPRET loop */
-    	 p4_setjmp_fenv_load(& PFE.loop_fenv);
-         p4_unnest_input (NULL);
-         for (;;)
-         {
-//             p4_do_all_words (PFE.prompt_wl);
-             FX (p4_ok);
-             FX (p4_cr);
-             FX (p4_query);
-             FX (p4_interpret);
-             FX (p4_Q_stack);
-         }
-
-     case 'X': /* exit / bye */
-         return 0;
-    }
-    return err;
 }
 
 /* **************************************************** compiled interpret */
@@ -637,7 +590,6 @@ FCode (p4_preload_interpret)
     p4_header_comma (p4_lit_interpret, sizeof(p4_lit_interpret)-1,
 		     PFE.forth_wl);
     FX_RUNTIME1 (p4_colon);
-    PFE.interpret_loop = P4_BODY_FROM (p4_HERE);
     PFE.state = P4_TRUE;
     FX (p4_begin); // compiling word
     PFE.interpret_compile_resolve = ((p4cell*) p4_HERE) - 1;
