@@ -20,6 +20,21 @@
 extern "C" {
 #endif
 
+#ifndef PFE_USE_SIGSETJMP
+# ifdef PFE_HAVE_SIGSETJMP
+# define PFE_USE_SIGSETJMP 1
+# endif
+#endif
+
+#if PFE_USE_SIGSETJMP+0
+#define p4_jmp_buf sigjmp_buf
+#define p4_setjmp(_buf) sigsetjmp((_buf), 1)
+#define p4_longjmp(_buf,_val) siglongjmp((_buf), (_val))
+#else
+#define p4_jmp_buf jmp_buf
+#define p4_setjmp(_buf) setjmp((_buf), 1)
+#define p4_longjmp(_buf,_val) longjmp((_buf), (_val))
+#endif
 
 #define p4_longjmp_abort()	(p4_longjmp_loop('A'))
 #define p4_longjmp_exit()	(p4_longjmp_loop('X'))

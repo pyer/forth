@@ -47,7 +47,6 @@ int main (int argc, char** argv)
     p4_memset (thread, 0, sizeof(p4_Thread));
     thread->set = &session;
     P4_CALLER_SAVEALL;
-    p4_init_boot_system(thread);
     p4_run_boot_system(thread);
     p4_run_application(thread);
     p4_atexit_cleanup();

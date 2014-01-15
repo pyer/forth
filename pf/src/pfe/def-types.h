@@ -22,8 +22,7 @@
 
 /* typedef FILE */
 #include <stdio.h>
-#include <pfe/os-setjmp.h>
-#include <pfe/os-fesetenv.h>
+#include <setjmp.h>
 
 #if defined HAVE_SYS_TYPES_H || defined PFE_HAVE_SYS_TYPES_H
 # include <sys/types.h>		/* size_t, time_t and friends */
@@ -129,9 +128,6 @@ typedef p4char* pfe_lfa_t;
 typedef p4code  pfe_cfa_t;
 typedef int (*p4_decompile_func_t)(p4_namebuf_t* nfa, p4xt xt);
 
-typedef int (*p4_setjmp_fenv_save_func_t)(p4_fenv_t*); /* uses fegetenv(fenv_t*) */
-typedef int (*p4_setjmp_fenv_load_func_t)(p4_fenv_t*); /* uses fesetenv(const fenv_t*) */
-
 typedef struct { p4_byte_t buffer[P4_POCKET_SIZE]; } p4_pocket_t;
 
 struct p4_Wordl			/* a word list */
@@ -195,8 +191,7 @@ struct p4_Except
     p4cell *lpp;                /* P4_REGLP_T */
     double *fpp;                /* P4_REGFP_T */
     p4_Iframe *iframe;
-    p4_jmp_buf jmp;
-    p4_fenv_t  jmp_fenv;
+    jmp_buf jmp;
     p4_Except *prev;
 };
 
@@ -290,11 +285,7 @@ struct p4_Session
 #ifndef P4_MOPTRS
 #define P4_MOPTRS 128
 #endif
-
-#define P4_MEM_SLOT (P4_MOPTRS-1)
 */
-   /* there's nothing good in this solution... *FIXME*/
-//#define PFE_MEM (PFE.p[P4_MEM_SLOT])
 #define PFE_MEM (PFE.dictfence)
 
 struct p4_Thread
@@ -331,7 +322,7 @@ struct p4_Thread
     double*   fp; /* the floating point stack pointer */
 
 /* jmp_buf */
-    p4_jmp_buf loop;       /* QUIT and ABORT do a THROW which longjmp() */
+    jmp_buf loop;       /* QUIT and ABORT do a THROW which longjmp() */
        			   /* here thus C-stack gets cleaned up too */
 /*Options*/
     p4_Session* set;        /* contains cpu-pointers */
@@ -436,9 +427,6 @@ struct p4_Thread
 /* support.c/xception */
     p4code throw_cleanup;
 
-/* main-mmap -> main-sub */
-//    int moptrs;
-
 /* new forth-wordlist mechanism */
     p4_Wordl* forth_wl;
 
@@ -450,12 +438,6 @@ struct p4_Thread
 
 /* environ-wl support */
     p4_Wordl* environ_wl;
-
-/* vectorized p4_interpret support */
-    p4ucell_p4code interpret [8];
-
-/* vectorized abort_system support */
-    p4code abort [4];
 
     p4cell next_exception;
     p4_Exception* exception_link;
@@ -495,11 +477,6 @@ struct p4_Thread
     p4cell* interpret_compile_extra;
     p4cell* interpret_compile_float;
 
-/* os-fesetenv.h + floating-ext.c */
-    p4_setjmp_fenv_save_func_t   setjmp_fenv_save;
-    p4_setjmp_fenv_load_func_t   setjmp_fenv_load;
-    p4_fenv_t loop_fenv;
-
 /* make updates safer with additional padding space, use it! */
     p4cell padding[3];
 };
@@ -533,15 +510,6 @@ struct p4_Thread
 # define DEFAULT_ORDER	p4_DFORDER
 # define ONLY		p4_ONLY
 # define CURRENT	p4_CURRENT
-#endif
-
-/* use as p4_setjmp_fenv_save(& thread->loop_fenv) */
-#if defined P4_NO_FP
-# define p4_setjmp_fenv_save(buffer)
-# define p4_setjmp_fenv_load(buffer)
-#else
-# define p4_setjmp_fenv_save(buffer) PFE.setjmp_fenv_save(buffer)
-# define p4_setjmp_fenv_load(buffer) PFE.setjmp_fenv_load(buffer)
 #endif
 
 # define p4_DP_CHAR     p4_DP

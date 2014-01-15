@@ -22,8 +22,8 @@ static char* id __attribute__((unused)) =
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <setjmp.h>
 #include <pfe/os-string.h>
-#include <pfe/os-setjmp.h>
 
 #include <pfe/exception-sub.h>
 #include <pfe/file-sub.h>
@@ -31,12 +31,7 @@ static char* id __attribute__((unused)) =
 
 #include <pfe/logging.h>
 
-#ifndef _export
-#define p4_longjmp_abort()	(p4_longjmp_loop('A'))
-#define p4_longjmp_exit()	(p4_longjmp_loop('X'))
-#define p4_longjmp_quit()	(p4_longjmp_loop('Q'))
-#define p4_longjmp_yield()	(p4_longjmp_loop('S'))
-#endif
+
 
 /**
  * just call longjmp on PFE.loop
@@ -44,7 +39,6 @@ static char* id __attribute__((unused)) =
 _export void
 p4_longjmp_loop(int arg)
 {
-	PFE.setjmp_fenv_save(& PFE.loop_fenv);
     p4_longjmp (PFE.loop, arg);
 }
 
@@ -52,12 +46,12 @@ p4_longjmp_loop(int arg)
  * show the error, along with info like the block, filename, line numer.
  */
 static void
-show_error (const char* str, int len)
+show_error (const char* str)
 {
     PFE.input_err = PFE.input;	/* save input specification of error */
 
     if (! str) str = "";
-    if (! len) len = p4_strlen(str);
+    len = p4_strlen(str);
     p4_outf ("\nError: %.*s", len, str);
     FX (p4_cr_show_input);
     p4_longjmp_abort ();
@@ -253,12 +247,10 @@ p4_catch (p4xt xt)
 #  endif
     frame.iframe = PFE.saved_input;
     frame.prev = PFE.catchframe;  PFE.catchframe = &frame;
-	p4_setjmp_fenv_save(& frame.jmp_fenv);
     returnvalue = p4_setjmp (frame.jmp);
     if (! returnvalue) {
         p4_call (xt);
     }
-	p4_setjmp_fenv_load(& frame.jmp_fenv);
     PFE.catchframe = frame.prev;
 #  ifdef P4_RP_IN_VM
     RP = frame.rpp;
@@ -321,7 +313,7 @@ p4_throws (int id, const p4_char_t* description, int len)
     {
      case P4_ON_ABORT_QUOTE:
      {
-	 show_error (addr, len);
+	 show_error (addr);
      }
      case P4_ON_ABORT:
          p4_longjmp_abort ();
@@ -340,7 +332,7 @@ p4_throws (int id, const p4_char_t* description, int len)
                  p4_strncat (msg, addr, len);
              }
          }
-         show_error (msg, 0);
+         show_error (msg);
     }
 }
 

@@ -655,7 +655,7 @@ P4RUNTIMES1_(p4_f_constant, p4_f_constant_RT, 0,p4_f_constant_RT_SEE);
 
 FCode (p4_f_depth)
 {
-    *--SP = p4_F0 - FP;
+    *--SP = PFE.f0 - FP;
 }
 
 FCode (p4_f_drop)
@@ -1021,11 +1021,6 @@ static p4ucell FXCode (interpret_float) /*hereclean*/
 #  endif
 }
 
-static FCode(abort_float)
-{
-    FP = p4_F0;
-}
-
 # if 0
 static int decompile_floating (char* nfa, p4xt xt)
 {
@@ -1071,20 +1066,6 @@ P4COMPILES (p4_interpret_float, p4_interpret_float_execution,
  *  floating stack and branch out of the loop body (usually do it => AGAIN )
  */
 
-/** alias fegetenv() */
-static int floating_setjmp_fenv_save(p4_fenv_t* fenvp)
-{
-	fenvp->initialized = 1;
-	return p4_fegetenv(& fenvp->fenv);
-}
-
-/** alias fesetenv() */
-static int floating_setjmp_fenv_load(p4_fenv_t* fenvp)
-{
-	if (! fenvp->initialized) return -1;
-	return p4_fesetenv(& fenvp->fenv);
-}
-
 #ifndef FLOATING_INTERPRET_SLOT       /* USER-CONFIG: */
 #define FLOATING_INTERPRET_SLOT 2     /* 1 == smart-ext / 2 == floating-ext */
 #endif
@@ -1094,10 +1075,6 @@ static FCode_RT(floating_deinit)
     FX_USE_BODY_ADDR;
     FX_POP_BODY_ADDR_UNUSED;
 /*  PFE.decompile[FLOATING_INTERPRET_SLOT] = 0; */
-    PFE.interpret[FLOATING_INTERPRET_SLOT] = 0;
-    PFE.abort[FLOATING_INTERPRET_SLOT] = 0;
-    PFE.setjmp_fenv_save = (p4_setjmp_fenv_save_func_t)(PFX(p4_noop));
-    PFE.setjmp_fenv_load = (p4_setjmp_fenv_load_func_t)(PFX(p4_noop));
     {   /* HACK: FIXME: verrrry experimental FLOAT-NUMBER? deactivate */
 	void* old_DP = PFE.dp;
 	PFE.dp = (p4_byte_t*) PFE.interpret_compile_float;
@@ -1128,10 +1105,7 @@ static FCode(floating_init)
     PFE.f0 -= 2;	/* F-stack underflow does no harm for these */
     FP = PFE.f0;	/* same as abort_float above. Is that a rule? askmee */
 
-    PFE.interpret[FLOATING_INTERPRET_SLOT] = PFX (interpret_float);
-    PFE.abort[FLOATING_INTERPRET_SLOT] = PFX(abort_float);
-    PFE.setjmp_fenv_save = floating_setjmp_fenv_save;
-    PFE.setjmp_fenv_load = floating_setjmp_fenv_load;
+//    PFE.interpret[FLOATING_INTERPRET_SLOT] = PFX (interpret_float);
 /*  PFE.decompile[FLOATING_INTERPRET_SLOT] = decompile_floating; */
     p4_forget_word ("deinit:floating:%i", FLOATING_INTERPRET_SLOT,
 		    PFX(floating_deinit), FLOATING_INTERPRET_SLOT);
@@ -1168,10 +1142,7 @@ puts("p4_floating_init");
     PFE.f0 -= 2;	/* F-stack underflow does no harm for these */
     FP = PFE.f0;	/* same as abort_float above. Is that a rule? askmee */
 
-    PFE.interpret[FLOATING_INTERPRET_SLOT] = PFX (interpret_float);
-    PFE.abort[FLOATING_INTERPRET_SLOT] = PFX(abort_float);
-    PFE.setjmp_fenv_save = floating_setjmp_fenv_save;
-    PFE.setjmp_fenv_load = floating_setjmp_fenv_load;
+//    PFE.interpret[FLOATING_INTERPRET_SLOT] = PFX (interpret_float);
 /*  PFE.decompile[FLOATING_INTERPRET_SLOT] = decompile_floating; */
     p4_forget_word ("deinit:floating:%i", FLOATING_INTERPRET_SLOT,
 		    PFX(floating_deinit), FLOATING_INTERPRET_SLOT);

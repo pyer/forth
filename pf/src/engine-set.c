@@ -137,15 +137,13 @@ void p4_default_options(p4_sessionP set)
 /**
  * note the argument
  */
-int p4_init_boot_system (p4_threadP th) /* main_init */
+int p4_run_boot_system (p4_threadP th) /* main_init */
 {
 #  ifdef PFE_USE_THREAD_BLOCK
 #  define PFE_VM_p4TH(_th_)
 #  else
 #  define PFE_VM_p4TH(_th_)    p4TH = _th_
 #  endif
-
-    PFE_VM_p4TH(th);
 
 #  ifdef PFE_HAVE_LOCALE_H
     setlocale (LC_ALL, "C");
@@ -154,29 +152,9 @@ int p4_init_boot_system (p4_threadP th) /* main_init */
     _control87 (EM_DENORMAL | EM_INEXACT, MCW_EM);
 #  endif
 
-    PFE.exitcode = 0;
-    switch (p4_setjmp (PFE.loop))
-    {           /* classify unhandled throw codes */
-    case 'A':
-    case 'Q':	P4_fatal ("Boot System Failure");
-        {   extern FCode(p4_come_back); /*:debug-ext:*/
-#         ifdef P4_RP_IN_VM
-            if (p4_R0) RP = p4_R0; /* quit_system */
-            FX (p4_come_back);
-#         endif
-        }
-        return -1;
-    default:
-		P4_warn ("Boot System Kill");
-		/*fallthrough*/
-    case 'X':
-    	P4_info ("Boot System Exit/Bye");
-    	return PFE.exitcode;
-    case 0:     break;
-    }
-
     /* ............................................................*/
     PFE_VM_p4TH(th);
+    PFE.exitcode = 0;
 
 #  if !defined __WATCOMC__
     if (! isatty (STDIN_FILENO))
@@ -226,6 +204,7 @@ int p4_init_boot_system (p4_threadP th) /* main_init */
 
     if (! PFE_MEM)
     {
+//puts("PFE_MEM alloc");
         PFE_MEM = p4_xcalloc (1, (size_t) PFE_set.total_size);
         if (PFE_MEM)
         {
@@ -270,11 +249,7 @@ int p4_init_boot_system (p4_threadP th) /* main_init */
 	PFE.exitcode = 3;
 	p4_longjmp_exit ();
     }
-    return PFE.exitcode;
-}
 
-int p4_run_boot_system (p4_threadP th)
-{
     /*  -- cold boot stage -- */
     PFE_VM_p4TH(th);
     FX (p4_cold_system);
@@ -298,45 +273,6 @@ int p4_run_boot_system (p4_threadP th)
  * THROW-code that jumps to the CATCH-domain of that mainloop.
  * (the EXITCODE of this routine can be set by the forth application)
  */
-/**
- * the outer interpreter, in PFE the jumppoint for both => ABORT and => QUIT
- */
-#if defined XXXXXX
-int p5_interpret_loop (void)
-{
-    register int err;
-    p4_setjmp_fenv_save(& PFE.loop_fenv);
-    switch (err = p4_setjmp(PFE.loop))
-    {
-     case  0:  /* newloop -> do abort*/
-         /* initialize */
-     case 'A': /* do abort */
-         abort_system (FX_VOID);
-//         p4_redo_all_words (PFE.abort_wl);
-         /* -> do quit */
-     case 'Q': /* do quit */
-         quit_system (FX_VOID);
-     case 'S': /* schedule */
-				/* normal interactive QUIT */
-                                /* doing the QUERY-INTERPRET loop */
-    	 p4_setjmp_fenv_load(& PFE.loop_fenv);
-         p4_unnest_input (NULL);
-         for (;;)
-         {
-             FX (p4_ok);
-             FX (p4_cr);
-             FX (p4_query);
-             FX (p4_interpret);
-             FX (p4_Q_stack);
-         }
-
-     case 'X': /* exit / bye */
-         return 0;
-    }
-    return err;
-}
-#endif
-
 
 void abort_system (void);
 void quit_system (void);

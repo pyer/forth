@@ -25,7 +25,6 @@ static char* id __attribute__((unused)) =
 #include <stdarg.h>
 #include <errno.h>
 #include <pfe/os-string.h>
-#include <pfe/os-setjmp.h>
 
 #include <pfe/double-sub.h>
 #include <pfe/debug-ext.h>
@@ -112,10 +111,8 @@ p4_call_loop (p4xt xt)
     p4WP = *IP;
 #  endif
 
-    // p4_setjmp_fenv_save(& stop.jmp_fenv);
     if (p4_setjmp (stop.jmp))
     {
-        // p4_setjmp_fenv_load(& stop.jmp_fenv);
 #     ifdef P4_REGRP		/* restore global register variables */
         RP = stop.rpp;		/* clobbered by longjmp() */
 #     endif
@@ -165,16 +162,7 @@ p4_call_loop (p4xt xt)
 _export void
 p4_call (p4xt xt)
 {
-# if 0 && defined __target_os_sunos
-    void *saved_ip;
-
-    saved_ip = IP;
-    printf ("%X/%X\n", IP, saved_ip);
-    p4_call_loop (xt);
-    printf ("%X/%X\n", IP, saved_ip);
-    IP = saved_ip;
-    printf ("%X/%X\n\n", IP, saved_ip);
-# elif !defined PFE_SBR_CALL_THREADING
+# if !defined PFE_SBR_CALL_THREADING
     p4xcode *saved_ip = IP;
     p4_call_loop (xt);
     IP = saved_ip;
@@ -636,8 +624,6 @@ FCode (p4_cold_system)
     WORDL_FLAG |= WORDL_NOCASE;
     WORDL_FLAG |= WORDL_UPPER_CASE;
     FLOAT_INPUT = P4_opt.float_input;
-    PFE.setjmp_fenv_save = (p4_setjmp_fenv_save_func_t)(PFX(p4_noop));
-    PFE.setjmp_fenv_load = (p4_setjmp_fenv_load_func_t)(PFX(p4_noop));
 
     PFE.local = (char (*)[P4_LOCALS]) PFE.stack; /* locals are stored as zstrings */
     PFE.pocket = PFE.pockets_ptr;
