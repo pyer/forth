@@ -82,7 +82,7 @@ static void init_accept_lined (void)
 /**
  * fill the session struct with precompiled options
  */
-void p4_default_options(p4_sessionP set)
+void p4_default_options(p4_Session* set)
 {
     if (! set) return;
     int len = sizeof(*set);
@@ -111,10 +111,6 @@ void p4_default_options(p4_sessionP set)
 #  else
     set->float_input = 0;
 #  endif
-    set->license = 0;
-    set->warranty = 0;
-    set->quiet = 0;
-    set->verbose = 0;
     set->debug = 0;
     set->cols = TEXT_COLS;
     set->rows = TEXT_ROWS;
@@ -137,14 +133,8 @@ void p4_default_options(p4_sessionP set)
 /**
  * note the argument
  */
-int p4_run_boot_system (p4_threadP th) /* main_init */
+int p4_run_boot_system (p4_Thread* th) /* main_init */
 {
-#  ifdef PFE_USE_THREAD_BLOCK
-#  define PFE_VM_p4TH(_th_)
-#  else
-#  define PFE_VM_p4TH(_th_)    p4TH = _th_
-#  endif
-
 #  ifdef PFE_HAVE_LOCALE_H
     setlocale (LC_ALL, "C");
 #  endif
@@ -153,7 +143,7 @@ int p4_run_boot_system (p4_threadP th) /* main_init */
 #  endif
 
     /* ............................................................*/
-    PFE_VM_p4TH(th);
+    p4TH = th;
     PFE.exitcode = 0;
 
 #  if !defined __WATCOMC__
@@ -167,23 +157,9 @@ int p4_run_boot_system (p4_threadP th) /* main_init */
     {
         if (! p4_prepare_terminal ())
 	{
-            if (! PFE_set.quiet)
-                P4_fatal (
-		    "[unknown terminal, "
-#                  if defined ASSUME_VT100
-		    "assuming vt100"
-#                  elif defined ASSUME_DUMBTERM
-		    "assuming dumb terminal"
-#                  else
-		    "running without terminal mode"
-#                  endif
-		    "]");
-#          if !defined ASSUME_VT100 && !defined ASSUME_DUMBTERM
             PFE_set.isnotatty = P4_TTY_ISPIPE;
-#          endif
 	}
 	p4_interactive_terminal ();
-	PFE.system_terminal = &p4_system_terminal;
     }
 
     if (PFE_set.isnotatty == P4_TTY_ISPIPE && ! PFE.term)
@@ -192,8 +168,8 @@ int p4_run_boot_system (p4_threadP th) /* main_init */
         PFE.term = &p4_term_stdio;
     }
 
-    if (! PFE_set.debug)
-        p4_install_signal_handlers ();
+//    if (! PFE_set.debug)
+//        p4_install_signal_handlers ();
 
     if (PFE.rows == 0)
         PFE.rows = PFE_set.rows;
@@ -247,18 +223,16 @@ int p4_run_boot_system (p4_threadP th) /* main_init */
     {
 	P4_fatal ("impossible memory map");
 	PFE.exitcode = 3;
-	p4_longjmp_exit ();
+    	return PFE.exitcode;
     }
 
     /*  -- cold boot stage -- */
-    PFE_VM_p4TH(th);
     FX (p4_cold_system);
     init_accept_lined ();
 
     /* -------- warm boot stage ------- */
     FX (p4_boot_system);
 
-    PFE_VM_p4TH(th);
     PFE_VM_SAVE(th);
     return PFE.exitcode;
 }
@@ -292,50 +266,17 @@ int p4_run_application(p4_Thread* th) /* main_loop */
     	return th->exitcode;
     case 0:     break;
     }
-    P4_CALLER_SAVEALL;
+//    P4_CALLER_SAVEALL;
     PFE_VM_LOAD(th);
-//    p5_interpret_loop();
-         for (;;)
-         {
+    for (;;) {
              FX (p4_ok);
              FX (p4_cr);
              FX (p4_query);
              FX (p4_interpret);
              FX (p4_Q_stack);
-         }
+    }
     PFE_VM_SAVE(th); /* ... */
-    P4_CALLER_RESTORE;
     return th->exitcode;
-}
-
-/**
- * init and execute the previously allocated forth-machine,
- * e.g. pthread_create(&thread_id,0,p4_Exec,threadP);
- *
- * The following words have been extracted from a big boot init
- * procedure previously existing in PFE. In the boot_system we
- * do initialize all inputs/outputs and load the wordset extensions
- * and the boot-preinit-block or boot-preinit-script. After that,
- * we run script_files to init the application code, and finally
- * the application is started - and if no APPLICATION was set then
- * we do the fallback to the forth interactive INTERPRET loop. The
- * latter is the usual case, use BYE to exit that inifinite loop.
- *
- * When the mainloop returns, we run the cleanup-routines. They are
- * registered seperatly so they can be run asynchronously - if the
- * application has broken down or it blocks hard on some hardware
- * then we can still run cleanup code in a new forthish context.
- */
-void p4_atexit_cleanup (void)
-{
-    extern void p4_cleanup_terminal (void);
-    P4_enter ("atexit cleanup");
-    p4_forget ((FENCE = PFE_MEM));
-
-    if (PFE.system_terminal)    /* call this once, with the first cpu */
-        PFE.system_terminal ();
-    p4_cleanup_terminal ();
-    P4_leave ("atexit cleanup done");
 }
 
 /*@}*/

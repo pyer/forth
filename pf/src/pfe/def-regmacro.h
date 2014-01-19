@@ -36,10 +36,6 @@
 # define PFE_USE_REGS USE_REGS
 #endif
 
-#if defined  PFE_WITH_STATIC_REGS
-#define PFE_NEED_NO_REGTH
-#endif
-
 #ifdef PFE_CALL_THREADING
 # undef P4_NEED_NO_REGW
 #endif

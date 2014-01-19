@@ -51,7 +51,7 @@ show_error (const char* str)
     PFE.input_err = PFE.input;	/* save input specification of error */
 
     if (! str) str = "";
-    len = p4_strlen(str);
+    int len = p4_strlen(str);
     p4_outf ("\nError: %.*s", len, str);
     FX (p4_cr_show_input);
     p4_longjmp_abort ();

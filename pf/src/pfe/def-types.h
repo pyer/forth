@@ -213,8 +213,6 @@ struct p4_Exception
 typedef struct p4_Session 	p4_Session;
 typedef struct p4_Thread	p4_Thread;
 
-typedef struct p4_Session* 	p4_sessionP;
-typedef struct p4_Thread*  	p4_threadP;
 typedef struct _p4_term_struct  p4_term_struct;
 
 //typedef struct p4_Dictionary    p4_Dictionary;
@@ -242,10 +240,6 @@ struct p4_Session
 	        find_any_case:1,/* make case-insensitive find default */
 	        lower_case_fn:1,/* convert file names to lower case? */
 	        float_input:1,	/* disables floating point input when false */
-		license:1,	/* show license string at startup */
-		warranty:1,	/* show warranty string at startup */
-		quiet:1,	/* no messages */
-		verbose:1,	/* more messages */
 		debug:1,	/* enable a few more outputs */
                 upper_case_on:1,/* make lower case words find upper case */
                 lastbit:1;      /* last bit */
@@ -258,7 +252,6 @@ struct p4_Session
     char const** inc_paths;     /* usually points to "INC-PATH" */
     char const** inc_ext;       /* usually points to "INC-EXT" */
     char const** lib_paths;     /* usually points to "LIB-PATH" */
-    /*                 _editor; // use option_string("$EDITOR") */
 
     /* for VMs */
     int     cpus;          /* how many cpus do we have in this tread */
@@ -356,19 +349,11 @@ struct p4_Thread
     p4ucell base;		/* of number i/o conversion */
     p4cell precision;		/* floating point output precision */
 
-/*Forth*/
-#if defined HOST_OS_AIX3 && !defined(__GNUC__)
-    /* avoid "internal compiler error" from AIX 3.2 cc compiler */
-    void *key;			/* executed by KEY */
-    void *emit;			/* executed by EMIT */
-    void *expect;		/* executed by EXPECT */
-    void *type;			/* executed by TYPE */
-#else
     p4xt key;			/* executed by KEY */
     p4xt emit;			/* executed by EMIT */
     p4xt expect;		/* executed by EXPECT */
     p4xt type;			/* executed by TYPE */
-#endif
+
     p4cell wordl_flag;		/* do toupper() before dictionary search */
     p4cell lower_case_fn;	/* do tolower() on file names */
     p4cell redefined_msg;	/* no `"xxx" is redefined' msg if false */
@@ -391,7 +376,7 @@ struct p4_Thread
 
 /* main-sub / dict-sub */
     int exitcode;
-    void (*system_terminal)(void);
+//    void (*system_terminal)(void);
     p4_Wordl *atexit_wl;	     /* atexit dictionary holder */
     p4_byte_t* volatile forget_dp;   /* temporary of forget */
 
@@ -443,7 +428,7 @@ struct p4_Thread
     p4_Exception* exception_link;
 
 /* vectorized p4_decompile - just a hack that needs to be replaced later */
-    p4_decompile_func_t decompile[3];
+//    p4_decompile_func_t decompile[3];
 
 /* go at quoting... */
     p4_char_t quoted_parse;

@@ -22,7 +22,9 @@
 #include <pfe/def-config.h>
 #include <pfe/def-cell.h>
 #include <pfe/def-regmacro.h>
-#include <pfe/def-regth.h>
+
+extern struct p4_Thread* p4TH;
+#define PFE (*p4TH)
 
 #ifdef _P4_NO_REGS_SOURCE
 #ifdef __GNUC__

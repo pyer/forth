@@ -534,6 +534,16 @@ void abort_system (void)
     }
 }
 
+/** BYE ( -- ) no-return
+ * should quit the forth environment completly
+ */
+FCode (p4_bye)
+{
+    FX (p4_close_all_files);
+    p4_outs ("\nGoodbye!\n");
+    p4_longjmp_exit ();
+}
+
 /* **************************************************** compiled interpret */
 
 static const p4_char_t p4_lit_interpret[] = "(INTERPRET)";

@@ -242,19 +242,6 @@ FCode (p4_new_ahead)
 P4COMPILES (p4_new_ahead, p4_branch_execution,
   P4_SKIPS_OFFSET, P4_ELSE_STYLE);
 
-/** BYE ( -- ) no-return
- * should quit the forth environment completly
- */
-FCode (p4_bye)
-{
-    FX (p4_close_all_files);
-    if (P4_opt.quiet)
-        p4_outc ('\n');
-    else
-        p4_outs ("\nGoodbye!\n");
-    p4_longjmp_exit ();
-}
-
 /** CS-PICK ( 2a 2b 2c ... n -- 2a 2b 2c ... 2a )
  * pick a value in the compilation-stack - note that the compilation
  * stack _can_ be seperate in some forth-implemenations. In PFE
@@ -448,7 +435,6 @@ P4_LISTWORDS (tools) =
     P4_FXco ("SEE",		   p4_see),
     P4_FXco ("WORDS",		   p4_words),
     P4_SXco ("AHEAD",		   p4_new_ahead), 
-    P4_FXco ("BYE",		   p4_bye),
     P4_FXco ("CS-PICK",		   p4_cs_pick),
     P4_FXco ("CS-ROLL",		   p4_cs_roll),
     P4_FXco ("FORGET",		   p4_forget),

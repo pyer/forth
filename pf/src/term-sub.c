@@ -434,6 +434,7 @@ int p4_prepare_terminal ()
 
 void p4_cleanup_terminal (void)
 {
+    p4_system_terminal ();
     if (PFE.term->fini) (*PFE.term->fini)();
     
     PFE.term = 0;

@@ -110,11 +110,6 @@ extern P4_CODE (p4_words);
  */
 extern P4_CODE (p4_new_ahead);
 
-/** BYE ( -- ) no-return
- * should quit the forth environment completly
- */
-extern P4_CODE (p4_bye);
-
 /** CS-PICK ( 2a 2b 2c ... n -- 2a 2b 2c ... 2a )
  * pick a value in the compilation-stack - note that the compilation
  * stack _can_ be seperate in some forth-implemenations. In PFE

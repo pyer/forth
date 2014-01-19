@@ -582,8 +582,6 @@ FCode (p4_dot_status)
     p4_outf ("\nUPPER-CASE-IS  %s", flag (UPPER_CASE));
 #  ifdef P4_REGTH
     p4_outs ("           REGTH="P4_REGTH);
-#  elif defined PFE_USE_THREAD_BLOCK
-    p4_outs ("           (static regVM block)");
 #  else
     p4_outs ("           (static regTH pointer)");
 #  endif
@@ -845,25 +843,6 @@ FCode (p4_argv)
     else
         p4_strpush (NULL);
 }
-
-/** EXPAND-FN ( name-ptr name-len buf-ptr -- buf-ptr buf-len ) [FTH]
- : e.g. s" includefile" POCKET-PAD EXPAND-FN ;
- */
-FCode (p4_expand_fn)
-{
-    p4_char_t *nm = (p4_char_t *) SP[2];
-    p4cell len = SP[1];
-    char *fn = (char *) SP[0];
-    char* buf;
-
-    buf = p4_pocket_expanded_filename (
-        nm, len, *P4_opt.inc_paths, *P4_opt.inc_ext);
-    p4_strcpy (fn, buf);
-    SP++;
-    SP[1] = (p4cell) fn;
-    SP[0] = p4_strlen (fn);
-}
-
 
 #ifndef NO_SYSTEM
 /** SYSTEM ( command-ptr command-len -- command-exitcode# ) [FTH]
@@ -1271,7 +1250,6 @@ P4_LISTWORDS (misc) =
     P4_DVaL ("STDOUT",		stdOut),
     P4_DVaL ("STDERR",		stdErr),
 
-    P4_FXco ("EXPAND-FN",	p4_expand_fn),
 #ifndef NO_SYSTEM
     P4_FXco ("SYSTEM",		p4_system),
     P4_SXco ("SYSTEM\"",	p4_system_quote),

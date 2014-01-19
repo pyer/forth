@@ -98,8 +98,6 @@ _extern  char* p4_store_filename (const p4_char_t* str, int n, char* dst, int ma
  */
 _extern  P4_GCC_MALLOC char* p4_pocket_filename (const p4_char_t* src, int n) ; /*{*/
 
-_extern  char* p4_pocket_expanded_filename (const p4_char_t *nm, int ln, const char *paths, const char *exts) ; /*{*/
-
 /** _search_ ( str* str# key* key# -- 0 | key-in-str* )
  * search for substring p2/u2 in string p1/u1, returns null if not found
  * or a pointer into str*,str# that has lenght of key# 

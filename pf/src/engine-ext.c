@@ -24,7 +24,7 @@ static char* id __attribute__((unused)) =
 extern const p4Words
     P4WORDS(core),		P4WORDS(core_misc),
     P4WORDS(double),	P4WORDS(double_misc),
-    P4WORDS(exception), P4WORDS(cdecl),
+    P4WORDS(exception),
     P4WORDS(environ),
     P4WORDS(facility),	P4WORDS(facility_mix),
     P4WORDS(file),		P4WORDS(file_misc),
@@ -59,6 +59,7 @@ extern FX_DEF_COMPILES (p4_interpret_undefined);
 
 P4_LISTWORDS(forth) =
 {
+    P4_FXco ("BYE",		   p4_bye),
     P4_INTO ("[ANS]", 0),
     P4_LOAD ("", search),
     P4_LOAD ("", core),
@@ -72,7 +73,6 @@ P4_LISTWORDS(forth) =
     P4_LOAD ("", string),
     P4_INTO ("FORTH", 0),
     P4_LOAD ("", header),
-    P4_LOAD ("", cdecl),
     P4_LOAD ("", environ),
     P4_LOAD ("", forth_83),
     P4_LOAD ("", forth_usual),
@@ -94,7 +94,6 @@ P4_LISTWORDS(extensions) =
     P4_INTO ("EXTENSIONS", "FORTH"),
     P4_LOAD ("", facility_mix),
     P4_LOAD ("", shell),
-    P4_LOAD ("", posix),
     P4_LOAD ("", term),
     P4_LOAD ("", your),
 #if 1 && defined PFE_WITH_SPY

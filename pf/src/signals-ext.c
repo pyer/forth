@@ -353,15 +353,6 @@ getinfo (int sig)
 
 typedef PFE_RETSIGTYPE (*_sighandler_t)(int);
 
-/* in vxworks, signal-handlers might possibly be in another context... */
-#if defined P4_REGTH && ! defined unix
-#define P4_REGTH_SIGNAL_SAVEALL P4_CALLER_SAVEALL; p4TH = p4_main_threadP;
-#define P4_REGTH_SIGNAL_RESTORE P4_CALLER_RESTORE;
-#else
-#define P4_REGTH_SIGNAL_SAVEALL 
-#define P4_REGTH_SIGNAL_RESTORE
-#endif
-
 static void
 sig_handler (int sig)		/* Signal handler for all signals */
 {
@@ -397,7 +388,7 @@ sig_handler (int sig)		/* Signal handler for all signals */
 	    IP = (p4xcode *) P4_TO_BODY (s->hdl);
 #         endif
         } else {
-	    P4_REGTH_SIGNAL_SAVEALL; ___
+	    ___
 #          ifdef PFE_HAVE_SYS_SIGLIST
             const char* msg = sys_siglist[sig];
 #          else
@@ -417,7 +408,7 @@ sig_handler (int sig)		/* Signal handler for all signals */
                  PFE.exitcode = 1;
                  p4_longjmp_exit ();
             }
-	    P4_REGTH_SIGNAL_RESTORE;____;
+	    ____;
         }
     }
 }
@@ -434,7 +425,6 @@ stop_hdl (int sig)
     signal (sig, (_sighandler_t) stop_hdl);
 #  endif
     { 
-        P4_REGTH_SIGNAL_SAVEALL;
         PFE.on_stop ();
         p4_swap_signals ();
 #      if _BSD
@@ -444,7 +434,6 @@ stop_hdl (int sig)
 #      endif
         p4_swap_signals ();
         PFE.on_continue ();
-        P4_REGTH_SIGNAL_RESTORE;
     }
 }
 #endif
@@ -457,9 +446,7 @@ winchg_hdl (int sig)
     signal (sig, winchg_hdl);
 #  endif
     {
-        P4_REGTH_SIGNAL_SAVEALL;
         PFE.on_winchg ();
-        P4_REGTH_SIGNAL_RESTORE;
     }
 }
 #endif
@@ -476,10 +463,8 @@ handle_sigalrm (int sig)
     signal (sig, (_sighandler_t) handle_sigalrm);
 #  endif
     {
-        P4_REGTH_SIGNAL_SAVEALL;
         if (PFE.on_sigalrm)
             (*PFE.on_sigalrm)();
-        P4_REGTH_SIGNAL_RESTORE;
     }
 }
 #endif

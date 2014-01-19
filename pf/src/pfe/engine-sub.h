@@ -21,7 +21,10 @@ extern "C" {
 #endif
 
 
-
+/** BYE ( -- ) no-return
+ * should quit the forth environment completly
+ */
+extern P4_CODE (p4_bye);
 
 extern P4_CODE(p4_noop);
 

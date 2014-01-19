@@ -117,6 +117,7 @@ extern struct _p4_term_struct p4_term_x11;
 
 int p4_tty_interrupt_key (char ch);
 int p4_prepare_terminal (void);
+void p4_cleanup_terminal (void);
 void p4_interactive_terminal (void);
 void p4_system_terminal (void);
 void p4_query_winsize (void);

@@ -331,11 +331,6 @@ extern P4_CODE (p4_argc);
  */
 extern P4_CODE (p4_argv);
 
-/** EXPAND-FN ( name-ptr name-len buf-ptr -- buf-ptr buf-len ) [FTH]
- : e.g. s" includefile" POCKET-PAD EXPAND-FN ;
- */
-extern P4_CODE (p4_expand_fn);
-
 /** ((LOAD")) ( -- ? ) [HIDDEN]
  */
 extern P4_CODE (p4_load_quote_execution);

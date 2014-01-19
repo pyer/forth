@@ -25,17 +25,15 @@ extern "C" {
 #endif
 
 /************************************************************************/
-int p4_init_boot_system (p4_threadP th);
-int p4_run_boot_system (p4_threadP th);
+int p4_run_boot_system (p4_Thread* th);
 int p4_run_application(p4_Thread* th);
-void p4_atexit_cleanup (void);
 
-void p4_default_options(p4_sessionP set);
+void p4_default_options(p4_Session* set);
 /************************************************************************/
 
 extern P4_CODE(p4_script_files);
 
-_extern  p4_threadP p4_main_threadP ; /*=*/
+//_extern  p4_Thread* p4_main_threadP ; /*=*/
 
 /** 
  * init and execute the previously allocated forth-maschine,
@@ -55,15 +53,15 @@ _extern  p4_threadP p4_main_threadP ; /*=*/
  * application has broken down or it blocks hard on some hardware
  * then we can still run cleanup code in a new forthish context.
  */
-_extern  int p4_Exec(p4_threadP th) ; /*{*/
+_extern  int p4_Exec(p4_Thread* th) ; /*{*/
 
-_extern  int p4_InitVM(p4_threadP th, p4_Session* set) ; /*{*/
+_extern  int p4_InitVM(p4_Thread* th, p4_Session* set) ; /*{*/
 
-_extern  int p4_LoopVM(p4_threadP th) ; /*{*/
+_extern  int p4_LoopVM(p4_Thread* th) ; /*{*/
 
-_extern  int p4_Evaluate(p4_threadP th, const p4_char_t* p, int n) ; /*{*/
+_extern  int p4_Evaluate(p4_Thread* th, const p4_char_t* p, int n) ; /*{*/
 
-_extern  int p4_DeinitVM(p4_threadP th) ; /*{*/
+_extern  int p4_DeinitVM(p4_Thread* th) ; /*{*/
 
 #ifdef __cplusplus
 } /* extern "C" */

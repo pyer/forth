@@ -223,24 +223,6 @@ char const * p4_vt100_rawkeys[] = /* Strings sent by function keys */
     NULL,			/* kC - clear screen key */
 };
 
-/** ASSUME_VT100 ( -- )
- * load hardwired VT100-termcap into the terminal-driver
- */
-FCode (p4_assume_vt100)
-{
-    PFE.control_string = p4_vt100_controls;
-    PFE.rawkey_string = p4_vt100_rawkeys;
-}
-
-/** ASSUME_DUMBTERM ( -- )
- * load hardwired DUMBTERM-termcap into the terminal-driver
- */
-FCode (p4_assume_dumbterm)
-{
-    PFE.control_string = p4_dumbterm_controls;
-    PFE.rawkey_string = p4_dumbterm_rawkeys;
-}
-
 /* ********************************************************************** */
 /* more advanced screen control                                           */
 /* ********************************************************************** */
@@ -335,8 +317,6 @@ P4_LISTWORDS (term) =
     P4_FXco ("SHOW-TERMCAP",		p4_show_termcap),
     P4_FXco ("SHOW-TERM-CONTROLS",	p4_show_control_strings),
     P4_FXco ("SHOW-TERM-ESC-KEYS",	p4_show_rawkey_strings),
-    P4_FXco ("ASSUME_VT100",		p4_assume_vt100),
-    P4_FXco ("ASSUME_DUMBTERM",		p4_assume_dumbterm),
   
   /** words for more advanced screen control */
     P4_DVaR ("ROWS",		        rows),

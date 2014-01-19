@@ -49,16 +49,6 @@ extern P4_CODE (p4_show_rawkey_strings);
  */
 extern P4_CODE (p4_show_termcap);
 
-/** ASSUME_VT100 ( -- )
- * load hardwired VT100-termcap into the terminal-driver
- */
-extern P4_CODE (p4_assume_vt100);
-
-/** ASSUME_DUMBTERM ( -- )
- * load hardwired DUMBTERM-termcap into the terminal-driver
- */
-extern P4_CODE (p4_assume_dumbterm);
-
 /** GOTOXY ( x y -- )
  * move the cursor to the specified position on the screen -
  * this is usually done by sending a corresponding esc-sequence
