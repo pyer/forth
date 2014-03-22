@@ -163,17 +163,15 @@ int pf_digit2number (p4_char_t c, p4ucell *n, p4ucell base)
         c -= '0';
     else
     {
-        if (UPPER_CASE)
-	c = toupper (c);
         if (c < 'A')
             return P4_FALSE;
         if (c <= 'Z')
             c -= 'A' - ('9' - '0' + 1);
         else
 	{
-            if (UPPER_CASE || c < 'a')
+            if (c < 'a')
                 return P4_FALSE;
-            c -= 'a' - ('9' - '0' + 1) - ('Z' - 'A' + 1);
+            c -= 'a' - ('9' - '0' + 1);
 	}
     }
     if (c >= base)
