@@ -1,3 +1,6 @@
+#ifndef __DICTIONARY_H
+#define __DICTIONARY_H
+
 /** 
  *  Implements dictionary and wordlists.
  *
@@ -7,6 +10,12 @@
  *
  *  @see     GNU LGPL
  */
+
+#define ORDER_LEN 64            /* maximum wordlists in search order */
+
+#define CONTEXT	(PFE.context)
+#define ONLY	(PFE.context[ORDER_LEN])
+#define CURRENT	(PFE.current)
 
 /* you must differentiate between VAR-style body and DOES-style body */
 #define P4_TO_LINK(C)     ((p4char**)(C) -1 )
@@ -36,3 +45,5 @@ p4char * pf_to_name (p4xt xt);
 void p4_preload_only (void);
 
 int p4_wl_hash (const p4_char_t *s, int l);
+
+#endif

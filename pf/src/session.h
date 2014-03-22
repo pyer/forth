@@ -53,26 +53,25 @@ struct p4_Exception
 
 struct p4_Session
 {
-    int argc;
-    char const ** argv;
-    unsigned    isnotatty:2,	/* running in canonical mode */
-	        stdio:1,	/* standard input isn't-tty: work as filter */
-	        caps_on:1,	/* exchange lower and upper case chars */
-	        find_any_case:1,/* make case-insensitive find default */
+//    int argc;
+//    char const ** argv;
+//    unsigned    isnotatty:2,	/* running in canonical mode */
+//	        stdio:1,	/* standard input isn't-tty: work as filter */
+//	        caps_on:1,	/* exchange lower and upper case chars */
+//	        find_any_case:1,/* make case-insensitive find default */
 //	        lower_case_fn:1,/* convert file names to lower case? */
-	        float_input:1,	/* disables floating point input when false */
-		debug:1,	/* enable a few more outputs */
-                upper_case_on:1,/* make lower case words find upper case */
-                lastbit:1;      /* last bit */
+//	        float_input:1,	/* disables floating point input when false */
+//		x_debug:1;	/* enable a few more outputs */
 //    int	cols, rows;	/* size of screen */
+/*
     p4ucelll	total_size;
     p4ucelll	stack_size;
     p4ucelll	ret_stack_size;
     p4ucelll	float_stack_size;
-
-    char ** boot_name;          /* points to argv[0] usually... */
-    char const** optv;
-    p4ucell     optc;
+*/
+//    char ** boot_name;          /* points to argv[0] usually... */
+//    char const** optv;
+//    p4ucell     optc;
     unsigned    wordlists;       /* p4ucell might be 64bit (16bit is okay) */
 //    void*       modules;         /* p4Words* : dl-internal / dl-ext */
     p4ucell     padding[4];      /* padding cells for binary compatibility */
@@ -151,10 +150,10 @@ struct p4_Thread
 //    p4xt expect;		/* executed by EXPECT */
 //    p4xt type;			/* executed by TYPE */
 
-    p4cell wordl_flag;		/* do toupper() before dictionary search */
+//    p4cell wordl_flag;		/* do toupper() before dictionary search */
 //    p4cell lower_case_fn;	/* do tolower() on file names */
     p4cell redefined_msg;	/* no `"xxx" is redefined' msg if false */
-    p4cell float_input;		/* don't try floating pt input when false */
+//    p4cell float_input;		/* don't try floating pt input when false */
     p4cell reset_order;		/* if true: reset search order on ABORT */
 
     p4_File *stdIn;		/* C-library standard files */
@@ -226,11 +225,8 @@ struct p4_Thread
 # define p4_FENCE	(PFE.fence)
 # define p4_LAST	(PFE.last)
 # define p4_VOC_LINK	(PFE.voc_link)
-# define p4_CONTEXT	(PFE.context)
 # define p4_DFORDER     (PFE.dforder)
 # define p4_DFCURRENT   (PFE.dfcurrent)
-# define p4_ONLY	(PFE.context[PFE_set.wordlists])
-# define p4_CURRENT	(PFE.current)
 
 # define DP		p4_DP
 # define HLD		p4_HLD
@@ -239,10 +235,7 @@ struct p4_Thread
 # define FENCE		p4_FENCE
 # define LAST		p4_LAST
 # define VOC_LINK	p4_VOC_LINK
-# define CONTEXT	p4_CONTEXT
 # define DEFAULT_ORDER	p4_DFORDER
-# define ONLY		p4_ONLY
-# define CURRENT	p4_CURRENT
 
 # define p4_DP_CHAR     p4_DP
 # define p4_DP_CELL     ((p4cell*)(p4_DP))
@@ -254,31 +247,15 @@ struct p4_Thread
 # define p4_CSP			(PFE.csp)
 # define p4_BASE		(PFE.base)
 # define p4_PRECISION		(PFE.precision)
-# define p4_WORDL_FLAG		(PFE.wordl_flag)
-# define p4_UPPER_CASE		(PFE.wordl_flag & P4_UPPER_CASE_FLAGS)
-# define p4_LOWER_CASE		(PFE.wordl_flag & WORDL_NOCASE) /*depracated*/
-//# define p4_LOWER_CASE_FN	(PFE.lower_case_fn)
 # define p4_REDEFINED_MSG	(PFE.redefined_msg)
-# define p4_FLOAT_INPUT		(PFE.float_input)
 # define p4_RESET_ORDER		(PFE.reset_order)
-
-# if PFE_USE_QUOTED_PARSE
-# define p4_QUOTED_PARSE        (PFE.quoted_parse)
-# else
-# define p4_QUOTED_PARSE        0
-#endif
 
 # define SCR		p4_SCR
 # define STATE		p4_STATE
 # define CSP		p4_CSP
 # define BASE		p4_BASE
 # define PRECISION	p4_PRECISION
-# define WORDL_FLAG	p4_WORDL_FLAG
-# define UPPER_CASE	p4_UPPER_CASE
-# define LOWER_CASE	p4_LOWER_CASE
-# define LOWER_CASE_FN	p4_LOWER_CASE_FN
 # define REDEFINED_MSG	p4_REDEFINED_MSG
-# define FLOAT_INPUT	p4_FLOAT_INPUT
 # define RESET_ORDER	p4_RESET_ORDER
 
 typedef p4_Wordl 	Wordl;

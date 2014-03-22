@@ -63,6 +63,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <signal.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -473,7 +474,8 @@ p4_install_signal_handlers (void)
      cont:;
     }
 
-    if (PFE_set.stdio) 
+//    if (PFE_set.stdio) 
+    if (! isatty (STDIN_FILENO))
         return;
     /* else */
 #ifdef SIGTSTP

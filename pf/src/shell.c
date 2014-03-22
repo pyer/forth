@@ -427,14 +427,13 @@ int p4_systemf (const char *s,...)
 
 /* ----------------------------------------------------------------------- */
 /** ARGC ( -- arg-count ) [FTH]
- */
 FCode (pf_argc)
 {
     *--SP = (p4cell)(P4_opt.argc);
 }
+ */
 
 /** ARGV ( arg-n# -- arg-ptr arg-len ) [FTH]
- */
 FCode (pf_argv)
 {
     p4ucell n = *SP++;
@@ -444,6 +443,7 @@ FCode (pf_argv)
     else
         p4_strpush (NULL);
 }
+ */
 
 /** SYSTEM ( command-ptr command-len -- command-exitcode# ) [FTH]
  * run a shell command  (note: embedded systems have no shell)
@@ -487,8 +487,8 @@ P4_LISTWORDS (shell) =
     /** mimics a unix'ish shell-command - =>'PARSE's two filenames/dirname */
 //    P4_SXco ("CP",		p4_cp),
     /** task system hooks */
-    P4_FXco ("ARGC",		pf_argc),
-    P4_FXco ("ARGV",		pf_argv),
+//    P4_FXco ("ARGC",		pf_argc),
+//    P4_FXco ("ARGV",		pf_argv),
     P4_FXco ("SYSTEM",		pf_system),
 };
 P4_COUNTWORDS (shell, "Shell like words");

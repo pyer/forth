@@ -127,9 +127,9 @@ FCode (pf_also)
 {
   int i;
 
-  if (CONTEXT[PFE_set.wordlists - 1])
+  if (CONTEXT[ORDER_LEN - 1])
       p4_throw (P4_ON_SEARCH_OVER);
-  for (i = PFE_set.wordlists; --i > 0;)
+  for (i = ORDER_LEN; --i > 0;)
       CONTEXT[i] = CONTEXT[i - 1];
 }
 
@@ -141,7 +141,7 @@ FCode (pf_get_order)
     Wordl **p;
     p4cell n = 0;
 
-    for (p = &CONTEXT[PFE_set.wordlists]; --p >= CONTEXT;)
+    for (p = &CONTEXT[ORDER_LEN]; --p >= CONTEXT;)
         if (*p) { 
             *--SP = (p4cell)(*p);
             n++;
@@ -184,7 +184,7 @@ p4_make_wordlist (p4char* nfa)
     
     memset( w->thread, 0, sizeof(w->thread) );   /* initialize all threads to empty */
     w->nfa = nfa;               /* set name for the wordlist (if any) */
-    w->flag = WORDL_FLAG;       /* init flags from global flags */
+    w->flag = 0;                /* init flags */
     w->prev = VOC_LINK;         /* chain word list in VOC-LINK */
     VOC_LINK = w;
     w->id = w->prev ? (w->prev->id << 1) : 1;
@@ -253,7 +253,7 @@ p4_charbuf_t* p4_string_comma (const p4_char_t* s, int len)
 FCode (p4_only_RT)
 {
     /* NO BODY_ADDR */
-    memset(CONTEXT, 0, PFE_set.wordlists*sizeof(p4_Wordl*));
+    memset(CONTEXT, 0, ORDER_LEN*sizeof(p4_Wordl*));
     CONTEXT[0] = CURRENT = ONLY;
 }
 
@@ -315,7 +315,7 @@ static void p4_load_into (const p4char* vocname, int vocname_len)
     if (voc)
        return;
     ___ register int i;
-    for (i=PFE_set.wordlists; --i > 0; )
+    for (i=ORDER_LEN; --i > 0; )
     {
 	if (CONTEXT[i] == voc) 
 	{
@@ -555,7 +555,7 @@ FCode_RT (pf_defer_RT)
 FCode (pf_defer)
 {
 //    FX_RUNTIME_HEADER;
-    p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (pf_defer);
     FX_XCOMMA (0); /* <-- leave it blank (may become chain-link later) */
     FX_XCOMMA (0); /* <-- put XT here in fig-mode */
@@ -621,7 +621,7 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	    ___ p4_Semant* semant = ((p4_Semant*(*)()) (void*)(*SP++)) ();
 #         endif
 
-	    p4_header_in(p4_CURRENT);
+	    p4_header_in(CURRENT);
 	    FX_COMMA ( semant->comp );
 	    if (! (semant ->name))
 		semant ->name = (p4_namebuf_t*)( PFE.word.ptr-1 ); 
@@ -633,12 +633,12 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	    break; ____;
 	case p4_RTCO:
 	    ___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
-	    p4_header_in(p4_CURRENT);
+	    p4_header_in(CURRENT);
 	    FX_COMMA ( runtime->comp );
 	    break; ____;
 	case p4_IXCO:         /* these are real primitives which do */
 	case p4_FXCO:         /* not reference an info-block but just */
-	    p4_header_in(p4_CURRENT);        /* the p4code directly */
+	    p4_header_in(CURRENT);        /* the p4code directly */
 	    FX_COMMA ( *SP ); 
 	    P4_INC(SP,p4cell);
 	    break;
@@ -654,13 +654,13 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	    break;
 	case p4_DVAR:
 //          FX_RUNTIME_HEADER;
-            p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+            p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictvar);
 	    FX_COMMA (*SP++);
 	    break;
 	case p4_DCON:
 //          FX_RUNTIME_HEADER;
-            p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+            p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictget);
 	    FX_COMMA (*SP++);
 	    break;
@@ -1069,7 +1069,7 @@ FCode (pf_forget_dp)
     {   
         {   /* delete from search-order */   
             int i;
-            for (i=0; i < PFE_set.wordlists; i++) 
+            for (i=0; i < ORDER_LEN; i++) 
             {
                 if (CONTEXT[i] == VOC_LINK) 
                 {
@@ -1087,17 +1087,17 @@ FCode (pf_forget_dp)
     }
     /* compact search-order */
     { register int i, j;
-      for (i=0, j=0; i < PFE_set.wordlists; i++)
+      for (i=0, j=0; i < ORDER_LEN; i++)
       {
         if (CONTEXT[i]) CONTEXT[j++] = CONTEXT[i];
       }
-      while (j < PFE_set.wordlists) CONTEXT[j++] = NULL;
+      while (j < ORDER_LEN) CONTEXT[j++] = NULL;
 
-      for (i=0, j=0; i < PFE_set.wordlists; i++)
+      for (i=0, j=0; i < ORDER_LEN; i++)
       {
         if (PFE.dforder[i]) PFE.dforder[j++] = PFE.dforder[i];
       }
-      while (j < PFE_set.wordlists) PFE.dforder[j++] = NULL;
+      while (j < ORDER_LEN) PFE.dforder[j++] = NULL;
     }
     /* free dictionary space: */
     DP = (p4char *) new_dp; 
@@ -1161,12 +1161,12 @@ static void pf_create_marker (const p4_char_t* name, p4cell len, p4_Wordl* wordl
      * and we use a nullptr to flag the end of the saved ptrlist
      */
 /*
-    for (i=0; i < PFE_set.wordlists ; i++)
-        if (p4_CONTEXT[i]) 
-            FX_PCOMMA (p4_CONTEXT[i]); 
+    for (i=0; i < ORDER_LEN ; i++)
+        if (CONTEXT[i]) 
+            FX_PCOMMA (CONTEXT[i]); 
     FX_UCOMMA (0);
 
-    for (i=0; i < PFE_set.wordlists ; i++)
+    for (i=0; i < ORDER_LEN ; i++)
         if (p4_DFORDER[i]) 
             FX_PCOMMA (p4_DFORDER[i]); 
     FX_UCOMMA (0);
@@ -1205,18 +1205,18 @@ FCode_RT (pf_marker_RT)
     forget_address =       (*RT++); 
     p4_FENCE =   (p4char*) (*RT++);
     p4_LAST =    (p4char*) (*RT++);
-    p4_ONLY =     (Wordl*) (*RT++);
-    p4_CURRENT =  (Wordl*) (*RT++);
-    for (i=0; i < PFE_set.wordlists ; i++)
+    ONLY =     (Wordl*) (*RT++);
+    CURRENT =  (Wordl*) (*RT++);
+    for (i=0; i < ORDER_LEN ; i++)
     {
         if (! *RT) 
-            p4_CONTEXT[i] = 0; /* no RT++ !! */
+            CONTEXT[i] = 0; /* no RT++ !! */
         else
-            p4_CONTEXT[i] = (Wordl*) (*RT++);
+            CONTEXT[i] = (Wordl*) (*RT++);
     }
     while (*RT) RT++;
     RT++; /* skip null */
-    for (i=0; i < PFE_set.wordlists ; i++)
+    for (i=0; i < ORDER_LEN ; i++)
     {
         if (! *RT)
             p4_DFORDER[i] = 0; /* no RT++ !! */
@@ -1275,7 +1275,7 @@ FCode_RT (pf_vocabulary_RT)
  */
 FCode (pf_vocabulary)
 {
-    p4_header_in(p4_CURRENT);
+    p4_header_in(CURRENT);
     FX_RUNTIME1(pf_vocabulary);
     p4_make_wordlist (LAST);
 }

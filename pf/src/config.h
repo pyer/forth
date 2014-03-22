@@ -135,14 +135,6 @@ struct p4_Thread* p4TH;
 #define P4_STDC 1               /* some words from the C-language family */
 #endif
 
-#ifndef PFE_USE_QUOTED_PARSE
-# if defined _K12_SOURCE || defined PFE_WITH_FIG
-# define PFE_USE_QUOTED_PARSE 0
-# else
-# define PFE_USE_QUOTED_PARSE 1
-# endif
-#endif
-
 #if defined PFE_HAVE_FTELLO && defined PFE_HAVE_FSEEKO
 #define PFE_USE_FSEEKO
 #define _p4_ftello ftello

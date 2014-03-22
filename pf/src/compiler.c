@@ -277,7 +277,7 @@ p4_Runtime2 pf_buildsRuntime;
 FCode (pf_builds)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_builds);
     FX_RCOMMA (pf_buildsRuntime.exec[0]);
     FX_RCOMMA (0);
@@ -389,7 +389,7 @@ FCode (pf_colon)
 {
     FX (pf_Q_exec);
 //  FX_RUNTIME_HEADER;
-    p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
     P4_NAMEFLAGS(p4_LAST) |= P4xSMUDGED;
     //FX_RUNTIME1 (pf_colon);
     FX_RCOMMA (pf_colonRuntime.exec[0]);
@@ -570,7 +570,7 @@ p4_Runtime2 pf_constantRuntime;
 FCode (pf_constant)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_constant);
     FX_RCOMMA (pf_constantRuntime.exec[0]);
     FX_VCOMMA (*SP++);
@@ -603,7 +603,7 @@ p4_Runtime2 pf_valueRuntime;
 FCode (pf_value)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_value);
     FX_RCOMMA (pf_valueRuntime.exec[0]);
     FX_VCOMMA (*SP++);
@@ -628,7 +628,7 @@ p4_Runtime2 pf_variableRuntime;
 FCode (pf_variable)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
     //FX_RUNTIME1(pf_variable);
     FX_RCOMMA (pf_variableRuntime.exec[0]);
     FX_VCOMMA (0);

@@ -392,7 +392,7 @@ p4_Runtime2 pf_exception_stringRuntime;
 FCode (pf_exception_string)
 {
 //    FX_RUNTIME_HEADER;
-    p4_header_in(p4_CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
 //    FX_RUNTIME1(p4_exception_string);
     FX_RCOMMA (pf_exception_stringRuntime.exec[0]);
     ___ p4cell id = *SP++;

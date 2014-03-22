@@ -284,8 +284,6 @@ int pf_more_Q (void)
     static char help[] = "\r[next line=<return>, next page=<space>, quit=q] ";
 
     pf_cr_();
-    if (P4_opt.isnotatty)
-        return 0;
     if (lines < more)
         return 0;
     lines = 0;

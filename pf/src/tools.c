@@ -163,11 +163,9 @@ FCode (pf_dot_memory)
 FCode (pf_dot_status)
 {
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
-    pf_outf ("\nmaximum wordlists in search order %u", P4_opt.wordlists);
+    pf_outf ("\nmaximum wordlists in search order %u", ORDER_LEN);
 
 #  define flag(X) ((X) ? "ON " : "OFF")
-    pf_outf ("\n      CASELESS %s", flag (LOWER_CASE));
-    pf_outf ("\nUPPER-CASE-IS  %s", flag (UPPER_CASE));
 #  ifdef P4_REGTH
     pf_outs ("           REGTH="P4_REGTH);
 #  else
@@ -188,7 +186,6 @@ FCode (pf_dot_status)
 #  elif defined PFE_SBR_CALL_THREADING
     pf_outs ("           REGRP (hardware)");
 #  endif
-    pf_outf ("\nFLOAT-INPUT    %s", flag (FLOAT_INPUT));
 #  if defined PFE_REGFP
     pf_outs ("           REGFP="P4_REGFP);
 #  endif

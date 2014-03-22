@@ -45,9 +45,6 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused);
 #define ___ {
 #define ____ }
 
-#ifndef ORDER_LEN               /* USER-CONFIG: */
-#define ORDER_LEN 64            /* maximum wordlists in search order */
-#endif
 #ifndef HISTORY_SIZE	        /* USER-CONFIG: */
 #define HISTORY_SIZE	0x1000  /* size of command line history buffer */
 #endif
@@ -92,35 +89,28 @@ void pf_default_options(p4_Session* set)
     set->opt.dp = set->opt.dict;
     set->opt.last = 0;
     set->opt.dictlimit = ((p4char*)set) + len;
+/*
 
     set->argv = 0;
     set->argc = 0;
     set->optv = 0;
     set->optc = 0;
-    set->boot_name = 0;
-    set->isnotatty = 0;
-    set->stdio = 0;
-    set->caps_on = 0;
-    set->find_any_case = 1;
+*/
+//    set->boot_name = 0;
+//    set->isnotatty = 0;
+//    set->stdio = 0;
+//    set->caps_on = 0;
+//    set->find_any_case = 1;
 //    set->lower_case_fn = 1;
-    set->upper_case_on = 1;
+//    set->upper_case_on = 1;
+/*
 #  ifndef P4_NO_FP
     set->float_input = 1;
 #  else
     set->float_input = 0;
 #  endif
     set->debug = 0;
-//    set->cols = TEXT_COLS;
-//    set->rows = TEXT_ROWS;
-    set->total_size = TOTAL_SIZE;
-    /* TOTAL_SIZE dependent defaults are moved to dict_allocate */
-    //set->stack_size = (set->total_size / 32 + 256)  / sizeof(p4cell); 
-    set->stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
-    //set->ret_stack_size = (set->total_size / 64 + 256) / sizeof(p4cell);
-    set->ret_stack_size = (TOTAL_SIZE / 64 + 256) / sizeof(p4cell);
-    //set->float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
-    set->float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
-
+*/
 }
 
 /************************************************************************/
@@ -183,8 +173,8 @@ void abort_system (void)
          * load the => DEFAULT-ORDER into the current search => ORDER
          * - this is implicitly done when a trap is encountered.
          */
-        memcpy (p4_CONTEXT, p4_DFORDER, PFE_set.wordlists);
-        p4_CURRENT = p4_DFCURRENT;
+        memcpy (CONTEXT, p4_DFORDER, ORDER_LEN);
+        CURRENT = p4_DFCURRENT;
     }
 
     BASE = 10;
@@ -210,8 +200,8 @@ FCode (p4_bye)
  */
 FCode (pf_default_order)
 {
-    memcpy (p4_DFORDER, p4_CONTEXT, PFE_set.wordlists);
-    p4_DFCURRENT = p4_CURRENT;
+    memcpy (p4_DFORDER, CONTEXT, ORDER_LEN);
+    p4_DFCURRENT = CURRENT;
 }
 
 /************************************************************************/
@@ -263,10 +253,10 @@ void pf_cold_system(void)
     BASE = 10;
     p4_DPL = -1;
     PRECISION = 6;
-    WORDL_FLAG = 0; /* implicitly enables HASHing */
-    WORDL_FLAG |= WORDL_NOCASE;
-    WORDL_FLAG |= WORDL_UPPER_CASE;
-    FLOAT_INPUT = P4_opt.float_input;
+//    WORDL_FLAG = 0; /* implicitly enables HASHing */
+//    WORDL_FLAG |= WORDL_NOCASE;
+//    WORDL_FLAG |= WORDL_UPPER_CASE;
+//    FLOAT_INPUT = P4_opt.float_input;
 
 //    PFE.local = (char (*)[P4_LOCALS]) PFE.stack; /* locals are stored as zstrings */
 
@@ -335,6 +325,11 @@ void pf_boot_system(void)
  */
 int pf_init_system (p4_Thread* th) /* main_init */
 {
+    long int total_size = TOTAL_SIZE;
+    long int stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
+    long int ret_stack_size = (TOTAL_SIZE / 64 + 256) / sizeof(p4cell);
+//    long int float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
+
     setlocale (LC_ALL, "C");
 #  if defined SYS_EMX
     _control87 (EM_DENORMAL | EM_INEXACT, MCW_EM);
@@ -343,10 +338,6 @@ int pf_init_system (p4_Thread* th) /* main_init */
     /* ............................................................*/
     p4TH = th;
 
-#  if !defined __WATCOMC__
-    if (! isatty (STDIN_FILENO))
-        PFE_set.stdio = 1;
-#  endif
 /*
     if (PFE_set.stdio)
         PFE_set.isnotatty = P4_TTY_ISPIPE;
@@ -375,15 +366,14 @@ int pf_init_system (p4_Thread* th) /* main_init */
 
     if (! dictfence)
     {
-        dictfence = calloc (1, (size_t) PFE_set.total_size);
+        dictfence = calloc (1, (size_t) total_size);
         if (dictfence)
         {
             printf("[%p] newmem at %p len %lu\n",
-		      p4TH, dictfence, PFE_set.total_size);
+		      p4TH, dictfence, total_size);
         }else{
             printf("[%p] FAILED to alloc any base memory (len %lu): %s\n",
-		      p4TH, PFE_set.total_size,
-		      strerror(errno));
+		      p4TH, total_size, strerror(errno));
             puts ("ERROR: out of memory");
 	    exitcode = 6;
 	    p4_longjmp_exit ();
@@ -393,7 +383,7 @@ int pf_init_system (p4_Thread* th) /* main_init */
     /* ________________ initialize dictionary _____________ */
 
     PFE.dict = dictfence;
-    PFE.dictlimit = PFE.dict + PFE_set.total_size;
+    PFE.dictlimit = PFE.dict + total_size;
 
     p4_dict_allocate (HISTORY_SIZE, sizeof(char), sizeof(char),
                       (void**) & PFE.history, (void**) & PFE.history_top);
@@ -401,17 +391,16 @@ int pf_init_system (p4_Thread* th) /* main_init */
                       (void**) & PFE.files, (void**) & PFE.files_top);
 //    p4_dict_allocate (TIB_SIZE, sizeof(char), sizeof(char),
 //                      (void**) & PFE.tib, (void**) & PFE.tib_end);
-    p4_dict_allocate (PFE_set.ret_stack_size, sizeof(p4xt*),
+    p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.rstack, (void**) & PFE.r0);
-    p4_dict_allocate (PFE_set.stack_size, sizeof(p4cell),
+    p4_dict_allocate (stack_size, sizeof(p4cell),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.stack, (void**) & PFE.s0);
 
-    PFE_set.wordlists = ORDER_LEN;
-    p4_dict_allocate (PFE_set.wordlists+1, sizeof(void*), sizeof(void*),
+    p4_dict_allocate (ORDER_LEN+1, sizeof(void*), sizeof(void*),
                       (void**) & PFE.context, (void**) 0);
-    p4_dict_allocate (PFE_set.wordlists, sizeof(void*), sizeof(void*),
+    p4_dict_allocate (ORDER_LEN, sizeof(void*), sizeof(void*),
                       (void**) & PFE.dforder, (void**) 0);
 
     if (PFE.dictlimit < PFE.dict + MIN_PAD + MIN_HOLD + 0x4000)
