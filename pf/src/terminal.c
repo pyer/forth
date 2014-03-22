@@ -31,7 +31,7 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 /************************************************************************/
 int cols  = 144;
 int rows  = 39;
-int outs  = 0;
+int out   = 0;
 int lines = 0;
 int more  = 39;
 /************************************************************************/
@@ -55,7 +55,7 @@ FCode (pf_rows)
 
 int get_outs(void)
 {
-    return outs;
+    return out;
 }
 
 /************************************************************************/
@@ -84,7 +84,7 @@ rows = 39;
 }
 
 /************************************************************************/
-static void pf_putc(char c) { fputc(c, stdout); PFE.out++; }
+static void pf_putc(char c) { fputc(c, stdout); out++; }
 static void pf_flush(void) { fflush (stdout); }
 static void pf_puts(const char* s) { fputs (s, stdout); }
 
@@ -192,7 +192,7 @@ FCode (pf_cr)
 {
     pf_putc('\n');
     pf_flush();
-    outs = 0;
+    out = 0;
     lines++;
 }
 
@@ -256,7 +256,7 @@ FCode(pf_spaces)
  */
 void pf_tab (int n)
 {
-    pf_emits (n - outs % n, ' ');
+    pf_emits (n - out % n, ' ');
 }
 
 FCode (pf_tab)

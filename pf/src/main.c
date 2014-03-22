@@ -54,7 +54,10 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused);
 /* minimum free space in PAD */
 #define MIN_PAD 	0x400
 
-void pf_include(const char *name, int len);
+/* if true: reset search order on ABORT */
+#define RESET_ORDER 	P4_TRUE
+/************************************************************************/
+
 int p4_close_file (p4_File *fid);
 FCode    (p4_only_RT);
 #define p4_longjmp_exit()	(p4_longjmp_loop('X'))
@@ -72,45 +75,6 @@ jmp_buf loop_jump;       /* QUIT and ABORT do a THROW which longjmp() */
 void p4_longjmp_loop(int arg)
 {
     longjmp (PFE.loop, arg);
-}
-
-/**
- * fill the session struct with precompiled options
- */
-void pf_default_options(p4_Session* set)
-{
-    if (! set) return;
-    int len = sizeof(*set);
-
-    memset(set, 0, len);
-
-    /* newstyle option-ext support */
-    set->opt.dict = set->opt.space;
-    set->opt.dp = set->opt.dict;
-    set->opt.last = 0;
-    set->opt.dictlimit = ((p4char*)set) + len;
-/*
-
-    set->argv = 0;
-    set->argc = 0;
-    set->optv = 0;
-    set->optc = 0;
-*/
-//    set->boot_name = 0;
-//    set->isnotatty = 0;
-//    set->stdio = 0;
-//    set->caps_on = 0;
-//    set->find_any_case = 1;
-//    set->lower_case_fn = 1;
-//    set->upper_case_on = 1;
-/*
-#  ifndef P4_NO_FP
-    set->float_input = 1;
-#  else
-    set->float_input = 0;
-#  endif
-    set->debug = 0;
-*/
 }
 
 /************************************************************************/
@@ -155,7 +119,6 @@ void quit_system (void)
     PFE.rp = PFE.r0;		/* return stack to its bottom */
     STATE = P4_FALSE;		/* interpreting now */
     PFE.catchframe = NULL;	/* and no exceptions to be caught */
-//    PFE.debugging = 0;          /* turn off debugger */
     PFE.execute = pf_normal_execute;
 }
 
@@ -165,10 +128,8 @@ void quit_system (void)
  */
 void abort_system (void)
 {
-    PFE.sp = PFE.s0;				/* stacks */
-//    if (PFE.abort[2]) { (PFE.abort[2]) (FX_VOID); } /* -> floating */
-//    if (PFE.abort[3]) { (PFE.abort[3]) (FX_VOID); } /* -> dstrings */
-    if (p4_RESET_ORDER)  {
+    PFE.sp = PFE.s0;		/* stacks */
+    if (RESET_ORDER) {
         /* reset search order:
          * load the => DEFAULT-ORDER into the current search => ORDER
          * - this is implicitly done when a trap is encountered.
@@ -288,7 +249,6 @@ void pf_cold_system(void)
 void pf_boot_system(void)
 {
     /* Action of COLD ABORT and QUIT, but don't enter the interactive QUIT */
-    RESET_ORDER = P4_TRUE;
     REDEFINED_MSG = P4_FALSE;
     abort_system ();
     quit_system ();
@@ -428,11 +388,8 @@ int main (int argc, char** argv)
     char buffer[256];
     int len;
     p4_Thread* thread = (p4_Thread*) memory;
-    p4_Session session;
   
-    pf_default_options(&session);
     memset (thread, 0, sizeof(p4_Thread));
-    thread->set = &session;
     pf_init_system(thread);
     exitcode = 0;
     switch (setjmp (thread->loop))

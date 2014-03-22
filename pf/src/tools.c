@@ -174,7 +174,6 @@ FCode (pf_dot_status)
 #  ifdef P4_REGSP
     pf_outs ("           REGSP="P4_REGSP);
 #  endif
-    pf_outf ("\nRESET-ORDER-IS %s", flag (RESET_ORDER));
 #  ifdef P4_REGIP
     pf_outs ("           REGIP="P4_REGIP);
 #  elif defined PFE_SBR_CALL_THREADING

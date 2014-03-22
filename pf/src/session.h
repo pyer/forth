@@ -8,7 +8,6 @@
    your OS isn`t multi-threaded, what the heck, use this feature!
 */
 
-typedef struct p4_Session 	p4_Session;
 typedef struct p4_Thread	p4_Thread;
 
 typedef struct _p4_term_struct  p4_term_struct;
@@ -50,44 +49,6 @@ struct p4_Exception
     char const * name;
 };
 
-
-struct p4_Session
-{
-//    int argc;
-//    char const ** argv;
-//    unsigned    isnotatty:2,	/* running in canonical mode */
-//	        stdio:1,	/* standard input isn't-tty: work as filter */
-//	        caps_on:1,	/* exchange lower and upper case chars */
-//	        find_any_case:1,/* make case-insensitive find default */
-//	        lower_case_fn:1,/* convert file names to lower case? */
-//	        float_input:1,	/* disables floating point input when false */
-//		x_debug:1;	/* enable a few more outputs */
-//    int	cols, rows;	/* size of screen */
-/*
-    p4ucelll	total_size;
-    p4ucelll	stack_size;
-    p4ucelll	ret_stack_size;
-    p4ucelll	float_stack_size;
-*/
-//    char ** boot_name;          /* points to argv[0] usually... */
-//    char const** optv;
-//    p4ucell     optc;
-    unsigned    wordlists;       /* p4ucell might be 64bit (16bit is okay) */
-//    void*       modules;         /* p4Words* : dl-internal / dl-ext */
-    p4ucell     padding[4];      /* padding cells for binary compatibility */
-
-    /* newstyle options support via option-ext */
-    struct
-    {
-        p4_namebuf_t* last;
-        p4_namebuf_t* dp;
-        p4_byte_t* dict;
-        p4_byte_t* dictlimit;
-        p4_byte_t  space[284]; /* atleast a few headers... */
-    } opt; /* must be last in this structure !! */
-};
-
-
 struct p4_Thread
 {
     p4_byte_t *dp;		/* actual top of the dictionary */
@@ -111,17 +72,11 @@ struct p4_Thread
     p4xt      wp;    /* speed up the inner interpreter */
     p4cell*   sp; /* the stack pointer */
     p4xcode** rp; /* the return stack pointer */
-//    p4cell*   lp; /* the pointer to local variables */
     double*   fp; /* the floating point stack pointer */
 
 /* jmp_buf */
     jmp_buf loop;       /* QUIT and ABORT do a THROW which longjmp() */
        			   /* here thus C-stack gets cleaned up too */
-/*Options*/
-    p4_Session* set;        /* contains cpu-pointers */
-#define P4_opt  (*PFE.set)
-#define PFE_set (*PFE.set)
-
 /*Dict*/
     p4_byte_t *fence;		/* can't forget below that address */
     p4_namebuf_t *last;		/* NFA of most recently CREATEd header */
@@ -138,8 +93,8 @@ struct p4_Thread
     p4_Except *catchframe;	/* links to chain of CATCHed words */
 
     p4ucell to_in;		/* input parsing position */
-    p4ucell scr;		/* latest LISTed block number */
-    p4cell out;			/* current output column on screen */
+//    p4ucell scr;		/* latest LISTed block number */
+//    p4cell out;			/* current output column on screen */
     p4cell state;		/* interpreting (0) or compiling (-1) */
     p4cell *csp;		/* compiler security, saves sp here */
     p4ucell base;		/* of number i/o conversion */
@@ -154,7 +109,6 @@ struct p4_Thread
 //    p4cell lower_case_fn;	/* do tolower() on file names */
     p4cell redefined_msg;	/* no `"xxx" is redefined' msg if false */
 //    p4cell float_input;		/* don't try floating pt input when false */
-    p4cell reset_order;		/* if true: reset search order on ABORT */
 
     p4_File *stdIn;		/* C-library standard files */
     p4_File *stdOut;		/* mapped to Forth-files */
@@ -248,7 +202,6 @@ struct p4_Thread
 # define p4_BASE		(PFE.base)
 # define p4_PRECISION		(PFE.precision)
 # define p4_REDEFINED_MSG	(PFE.redefined_msg)
-# define p4_RESET_ORDER		(PFE.reset_order)
 
 # define SCR		p4_SCR
 # define STATE		p4_STATE
@@ -256,7 +209,6 @@ struct p4_Thread
 # define BASE		p4_BASE
 # define PRECISION	p4_PRECISION
 # define REDEFINED_MSG	p4_REDEFINED_MSG
-# define RESET_ORDER	p4_RESET_ORDER
 
 typedef p4_Wordl 	Wordl;
 typedef p4_File 	File;
