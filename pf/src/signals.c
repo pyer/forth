@@ -344,7 +344,7 @@ getinfo (int sig)
     return i;
 }
 
-typedef PFE_RETSIGTYPE (*_sighandler_t)(int);
+typedef void (*_sighandler_t)(int);
 
 static void
 sig_handler (int sig)		/* Signal handler for all signals */
@@ -367,17 +367,9 @@ sig_handler (int sig)		/* Signal handler for all signals */
         s = &siginfo[getinfo (sig)];
         if (s->hdl) {
 	    puts("forth-signal callback does not work!"); /* FIXME: */
-#         if 0
-            p4_call (s->hdl);	/* a p4sys.handled signal */
-#         elif defined PFE_SBR_CALL_THREADING
-	    p4_sbr_call (s->hdl);
-#         elif defined PFE_CALL_THREADING
-	    p4_call (s->hdl);  /* fixme */
-#         else
 	    /* assume that s->hdl is a colon word */
             (*--PFE.rp) = PFE.ip;
 	    PFE.ip = (p4xcode *) P4_TO_BODY (s->hdl);
-#         endif
         } else {
 	    ___
             const char* msg = s->msg;

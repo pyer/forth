@@ -284,16 +284,11 @@ FCode (pf_builds)
 }
 P4RUNTIMES1_(pf_builds, pf_builds_RT, 0, pf_builds_RT_SEE);
 
-# ifdef PFE_SBR_CALL_THREADING
-static int sizeof_PFE_SBR_COMPILE_EXIT = 0;
-#endif
-
 /** "(DOES>)" ( -- pfa ) [HIDDEN]
  * execution compiled by => DOES>
  */
 FCode_XE (pf_does_execution)
 {
-#  if ! defined PFE_SBR_CALL_THREADING
     p4xt xt;
     if (! LAST)
         p4_throw (P4_ON_ARG_TYPE);
@@ -302,19 +297,6 @@ FCode_XE (pf_does_execution)
     P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
     *P4_TO_DOES_CODE(xt) = PFE.ip; /* into CFA[1] */
     FX (pf_semicolon_execution);   /* double-EXIT */
-#  else
-    /* in SBR-threading, a RET should be compiled after (DOES) */
-    p4xt xt;
-    FX_NEW_IP_WORK; /* early because gcc 4.2.3 uses %eax even if allocated ! */
-    if (! LAST)
-        p4_throw (P4_ON_ARG_TYPE);
-
-    xt = pf_name_from (LAST);
-    P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
-    p4char* ip = FX_NEW_IP_CHAR; ip += sizeof_PFE_SBR_COMPILE_EXIT;
-    *P4_TO_DOES_CODE(xt) = (p4xcode*) (ip);
-    FX_NEW_IP_DONE;
-#  endif
 }
 
 /** "DOES>" ( -- does* ) [ANS] [END] [NEW]

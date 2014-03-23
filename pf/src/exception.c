@@ -40,6 +40,8 @@
 #define ___ {
 #define ____ }
 
+p4cell next_exception = 0;
+p4_Exception* exception_link;
 
 void * p4_save_input (void *p);
 void * p4_restore_input (void *p);
@@ -183,7 +185,7 @@ throw_msg (int id, char *msg)
     else if (-32767 < id && id <= -2048)
     {
 	/* search the exception_link for our id */
-	p4_Exception* expt = PFE.exception_link;
+	p4_Exception* expt = exception_link;
 	strcpy (msg, "module-specific error-condition");
 	while (expt)
 	{
@@ -253,12 +255,6 @@ p4_throws (int id, const p4_char_t* description, int len)
     p4_Except *frame = PFE.catchframe;
     char msg[256];
     char* addr = (char*) description;
-
-    if (PFE.throw_cleanup)
-    {
-        PFE.throw_cleanup ();
-        PFE.throw_cleanup = NULL;
-    }
 
     if (frame && frame->magic == P4_EXCEPTION_MAGIC)
     {
@@ -342,7 +338,7 @@ FCode (p4_throw)
  * throw - cleanup some things and go back to the QUIT routine
  : ABORT -1 THROW ;
  */
-FCode (p4_abort)
+FCode (pf_abort)
 {
     p4_throw (P4_ON_ABORT);
 }
@@ -352,7 +348,7 @@ FCode (p4_abort)
  */ 
 #define P4_CHARBUF_LEN(X)     (*((p4char*)(X)))
 #define P4_CHARBUF_PTR(X)     (((p4char*)(X))+1)
-FCode_XE (p4_abort_quote_execution)
+FCode_XE (pf_abort_quote_execution)
 {
     p4_charbuf_t *p = (p4_char_t *) IP;
     FX_SKIP_STRING;
@@ -363,17 +359,13 @@ FCode_XE (p4_abort_quote_execution)
  * throw like => ABORT but print an additional error-message
  * to stdout telling what has happened.
  */
-FCode (p4_abort_quote)
+FCode (pf_abort_quote)
 {
-    FX_COMPILE (p4_abort_quote);
-//    FX (p4_parse_comma_quote);
+    FX_COMPILE (pf_abort_quote);
+    FX (pf_parse_comma_quote);
 }
-P4COMPILES (p4_abort_quote, p4_abort_quote_execution,
+P4COMPILES (pf_abort_quote, pf_abort_quote_execution,
   P4_SKIPS_STRING, P4_DEFAULT_STYLE);
-
-/** NEXT-EXCEPTION ( -- throw#!* ) [EXT]
- *  used for runtime allocation of a new throw id.
- */
 
 /* ((EXCEPTION-STRING)) ( -- zstring* id )
  */ 
@@ -397,8 +389,9 @@ FCode (pf_exception_string)
     FX_RCOMMA (pf_exception_stringRuntime.exec[0]);
     ___ p4cell id = *SP++;
     p4_Exception* expt = (void*) DP; DP += sizeof(*expt);
-    if (id < PFE.next_exception) PFE.next_exception = id - 1;
-    expt->next = PFE.exception_link; PFE.exception_link = expt;
+    if (id < next_exception)
+         next_exception = id - 1;
+    expt->next = exception_link; exception_link = expt;
     expt->name = (char*) DP; expt->id = id; ____;
     pf_parse_word(')'); /* PARSE-NOHERE-NOTHROW */
     memcpy (DP, PFE.word.ptr, PFE.word.len);
@@ -411,15 +404,16 @@ P4_LISTWORDS (exception) =
 //    P4_INTO ("[ANS]", 0),
     P4_FXco ("CATCH",			p4_catch),
     P4_FXco ("THROW",			p4_throw),
-    P4_FXco ("ABORT",			p4_abort),
-    P4_SXco ("ABORT\"",			p4_abort_quote),
-
+    P4_FXco ("ABORT",			pf_abort),
+    P4_SXco ("ABORT\"",			pf_abort_quote),
+/*
     P4_DVAR ("NEXT-EXCEPTION", next_exception),
     P4_EXPT ("no or not matching binary image",      P4_ON_NO_BINARY),
     P4_EXPT ("binary image too big",                 P4_ON_BIN_TOO_BIG),
     P4_EXPT ("out of memory",                        P4_ON_OUT_OF_MEMORY),
     P4_EXPT ("index out of range",                   P4_ON_INDEX_RANGE),
     P4_EXPT ("compile failed (call from bad point)", P4_ON_COMPILE_FAIL),
+*/
 };
 P4_COUNTWORDS (exception, "Exception");
 

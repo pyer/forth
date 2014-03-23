@@ -400,11 +400,6 @@ p4cell * pf_to_body (p4xt xt)
 {
     if (! xt) return P4_TO_BODY (xt);
 
-/*
-    if (p4_LogMask & P4_LOG_DEBUG)
-        if ((p4char*)xt < PFE.dict || PFE.dictlimit < (p4char*)xt)
-            p4_abortq ("xt in '>BODY' out of range (not in my dict space)");
-*/
     if (P4_XT_VALUE(xt) == FX_GET_RT (pf_dictvar) || 
 	P4_XT_VALUE(xt) == FX_GET_RT (pf_dictget)) 
         return ((p4cell*)( (char*)p4TH + P4_TO_BODY(xt)[0] ));
@@ -448,12 +443,12 @@ p4_Semant * p4_to_semant (p4xt xt)
 # undef TO_SEMANT
 }
 
-p4_namebuf_t** p4_name_to_link (const p4_namebuf_t* p)
+p4char** pf_name_to_link (const p4char* p)
 {
 #  ifdef PFE_WITH_ZNAME
-    return (p4_namechar_t **) pf_aligned ((p4cell) (strchr((const char*) NAMEPTR(p), '\0')+1) );
+    return (p4char **) pf_aligned ((p4cell) (strchr((const char*) NAMEPTR(p), '\0')+1) );
 # else
-    return (p4_namechar_t **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
+    return (p4char **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
 # endif
 }
 
@@ -461,7 +456,7 @@ p4char * pf_to_name (p4xt xt)
 {
     /* cfa to lfa */
     p4_Semant *s = p4_to_semant (xt);
-    p4_namebuf_t ** cfa = (s ? p4_name_to_link (s->name) : (p4_namebuf_t**)( xt - 1 )); 
+    p4_namebuf_t ** cfa = (s ? pf_name_to_link (s->name) : (p4_namebuf_t**)( xt - 1 )); 
     /* cfa to lfa
      * scan backward for count byte preceeding name of definition
      * returns pointer to count byte of name field or NULL
@@ -523,7 +518,7 @@ FCode (pf_to_name)
  */
 p4xt pf_name_from (const p4_namebuf_t *p)
 {
-    p4xt xt = P4_LINK_FROM (p4_name_to_link (p));
+    p4xt xt = P4_LINK_FROM (pf_name_to_link (p));
     return xt;
 }
 
@@ -563,7 +558,6 @@ FCode (pf_defer)
 P4RUNTIME1(pf_defer, pf_defer_RT);
     
 /* ------------------------------------------------------------------- */
-void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused);
 
 static FCode (p4_load_words)
 {
@@ -693,330 +687,6 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 }
 
 /* ------------------------------------------------------------------- */
-
-#ifdef _export
-extern p4xcode* p4_compile_comma (p4xcode* at, p4xt);
-extern p4xcode* p4_compile_xcode (p4xcode* at, p4xcode);
-extern p4xcode* p4_compile_xcode_CODE (p4xcode* at, p4xcode);
-extern p4xcode* p4_compile_xcode_BODY (p4xcode* at, p4xcode, p4cell*);
-#endif
-
-# ifdef PFE_CALL_THREADING
-typedef struct { const char* name; const p4xcode xcode; } const loader_t;
-static loader_t * loader (p4char c)
-{
-    static loader_t trampoline = { "trampoline", 0 };
-    static loader_t primitive = { "primitive", 0 };
-    static loader_t compiling = { "compiling-prim", 0 };
-    static loader_t creating =  { "creating-prim", 0 };
-    static loader_t createdW = { "created-word", 0 };
-    static loader_t vocabulary = { "vocabulary", PFX (pf_vocabulary_RT) };
-    static loader_t dictvar = { "system-variable", PFX(pf_dictvar_RT) };
-    static loader_t dictget = { "system-constant", PFX(pf_dictget_RT) };
-    static loader_t valuevar = { "valuevar", PFX(pf_value_RT) };
-    static loader_t variable = { "variable", PFX(pf_variable_RT) };
-    static loader_t constant = { "constant", PFX(pf_constant_RT) };
-    static loader_t obsoleted = { "obsolete-word", PFX(p4_obsoleted_RT) };
-    static loader_t unknown = { "unknown-typecode", 0 };
-
-    switch (c)
-    {
-    case 0:	  return & trampoline;
-    case p4_FXCO:
-    case p4_IXCO: 
-    case p4_XXCO: return & primitive;
-    case p4_SXCO: return & compiling;
-    case p4_RTCO: return & creating;
-    case p4_ITEM: return & createdW;
-    case p4_IVOC: 
-    case p4_OVOC: return & vocabulary;
-    case p4_DVAR: return & dictvar;
-    case p4_DCON: return & dictget;
-    case p4_OVAR: 
-    case p4_IVAR: return & variable;
-    case p4_OVAL: 
-    case p4_IVAL: return & valuevar;
-    case p4_OCON: 
-    case p4_ICON: return & constant;
-    case p4_iOLD: 
-    case p4_xOLD: return & obsoleted ;
-    default:	  return & unknown;
-    }
-}
-
-p4xcode* p4_compile_xcode(p4xcode* at, p4code code)
-{
-    FX_COMPILE1_CALL (at, code);
-    return at;
-}
-
-p4xcode* p4_compile_xcode_BODY(p4xcode* at, p4code code, p4cell* body)
-{
-    FX_ARG_BODY_ADDR (at, body);
-    FX_COMPILE1_CALL (at, code);
-    FX_PUT_BODY_ADDR (at, body);
-    return at;
-}
-
-p4xcode* p4_compile_xcode_CODE(p4xcode* at, p4code code)
-{
-    FX_ARG_CODE_ADDR (at);
-    FX_COMPILE1_CALL (at, code);
-    FX_PUT_CODE_ADDR (at);
-    return at;
-}
-
-/* the const here will hint where possibly sth. would write to code-mem */
-const p4xcode* p4_to_code(p4xt xt)
-{
-    static p4xcode vocabulary = PFX(pf_vocabulary_RT);
-    static p4xcode dictvar =    PFX(pf_dictvar_RT);
-    static p4xcode dictget =    PFX(pf_dictget_RT);
-    static p4xcode value =      PFX(pf_value_RT);
-    static p4xcode variable =   PFX(pf_variable_RT);
-    static p4xcode constant =   PFX(pf_constant_RT);
-    static p4xcode obsoleted =  PFX(p4_obsoleted_RT);
-
-    switch (*xt->type->def)
-    {
-    case 0:        /* the "" string indicates a trampoline */
-    case p4_NEST:  /* a trampoline compiled by : ... ; */
-    case p4_DTOR:
-    case p4_FXCO:
-    case p4_IXCO:
-    case p4_XXCO:	return & xt->word->ptr;
-    case p4_SXCO:	return & ((p4_Semant*)xt->word->ptr)->comp;
-    case p4_RTCO:	return & ((p4_Runtime2*)xt->word->ptr)->comp;
-    case p4_ITEM:	return & xt->call->exec[0];
-    case p4_IVOC:
-    case p4_OVOC:	return & vocabulary;
-    case p4_DVAR:	return & dictvar ;
-    case p4_DCON:	return & dictget ;
-    case p4_OVAR:
-    case p4_IVAR:	return & variable ;
-    case p4_OVAL:
-    case p4_IVAL:	return & value ;
-    case p4_OCON:
-    case p4_ICON:	return & constant ;
-    case p4_iOLD:
-    case p4_xOLD:	return & obsoleted;
-    default:
-	pf_outf("ERROR: <!unknown execution code!(%c:%s)>", 
-                  *xt->type->def, loader(*xt->type->def)->name);
-	/* not yet supported */
-	return 0;
-    }
-    /* unreachable */
-}
-
-
-
-/* simplest form of compilation */
-p4xcode* p4_compile_comma(p4xcode* at, p4xt xt)
-{
-    switch (*xt->type->def)
-    {
-    case 0: /* the "" string indicates a trampoline */
-    case p4_FXCO:
-    case p4_IXCO:
-    case p4_XXCO:
-	return p4_compile_xcode (at,xt->word->ptr);
-    case p4_SXCO:
-	return p4_compile_xcode (at,((p4_Semant*)xt->word->ptr)->comp);
-    case p4_RTCO:
-	return p4_compile_xcode (at,((p4_Runtime2*)xt->word->ptr)->comp);
-    case p4_ITEM:
-	if (! xt->call->flag & P4_ONLY_CODE1) 
-	    return p4_compile_xcode_BODY (at,xt->call->exec[0],P4_TO_BODY(xt));
-	else
-	    return p4_compile_xcode (at, xt->call->exec[0]);
-    case p4_DTOR: /* a destroyer-trampoline */
-	return p4_compile_xcode_BODY (at, xt->word->ptr, P4_TO_BODY(xt));
-    case p4_NEST: /* a CODE trampoline */
-	return p4_compile_xcode (at, (p4xcode)(xt+1));
-    case p4_IVOC:
-    case p4_OVOC:	
-    case p4_DVAR:      
-    case p4_DCON:               /* all these are not primitives */
-    case p4_OVAR:               /* their runtimes will fetch the */
-    case p4_IVAR:               /* body-ptr being compiled here */
-    case p4_OVAL:
-    case p4_IVAL:  
-    case p4_OCON:
-    case p4_ICON:
-	/* P4_fail5 ("<!word type=%c:%s xt=%p code=%p body=%p!>",
-	 *           *xt->type->def, loader(*xt->type->def)->name, xt, 
-	 *           *p4_to_code(xt), P4_TO_BODY(xt));
-	 */
-	return p4_compile_xcode_BODY (at, *p4_to_code(xt), P4_TO_BODY(xt));
-    default:
-	pf_outf("ERROR: <!unknown compile code!(%c:%s)>", 
-                  *xt->type->def, loader(*xt->type->def)->name);
-	/* not yet supported */
-	return at;
-    }
-    /* unreachable */
-}
-
-# if defined PFE_SBR_CALL_THREADING
-/* ... and here are the SBR snippets needed to call an XT from C ... */
-
-# if defined PFE_SBR_CALL_ARG_THREADING
-/* defeat the compiler which wishes to optimize arg away for being unused */
-#  if defined PFE_HOST_ARCH_I386
-/*  the i386 architecture is so heavily register-starved that it does
- *  quite always setup a local frame which however breaks the ret-jmp
- *  asm-code presented. So what, we make another subroutine for which
- *  hopefully the compiler will not try to build an extra locals frame */
-#   define __call(X,Y) { \
-     register void* _v P4_SBR_TAKE_BODY; \
-     _v = (X);        asm volatile ("push %0":: "r" (_v)); \
-     _v = P4_TO_BODY (Y); asm volatile ("ret":: "r" (_v)); }
-#   define _call(X,Y) p4_sbr_call_arg((X),(Y),(Y)) 
-    void p4_sbr_call_arg(void* code, void* xt1, void*xt2) { __call(code,xt1); }
-#  elif defined PFE_HOST_ARCH_M68K
-#   define _call(X,Y) { \
-     register p4xcode _x asm ("%a0") = (X); \
-     register void* _y asm ("%a1") = P4_TO_BODY (Y); \
-     asm volatile ("jsr %0@":: "r" (_x), "r" (_y)); }
-#  elif defined PFE_HOST_ARCH_POWERPC
-#   define _call(X,Y) { \
-     register p4xcode _x asm ("0") = (X); \
-     register p4xcode _y P4_SBR_TAKE_BODY = P4_TO_BODY (Y); \
-     asm volatile ("mtlr %0" :: "r" (_x)); \
-     asm volatile ("blrl" :: "r" (_y)); }
-
-#  else
-#   error need to define asm p4_sbr_call for this architecture
-#  endif /* PFE_HOST_* */
-# endif /* PFE_SBR_CALL_ARG_THREADING */
-
-#if PFE_SBR_CALL_DEBUGGING+0
-static void _enter() { p4_outf(" {<%p:%p>", p4RP,p4RP[-2]); }
-static void _leave() { p4_outf("<%p:%p>}", p4RP,p4RP[-2]); }
-void p4_sbr_call (p4xt xt) {
-    _enter();
-    _p4_sbr_call(xt);
-    _leave();
-}
-#define p4_sbr_call _p4_sbr_call
-#else
-#define _enter()
-#define _leave()
-#endif
-
-_export void p4_sbr_call (p4xt xt)
-{
-# if defined PFE_HOST_ARCH_I386 /* && ! SBR_CALL_ARG */
-
-    /* the modern RISC architectures do not quite like it when some memory
-     * area is modified and executed right away. It emerges to be a variant
-     * of the problems about self-modifiying code. Even a jump via register
-     * did not help it. So far, only the i386 processors can stand the
-     * following simple code that is based on the compile_comma code
-     */
-
-    /* sbr-stub, xt-code, xt-data, sbr-exit */
-    p4xcode list[6] /* = { 0,0,0,0,0,0 } */;
-    void* p = p4_compile_comma(list, xt);
-    PFE_SBR_COMPILE_EXIT(p);    _enter();
-    ((p4code) (list))();        _leave();
-    return;
-
-    /* note however, that quite some i386-type processors do not honour
-     * such conditions lightly - they might not just only flush the
-     * the instruction pipeline, they might even flush the L1 cache when
-     * there are different L1 caches for data and code. You don't want that.
-     */
-# elif defined PFE_SBR_CALL_ARG_THREADING
-    /* and here, we have to recreate the variants of our compile_xcode
-     * routines, in this case however, we just want to have the register effect
-     * immediatly that the compiled code would have, and jump to the target
-     * xcode - it is almost easy with sbr-arg threading since we just need
-     * to setup the arg-register correctly, and then call the actual routine.
-     */
-
-    switch (*xt->type->def)
-    {
-    case 0: /* the "" string indicates a trampoline */
-    case p4_FXCO:
-    case p4_IXCO:
-    case p4_XXCO:
-        xt->word->ptr (); return; 
-        /* p4_compile_xcode (at,xt->word->ptr); */
-    case p4_SXCO:
-        ((p4_Semant*)xt->word->ptr)->comp (); return;
-	/* p4_compile_xcode (at,((p4_Semant*)xt->word->ptr)->comp); */
-    case p4_RTCO:
-        ((p4_Runtime2*)xt->word->ptr)->comp (); return;
-	/* p4_compile_xcode (at,((p4_Runtime2*)xt->word->ptr)->comp);*/
-    case p4_ITEM:
-        _call (xt->call->exec[0], xt); return;
-	/* if (! xt->call->flag & P4_ONLY_CODE1) 
-         *  return p4_compile_xcode_BODY (at,xt->call->exec[0],P4_TO_BODY(xt));
-         * else
-         *  return p4_compile_xcode (at, xt->call->exec[0]);
-         */
-    case p4_DTOR: /* a destroyer-trampoline */
-        _call (xt->word->ptr, xt); return;
-	/* p4_compile_xcode_BODY (at, xt->word->ptr, P4_TO_BODY(xt)); */
-    case p4_NEST: /* a CODE trampoline */
-        ((p4xcode)(xt+1)) (); return;
-	/* p4_compile_xcode (at, (p4xcode)(xt+1)); */
-    case p4_IVOC:
-    case p4_OVOC:	
-    case p4_DVAR:      
-    case p4_DCON:               /* all these are not primitives */
-    case p4_OVAR:               /* their runtimes will fetch the */
-    case p4_IVAR:               /* body-ptr being compiled here */
-    case p4_OVAL:
-    case p4_IVAL:  
-    case p4_OCON:
-    case p4_ICON:
-	/* P4_note5 ("<!word type=%c:%s xt=%p code=%p body=%p!>",
-	 *           *xt->type->def, loader(*xt->type->def)->name, xt, 
-	 *           *p4_to_code(xt), P4_TO_BODY(xt));
-	 */
-        
-        _call (*p4_to_code(xt), xt); return; 
-	/* p4_compile_xcode_BODY (at, *p4_to_code(xt), P4_TO_BODY(xt)); */
-    default:
-	pf_outf("\nERROR: <!unknown execute code!(%c:%s)>", 
-                  *xt->type->def, loader(*xt->type->def)->name);
-	/* not yet supported */
-	return;
-    }
-    /* unreachable */
-# else /* other HOST_* && ! SBR_CALL_ARG */
-    /* for the case of sbr-call no-arg, we will need to do it quite
-     * differently. Here we have to lie about the return-code that is
-     * on the stack and which will be used to return later on. Instead
-     * of setting an arg-register, we set a memory cell and take the
-     * address of it to be pushed on the return-stack as the return
-     * address for the items with an call-body, the other items can
-     * just be called as is. Then we JUMP into the routine instead of
-     * CALL to the routine, which will execute that routine and let
-     * it return via the ret-code that follows the data area. However,
-     * this is not tested - I'm not sure if it works on superpipelined
-     * RISC machines although I guess it should. For the work at the
-     * Tek labs, the no-arg sbr-threaded mode is not used anyway. Feel
-     * free to add it. Otherwise this area will be left incomplete
-     * as its support is only academic - for commercial grade developments
-     * all the cpu docs are at hand, so it should be always possible to
-     * define the bits to use sbr-call-arg threading.
-     */
-    pf_outf("ERROR: <!sbr-call no-arg is not supported on this platform,"
-              " can not handle execute code!(%c:%s)>", 
-              *xt->type->def, loader(*xt->type->def)->name);
-    return;
-# endif
-}
-
-/* _SBR_CALL_THREADING */
-# endif
-/* _CALL_THREADING */
-#endif
-/* -------------------------------------------------------------- */
 FCode_RT (pf_destroyer_RT)
 {   
     /* this code is a trampoline for ITC code not using an FFA flag.
@@ -1059,7 +729,7 @@ FCode (pf_forget_dp)
                     new_dp = PFE.forget_dp; /* forget_dp is volatile */
                     /* and may have changed through recursive forget */
                 }
-                *p = *p4_name_to_link (*p);
+                *p = *pf_name_to_link (*p);
             }
         }
     }
@@ -1251,7 +921,6 @@ FCode (pf_marker)
 }
 P4RUNTIME1(pf_marker, pf_marker_RT);
 
-/* -------------------------------------------------------------- */
 /* -------------------------------------------------------------- */
 /** ((VOCABULARY)) ( -- ) [HIDDEN]
  * runtime of a => VOCABULARY

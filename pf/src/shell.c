@@ -459,9 +459,9 @@ P4_LISTWORDS (shell) =
 {
 //    P4_INTO ("FORTH", 0),
     /** ( -- fid ) - the standard file-handles of the task */
-    P4_DVaL ("STDIN",		stdIn),
-    P4_DVaL ("STDOUT",		stdOut),
-    P4_DVaL ("STDERR",		stdErr),
+//    P4_DVaL ("STDIN",		stdIn),
+//    P4_DVaL ("STDOUT",		stdOut),
+//    P4_DVaL ("STDERR",		stdErr),
 
     P4_FXco ("$PID",		p4_getpid),
     P4_FXco ("$UID",		p4_getuid),

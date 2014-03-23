@@ -14,21 +14,6 @@ typedef struct _p4_term_struct  p4_term_struct;
 
 #define PATH_LENGTH 256
 
-struct p4_File			/* describes a file */
-{
-    FILE *f;			   /* associated ANSI-C file structure */
-    char mdstr[4];		   /* mode string for fopen() */
-    char mode;			   /* mode code for open_file() */
-//    signed char last_op;	   /* -1 write, 0 none, 1 read */
-//    p4word len;			   /* if stream: length of input line */
-//    p4ucelll size;		   /* if block file: size of file in blocks */
-//    p4ucelll n;			   /* block in buffer or source line */
-//    p4cell updated;		   /* if block file: block updated? */
-//    union { _p4_off_t pos;	   /* saved position, e.g. beginning of line */
-//        char compat[8]; } line;
-//    char name[PATH_LENGTH];	   /* file name */
-};
-
 struct p4_Except
 {
     p4cell magic;
@@ -64,8 +49,6 @@ struct p4_Thread
 
     char* history;		/*  command line history buffer */
     char* history_top;
-    p4_File* files;		/*  files */
-    p4_File* files_top;
 
 /* VM */
     p4xcode*  ip; /* the intruction pointer */
@@ -110,9 +93,6 @@ struct p4_Thread
     p4cell redefined_msg;	/* no `"xxx" is redefined' msg if false */
 //    p4cell float_input;		/* don't try floating pt input when false */
 
-    p4_File *stdIn;		/* C-library standard files */
-    p4_File *stdOut;		/* mapped to Forth-files */
-    p4_File *stdErr;
 //    p4ucell more;		/* for a more-like effect */
 //    p4ucell lines;
 
@@ -142,14 +122,8 @@ struct p4_Thread
     void (*on_winchg) (void);   /* = p4_query_winsize; */
     void (*on_sigalrm) (void);  /* really from signal.c */
 
-/* support.c/xception */
-    p4code throw_cleanup;
-
 /* new forth-wordlist mechanism */
     p4_Wordl* forth_wl;
-
-    p4cell next_exception;
-    p4_Exception* exception_link;
 
     struct {
 	const p4_char_t* ptr;
@@ -165,17 +139,12 @@ struct p4_Thread
 
 };
 
-#define MIN_HOLD	0x100
-#define MIN_PAD		0x400
-
 # define p4_S0 PFE.s0
 # define p4_F0 PFE.f0
 # define p4_R0 PFE.r0
 
 # define p4_DP          (PFE.dp)
-# define p4_HLD		(PFE.hld)
 # define p4_DPL		(PFE.dpl)
-# define p4_PAD		((p4_char_t *)p4_DP + MIN_HOLD)
 # define p4_FENCE	(PFE.fence)
 # define p4_LAST	(PFE.last)
 # define p4_VOC_LINK	(PFE.voc_link)
@@ -183,9 +152,7 @@ struct p4_Thread
 # define p4_DFCURRENT   (PFE.dfcurrent)
 
 # define DP		p4_DP
-# define HLD		p4_HLD
 # define DPL		p4_DPL
-# define PAD		p4_PAD
 # define FENCE		p4_FENCE
 # define LAST		p4_LAST
 # define VOC_LINK	p4_VOC_LINK
@@ -211,7 +178,6 @@ struct p4_Thread
 # define REDEFINED_MSG	p4_REDEFINED_MSG
 
 typedef p4_Wordl 	Wordl;
-typedef p4_File 	File;
 typedef p4_Except	Except;
 
 #endif

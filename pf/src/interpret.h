@@ -1,8 +1,9 @@
 #ifndef __INTERPRET_H
 #define __INTERPRET_H
 
-//#define TIB_SIZE 	0x100 /* size of terminal input buffer */
 #define TO_IN		PFE.to_in
+#define PAD		((p4_char_t *)PFE.dp + MIN_HOLD)
+#define HLD		(PFE.hld)
 
 void p4_lower (p4_char_t *p, int n);
 void p4_upper (p4_char_t *p, int n);
@@ -22,10 +23,9 @@ void pf_normal_execute (p4xt xt);
 p4char * pf_tick_nfa (void);
 p4xt pf_tick_cfa (void);
 
-p4char** pf_name_to_link (const p4char* p);
-
 void pf_skip_spaces(void);
 void pf_parse_word( char delimiter );
+FCode (pf_parse_comma_quote);
 
 p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid);
 p4char* p4_header_in (p4_Wordl* wid);

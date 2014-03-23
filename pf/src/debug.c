@@ -237,7 +237,7 @@ p4_name_walk_next(p4_name_Walk* walk) {
         walk->thread = 0;
         walk->name = walk->wl->thread[walk->thread];
     } else {
-        walk->name = *p4_name_to_link(walk->name);
+        walk->name = *pf_name_to_link(walk->name);
     }
     while (walk->name == NULL) {
         walk->thread ++;
@@ -358,194 +358,12 @@ p4_lit_2strings_SEE (p4xcode* ip, char* p, p4_Semant* s)
     return ip;
 }
 
-//_export p4xcode* /* P4_SKIPS_DCELL */
-//p4_lit_dcell_SEE (p4xcode* ip, char* p, p4_Semant* s)
-/*
-{
-    char buf[80];
-    sprintf (p, "%s. ",
-      p4_str_d_dot_r (*(p4dcell *) ip, buf + sizeof buf, 0, BASE));
-    P4_INC (ip, p4dcell);
-    
-    return ip;
-}
-*/
-
 static P4_CODE_RUN(p4_code_RT_SEE)
 {
-#  ifdef PFE_SBR_CALL_THREADING
-    sprintf(p, ": %.*s ", NAMELEN(nfa), NAMEPTR(nfa));
-#  else
     sprintf(p, "CODE %.*s ", NAMELEN(nfa), NAMEPTR(nfa));
-#  endif
     ___ p4xcode* ip = (p4xcode*) P4_TO_BODY(xt);
-#  ifdef PFE_SBR_DECOMPILE_PROC
-    return PFE_SBR_DECOMPILE_PROC(ip);
-#  else
     return ip;
-#  endif
     ____;
-}
-
-static p4_bool_t
-is_sbr_compile_exit(p4xcode** ip)
-{
-#  ifdef PFE_SBR_COMPILE_EXIT
-    p4char code[40];
-    p4char* ref = (p4char*) *ip;
-    p4char* end = code;
-    PFE_SBR_COMPILE_EXIT(end);
-    if (end > code && ! memcmp(ref, code, end-code)) {
-        *ip = (p4xcode*)(ref + (end-code));
-        return P4_TRUE;            
-    }
-#  endif
-    return P4_FALSE;
-}
-
-static p4_bool_t
-is_sbr_compile_proc(p4xcode** ip) 
-{
-#  ifdef PFE_SBR_COMPILE_PROC
-    p4char code[40];
-    p4char* ref = (p4char*) *ip;
-    p4char* end = code;
-    PFE_SBR_COMPILE_PROC(end);
-    if (end > code && ! memcmp(ref, code, end-code)) {
-        *ip = (p4xcode*)(ref + (end-code));
-        return P4_TRUE;
-    }
-#  endif
-    return P4_FALSE;
-}
-
-static p4_bool_t
-is_sbr_give_code(p4xcode** ip) 
-{
-#  ifdef FX_SBR_GIVE_CODE
-    p4char code[40];
-    p4char* ref = (p4char*) *ip;
-    p4char* end = code;
-    FX_SBR_GIVE_CODE(end);
-    if (end > code && ! memcmp(ref, code, end-code)) {
-        *ip = (p4xcode*)(ref + (end-code));
-        return P4_TRUE;
-    }
-#endif
-    return P4_FALSE;
-}
-
-static p4_bool_t
-is_sbr_give_body(p4xcode** ip, const p4_namebuf_t** name) 
-{
-#  ifdef FX_SBR_GIVE_BODY
-    p4char code[40];
-    auto p4_name_Walk walk;
-    p4_name_walk_init(&walk);
-    while (p4_name_walk_next(&walk))
-    {
-        p4xt xt = P4_LINK_FROM(p4_name_to_link(walk.name));
-        p4char* ref = (p4char*) *ip;
-        p4char* end = code;
-        /* does not work relative addressing */
-        p4char* arg = (p4char*) P4_TO_BODY(xt);
-        FX_SBR_GIVE_BODY(end, arg);
-        if (end > code && ! memcmp(ref, code, end-code)) {
-            *name = walk.name;
-            *ip = (p4xcode*)(ref + (end-code));
-            return P4_TRUE;
-        }
-        end = code;
-        arg += (code-ref);
-        FX_SBR_GIVE_BODY(end, arg);
-        if (end > code && ! memcmp(ref, code, end-code)) {
-            *name = walk.name;
-            *ip = (p4xcode*)(ref + (end-code));
-            return P4_TRUE;
-        }
-    }    
-#  endif
-    return P4_FALSE;
-}
-
-#ifdef PFE_SBR_COMPILE_CALL
-static p4_bool_t
-is_sbr_compile_call_to(p4xcode** ip, p4char* arg)
-{
-#    undef PFE_SBR_COMPILE_CALL_FAILED
-#   define PFE_SBR_COMPILE_CALL_FAILED(X) /* we don't wanna know */
-    p4char code[40];
-    p4char* ref = (p4char*) *ip;
-    p4char* end = code;             /* => absolute address */
-    PFE_SBR_COMPILE_CALL(end, arg);
-    if (end > code && ! memcmp(ref, code, end-code)) {
-        *ip = (p4xcode*)(ref + (end-code));
-        return P4_TRUE;
-    }
-#    undef PFE_SBR_LABEL_ 
-#   define PFE_SBR_LABEL_(label) __pfe_sbr_label_relative_##label    
-    end = code;  arg += (code-ref); /* => relative address */
-    PFE_SBR_COMPILE_CALL(end, arg);
-    if (end > code && ! memcmp(ref, code, end-code)) {
-        *ip = (p4xcode*)(ref + (end-code));
-        return P4_TRUE;
-    }
-    return P4_FALSE;
-}
-#endif
-
-static p4_bool_t
-is_sbr_compile_call(p4xcode** ip, const p4_namebuf_t** name) 
-{
-#  ifdef PFE_SBR_COMPILE_CALL
-    auto p4_name_Walk walk;
-    p4_name_walk_init(&walk);
-    while (p4_name_walk_next(&walk))
-    {
-        p4xt xt = P4_LINK_FROM(p4_name_to_link(walk.name));
-        if (is_sbr_compile_call_to(ip, (p4char*) P4_TO_BODY(xt)))
-        {
-            *name = walk.name;
-            return P4_TRUE;
-        }
-    }
-
-    ___ auto p4_Decompile decomp; 
-    memset ((&decomp), 0, sizeof (decomp)); decomp.next = PFE.atexit_wl->thread[0];
-    while (p4_loader_next (&decomp))
-    {
-        switch(decomp.word->loader->type)
-        {
-        case p4_SXCO:
-            if (is_sbr_compile_call_to (ip, (p4char*) decomp.word->value.semant->exec[0])) {
-                *name = decomp.word->value.semant->name;
-                return P4_TRUE;
-            }
-            if (is_sbr_compile_call_to (ip, (p4char*) decomp.word->value.semant->exec[1])) {
-                *name = decomp.word->value.semant->name;
-                return P4_TRUE;
-            }
-        case p4_RTCO:
-            if (is_sbr_compile_call_to (ip, (p4char*) decomp.word->value.runtime->exec[0])) {
-                *name = decomp.word->value.semant->name;
-                return P4_TRUE;
-            }
-            if (is_sbr_compile_call_to (ip, (p4char*) decomp.word->value.runtime->exec[1])) {
-                *name = decomp.word->value.semant->name;
-                return P4_TRUE;
-            }
-        case p4_FXCO:
-            if (is_sbr_compile_call_to (ip, (p4char*) decomp.word->value.ptr)) {
-                *name = (p4_namebuf_t*) (decomp.word->loader->name - 1); /* NAMEPTR>NAME */ 
-                /* TODO: the NAMELEN of a wordset loader name is wrong... but it is the maximum
-                 * value for the count field but current users of this function do always watch
-                 * for the zero-byte and the end.... and so it does work okay (so far). */
-                return P4_TRUE;
-            }
-        }
-    } ____;
-#  endif
-    return P4_FALSE;
 }
 
 static const p4_Decomp default_style = {P4_SKIPS_NOTHING, 0, 0, 0, 0, 0};
@@ -553,65 +371,16 @@ static const p4_Decomp default_style = {P4_SKIPS_NOTHING, 0, 0, 0, 0, 0};
 static p4xcode *
 p4_decompile_comma (p4xcode* ip, char *p)
 {
-#  if defined PFE_SBR_DECOMPILE_LCOMMA
-    p4cell* x = (p4cell*) ip;
-    sprintf (p, "$%08x L, ", *x); ++x;
-#  elif defined PFE_SBR_DECOMPILE_WCOMMA
-    p4word* x = (p4word*) ip;
-    sprintf (p, "$%04x W, ", *x); ++x;
-#  else /*  def PFE_SBR_DECOMPILE_BCOMMA */
     p4char* x = (p4char*) ip;
     sprintf (p, "$%02x C, ", *x); ++x;
-#  endif    
     return (p4xcode*) (x);
 }
 
 static p4xcode *
 p4_decompile_code (p4xcode* ip, char *p, p4_Decomp *d)
 {
-    const p4_namebuf_t* name;
-    if (is_sbr_compile_exit (& ip))
-    {
-        static const p4_Decomp end_code_style = {P4_SKIPS_NOTHING, 0, 0, 0, 3, 0};
-        memcpy (d, (& end_code_style), sizeof (*d));
-        sprintf (p, "] ;");
-        return ip;            
-    }
-    if (is_sbr_compile_proc (& ip))
-    {
-        memcpy (d, (& default_style), sizeof (*d));
-        sprintf (p, "( -- ) ");
-        return ip;            
-    }
-    if (is_sbr_give_code (& ip))
-    {
-        if (is_sbr_compile_call(& ip, & name)) {
-            memcpy (d, (& default_style), sizeof (*d));
-            sprintf (p, "] %.*s ", NAMELEN(name), NAMEPTR(name));
-        } else {
-            memcpy (d, (& default_style), sizeof (*d));
-            sprintf (p, "(  ) ");
-        }
-        return ip;            
-    }
-    if (is_sbr_give_body (& ip, & name))
-    {
-        memcpy (d, (& default_style), sizeof (*d));
-        sprintf (p, "] %.*s ", NAMELEN(name), NAMEPTR(name));
-        is_sbr_compile_call (& ip, & name); /* already printed */
-        return ip;            
-    }
-    if (is_sbr_compile_call (& ip, & name))
-    {
-        memcpy (d, (& default_style), sizeof (*d));
-        sprintf (p, "] %.*s ", NAMELEN(name), NAMEPTR(name));
-        return ip;            
-    }
-    { /* else */
-        memcpy (d, (& default_style), sizeof (*d));
-        return p4_decompile_comma (ip, p);
-    }
-    /* return *ip++; */
+    memcpy (d, (& default_style), sizeof (*d));
+    return p4_decompile_comma (ip, p);
 }
 
 static p4xcode *
@@ -720,9 +489,6 @@ p4_decompile_word (p4xcode* ip, char *p, p4_Decomp *d)
 _export void
 p4_decompile_rest (p4xcode *ip, int nl, int indent, p4_bool_t iscode)
 {
-#  if defined PFE_SBR_CALL_THREADING
-    int incode = P4_FALSE;
-#  endif
     char buf[256];
     /* p4_Seman2 *seman; // unused ? */
     p4_Decomp decomp;
@@ -735,7 +501,6 @@ p4_decompile_rest (p4xcode *ip, int nl, int indent, p4_bool_t iscode)
         /* seman = (p4_Seman2 *) p4_to_semant (*ip); // unused ? */
         if (iscode) 
         {
-#         if !defined PFE_SBR_CALL_THREADING
             p4xcode* old_ip = ip;
             ip = p4_decompile_code (ip, buf, &decomp);
             if (! strcmp (buf, "] ;") ) 
@@ -760,22 +525,6 @@ p4_decompile_rest (p4xcode *ip, int nl, int indent, p4_bool_t iscode)
                     old_ip = p4_decompile_comma(old_ip, append);
                 }
             }
-#         else
-            ip = p4_decompile_code (ip, buf, &decomp);
-            if (! strncmp (buf, "] ", 2)) 
-            {
-                if (incode)
-                    incode = P4_FALSE; 
-                else
-                    memmove(buf, buf+2, strlen(buf)-1);
-            } else if (buf[0] == '$') {
-                if (! incode) {
-                    memmove(buf+2, buf, strlen(buf)+1);
-                    buf[0] = '['; buf[1] = ' ';
-                    incode = P4_TRUE;
-                }
-            }
-#         endif
         } else 
         {
             ip = p4_decompile_word (ip, buf, &decomp);
@@ -1131,7 +880,6 @@ void p4_debug_off (void)
 static void			/* modified inner interpreter for */
 do_single_step (void)		/* single stepping */
 {
-#  if ! defined PFE_SBR_CALL_THREADING
     while (level >= 0)
     {
         if (level <= maxlevel)
@@ -1155,10 +903,6 @@ do_single_step (void)		/* single stepping */
 #         endif
         }
     }
-#   else
-    /* one can not really single-step in sbr-threading mode */
-    interaction (0);
-#   endif
 }
 
 FCode (p4_debug_colon_RT)

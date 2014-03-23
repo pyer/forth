@@ -38,14 +38,6 @@
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
 #define HEXWIDTH (sizeof (p4cell) * 2)
 
-#ifndef USE_END_CODE
-#if defined PFE_SBR_COMPILE_PROC && defined PFE_SBR_COMPILE_EXIT
-#define USE_END_CODE 1
-#else
-#define USE_END_CODE 0
-#endif
-#endif
-
 void p4_decompile (p4char* nfa, p4xt xt);
 char p4_category (p4code p);
 /* ----------------------------------------------------------------------- */
@@ -111,7 +103,7 @@ FCode (pf_dot_s)
             /* only data stack not empty */
             for (i = 0; i < dd; i++)
             {
-                FCode (pf_cr);
+                FX (pf_cr);
                 pf_prCell (PFE.sp[i]);
             }
         }
@@ -129,13 +121,13 @@ FCode (pf_dot_s)
         int bd = dd < fd ? dd : fd;
         for (i = 0; i < bd; i++)
         {
-	    FCode (pf_cr);
+	    FX (pf_cr);
 	    pf_prCell (PFE.sp[i]);
 	    pf_outf ("%15.7G ", PFE.fp[i]);
         }
 	for (; i < dd; i++)
         {
-	    FCode (pf_cr);
+	    FX (pf_cr);
 	    pf_prCell (PFE.sp[i]);
         }
 	for (; i < fd; i++)
@@ -153,7 +145,7 @@ FCode (pf_dot_memory)
     pf_outf ("\nStack space:         %7ld cells",  (p4celll) (PFE.s0 - PFE.stack));  /* sizeof (p4cell) */
     pf_outf ("\nFloating stack space:%7ld floats", (p4celll) (PFE.f0 - PFE.fstack)); /* sizeof (double) */
     pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4celll) (PFE.r0 - PFE.rstack));  /* sizeof (p4xt**) */
-    pf_cr_();
+    FX (pf_cr);
 }
 
 /** .STATUS ( -- ) [FTH]
@@ -166,42 +158,9 @@ FCode (pf_dot_status)
     pf_outf ("\nmaximum wordlists in search order %u", ORDER_LEN);
 
 #  define flag(X) ((X) ? "ON " : "OFF")
-#  ifdef P4_REGTH
-    pf_outs ("           REGTH="P4_REGTH);
-#  else
-    pf_outs ("           (static regTH pointer)");
-#  endif
-#  ifdef P4_REGSP
-    pf_outs ("           REGSP="P4_REGSP);
-#  endif
-#  ifdef P4_REGIP
-    pf_outs ("           REGIP="P4_REGIP);
-#  elif defined PFE_SBR_CALL_THREADING
-    pf_outs ("           REGIP (hardware)");
-#  endif
     pf_outf ("\nREDEFINED-MSG  %s", flag (REDEFINED_MSG));
-#  ifdef P4_REGRP
-    pf_outs ("           REGRP="P4_REGRP);
-#  elif defined PFE_SBR_CALL_THREADING
-    pf_outs ("           REGRP (hardware)");
-#  endif
-#  if defined PFE_REGFP
-    pf_outs ("           REGFP="P4_REGFP);
-#  endif
-#  undef flag
     pf_outf ("\nPRECISION     %3d", (int) PRECISION);
-#  ifdef P4_REGW
-    pf_outs ("            REGW="P4_REGW" (threading)");
-#  elif defined PFE_SBR_CALL_ARG_THREADING
-    pf_outs ("           (sbr-call-arg-threading)");
-#  elif defined PFE_SBR_CALL_THREADING
-    pf_outs ("           (sbr-call-threading)");
-#  elif defined PFE_CALL_THREADING
-    pf_outs ("           (call-threading)");
-#  else
-    pf_outs ("           (traditional-threading)");
-#  endif
-    pf_cr_();
+    FX (pf_cr);
 }
 
 /************************************************************************/
@@ -219,8 +178,8 @@ FCode (pf_dump)
     p4ucell n = (p4ucell)*(PFE.sp++);
     p4char *p = (p4char*)(*(PFE.sp++));
     
-    FCode (pf_cr);
-    FCode (pf_more);
+    FX (pf_more);
+    FX (pf_cr);
     pf_outf ("%*s ", (int)HEXWIDTH, "");
     for (j = 0; j < 16; j++)
         pf_outf ("%02X ", (unsigned)((p4ucell)(p + j) & 0x0F));
@@ -238,7 +197,7 @@ FCode (pf_dump)
 			    ! isascii (p [j]) ? '_' :
 			    isprint (p [j]) ? p [j] : '.'));
     }
-    FCode (pf_space);
+    FX (pf_space);
 }
 
 /** SEE ( "word" -- )
@@ -277,12 +236,12 @@ FCode (pf_words)
 # define WILD_TAB 20 /* traditional would be 20 (26*4=80), now 26*3=78 */
 # endif
     
-    FCode (pf_cr);
-    FCode (pf_more);
+    FX (pf_more);
+    FX (pf_cr);
     for (t = p4_topmost (&wcopy); *t; t = p4_topmost (&wcopy))
     {
         p4char *w = *t;
-        p4char **s = p4_name_to_link (w);
+        p4char **s = pf_name_to_link (w);
 	char c = p4_category (*P4_TO_CODE(P4_LINK_FROM (s)));
 //        w++;
 //        int l = strlen((char *)w);
@@ -299,7 +258,9 @@ FCode (pf_words)
         pf_outc(c); pf_outc(' ');
         pf_type((char *)w,l);
         pf_tab (WILD_TAB);
-        pf_cr_();
+        if (get_outs()+WILD_TAB > get_cols()) {
+            FX (pf_cr);
+        }
         *t = *s;
     }
 }

@@ -56,21 +56,6 @@ FCode (pf_source)
 FCode_XE (pf_call_stop)
 {
     p4_Except *buf = (p4_Except *) *PFE.ip;
-
-# ifdef P4_REGRP		/* save global register variables */
-    buf->rpp = PFE.rp;
-# endif
-# ifdef P4_REGSP
-    buf->spp = SP;
-# endif
-# ifdef P4_REGLP
-    buf->lpp = PFE.lp;
-# endif
-# ifndef P4_NO_FP
-# ifdef P4_REGFP
-    buf->fpp = PFE.fp;
-# endif
-# endif
     longjmp (buf->jmp, 1);
 }
 
@@ -93,20 +78,6 @@ void pf_call_loop (p4xt xt)
 
     if (setjmp (stop.jmp))
     {
-#     ifdef P4_REGRP		/* restore global register variables */
-        PFE.rp = stop.rpp;		/* clobbered by longjmp() */
-#     endif
-#     ifdef P4_REGSP
-        PFE.sp = stop.spp;
-#     endif
-#     ifdef P4_REGLP
-        PFE.lp = stop.lpp;
-#     endif
-#     ifndef P4_NO_FP
-#     ifdef P4_REGFP
-        PFE.fp = stop.fpp;
-#     endif
-#     endif
         return;
     }
 
@@ -208,10 +179,6 @@ void p4_upper (p4_char_t *p, int n)
 }
 
 /* -------------------------------------------------------------- */
-p4char** pf_name_to_link (const p4char* p)
-{
-    return (p4char **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
-}
 
 static p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl)
 {
@@ -309,7 +276,7 @@ _export p4char*
 p4_next_search_wordlist (p4char* last, const p4_char_t* nm, int l, const p4_Wordl* w)
 {
     if (! last) return last;
-    return search_thread (nm, l, *p4_name_to_link(last), w );
+    return search_thread (nm, l, *pf_name_to_link(last), w );
 }
 /* -------------------------------------------------------------- */
 /** HERE ( -- here* ) [ANS]
@@ -326,9 +293,9 @@ FCode (pf_here)
  */
 void pf_hold (char c)
 {
-    if (p4_HLD <= DP)
+    if (HLD <= DP)
         p4_throw (P4_ON_PICNUM_OVER);
-    *--p4_HLD = c;
+    *--HLD = c;
 }
 
 /** HOLD ( char# -- ) [ANS]
@@ -367,7 +334,7 @@ FCode (pf_sign)
  */
 FCode (pf_less_sh)
 {
-    p4_HLD = p4_PAD;
+    HLD = PAD;
 }
 
 /** # ( n -- n' ) [ANS]
@@ -395,8 +362,8 @@ FCode (pf_sh)
  */
 FCode (pf_sh_greater)
 {
-    *SP = (p4cell) p4_HLD;
-    *--SP = (p4cell) (p4_PAD - p4_HLD);
+    *SP = (p4cell) HLD;
+    *--SP = (p4cell) (PAD - HLD);
 }
 
 /** #S ( n -- 0 ) [ANS]
@@ -798,22 +765,6 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
     LAST = DP-len -1;      /* point to count-byte before the name */
     *LAST = len;           /* set the count-byte */
     LAST[-1] = '\x80';     /* set the flag-byte before the count-byte */
-# elif defined PFE_WITH_FIG
-    /* the FIG style variant is a bit more special - as it is trying to
-     * be extra compatible with user code that expects N>LINK to actually
-     * turn out to be "DUP C@ 31 AND + 1+" - i.e. the end of the name is
-     * exactly the start of the link-field. This is based on the oldest
-     * of the implementations that had not to watch out for address
-     * alignment exceptions - but even the widespread m68k implementation
-     * did need to align at 16-bit adresses. Therefore - we have to move
-     * a name up being layed down at HERE via traditional WORD - but that
-     * makes the string to move UP usually - an overlap for normal memcpy()
-     */
-    DP += 1; DP += len; FX (pf_align);
-    memmove (DP-len, name, len);
-    LAST = DP-len -1;
-    *LAST = len;
-    *LAST |= '\x80';
 # else
     /* traditional way - avoid copying if using WORD. Just look for the
      * only if() in this code which will skip over the memcpy() call if

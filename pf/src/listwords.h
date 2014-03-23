@@ -59,7 +59,7 @@ typedef p4cell  (*p4cell_p4code) (void); /* very useful sometimes */
 typedef p4ucell (*p4ucell_p4code) (void); /* very useful sometimes */
 
 typedef struct p4_Wordl  p4_Wordl;  /* body of a word list */
-typedef struct p4_File 	 p4_File;   /* neccessary information about open files */
+//typedef struct p4_File 	 p4_File;   /* neccessary information about open files */
 typedef struct p4_Except p4_Except; /* an exception frame */
 
 struct p4_Wordl			/* a word list */

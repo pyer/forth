@@ -37,12 +37,12 @@ p4char ** p4_topmost (p4_Wordl *w);
 void pf_dot_name (const p4char *nfa);
 p4cell * pf_to_body (p4xt xt);
 
-p4char** p4_name_to_link (const p4char* p);
+p4char** pf_name_to_link (const p4char* p);
+p4char * pf_to_name (p4xt xt);
 p4xt pf_name_from (const p4char *p);
 
-p4char * pf_to_name (p4xt xt);
-
 void p4_preload_only (void);
+void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused);
 
 int p4_wl_hash (const p4_char_t *s, int l);
 

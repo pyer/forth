@@ -48,22 +48,7 @@
 #define _NULLFILE_ROBUST 0
 #endif
 
-/* when no _NULLFILE_ROBUST is set, then let the compiler do some
- * code removal of unreachable code - because of that if(0) part.
- */
-#if _NULLFILE_ROBUST+0
-#define _is_nullfile(X) !(X)
-#else
-#define _is_nullfile(X) 0
-#endif
-
-#ifdef PFE_WITH_FIG
-#define CHECKFILE " - did an earlier FILE-OPEN fail?" \
-                  " - often it is file permissions" \
-                  " - file or directory read-only?"
-#else
 #define CHECKFILE " (did some FILE-OPEN fail?)"
-#endif
 
 /* ================================================================= */
 enum
@@ -74,24 +59,6 @@ enum
 
 # define FMODE_BIN (FMODE_ROB - FMODE_RO)
 /* ================================================================= */
-
-void init_stdio( void )
-{
-    PFE.stdIn = PFE.files_top - 3;
-    PFE.stdIn->f = stdin;
-    strcpy (PFE.stdIn->mdstr, "r");
-    PFE.stdIn->mode = FMODE_RO;
-
-    PFE.stdOut = PFE.files_top - 2;
-    PFE.stdOut->f = stdout;
-    strcpy (PFE.stdOut->mdstr, "a");
-    PFE.stdOut->mode = FMODE_WO;
-
-    PFE.stdErr = PFE.files_top - 1;
-    PFE.stdErr->f = stderr;
-    strcpy (PFE.stdErr->mdstr, "a");
-    PFE.stdErr->mode = FMODE_WO;
-}
 
 _export _p4_off_t
 p4_file_size (FILE * f)		/* Result: file length, -1 on error */
@@ -208,24 +175,9 @@ int p4_file_resize (const char *fn, off_t new_size)
 /* ********************************************************************** 
  * file interface
  */
-char file_name[PATH_LENGTH];
-
-/**
- */
-static p4_File *
-p4_free_file_slot (void)
-{
-    p4_File *f;
-
-    for (f = PFE.files; f < PFE.files_top; f++)
-        if (f->f == NULL)
-        {
-            memset (f, 0, sizeof *f);
-            return f;
-        }
-    //P4_warn ("not enough file slots in pfe io subsystem");
-    return NULL;
-}
+//char file_name[PATH_LENGTH];
+/* FILENAME_MAX is defined in stdio.h */
+char file_name[FILENAME_MAX];
 
 /** _zplaced_filename_ ( str* str# dst* max# -- dst* ) [alias] _store_filename_
  * copy stringbuffer into a field as a zero-terminated filename-string,
@@ -310,33 +262,25 @@ static char open_mode[][4] =	/* mode strings for fopen() */
 /**
  * open file
  */
-_export p4_File *
-p4_open_file (const p4_char_t *name, int len, int mode)
+FILE * p4_open_file (const p4_char_t *name, int len, int mode)
 {
-    p4_File *fid;
+    char mdstr[8];
     mode &= 7;
 
-    fid = p4_free_file_slot ();
-    if (fid == NULL) 
-        return NULL;
     pf_store_filename ((const char*)name, len);
-    fid->mode = mode;
-    strcpy (fid->mdstr, open_mode[mode - FMODE_RO]);
-    if ((fid->f = fopen (file_name, fid->mdstr)) == NULL)
-        return NULL;
-    return fid;
+    strcpy (mdstr, open_mode[mode - FMODE_RO]);
+    return (fopen (file_name, mdstr));
 }
 
 /**
  * create file 
  */
-_export p4_File *
-p4_create_file (const p4_char_t *name, int len, int mode)
+FILE * p4_create_file (const p4_char_t *name, int len, int mode)
 {
 #   define null_AT_fclose(X) { FILE* f = (X); if (!f) goto _null; fclose(f); }
 
     char* fn;
-    p4_File *fid;
+    FILE *fid;
 
     fn = pf_store_filename ((const char *)name, len);
     null_AT_fclose (fopen (fn, "wb"));
@@ -359,74 +303,14 @@ p4_create_file (const p4_char_t *name, int len, int mode)
 }
 
 /**
- * close file
- */
-_export int
-p4_close_file (p4_File *fid)
-{
-    int res = 0;
-    
-    if (fid->f)
-    {
-        res = fclose (fid->f);
-        memset (fid, 0, sizeof *fid);
-    }
-    return res;
-}
-
-/**
- * seek file
- */
-_export int
-p4_reposition_file (p4_File *fid, _p4_off_t pos)
-{
-    return fseek (fid->f, pos, SEEK_SET) ? errno : 0;
-}
-
-/*
- * Called before trying to read from a file.
- * Checks if you may, maybe fseeks() so you can.
- */
-static int
-p4_can_read (p4_File *fid)
-{
-    switch (fid->mode)		/* check permission */
-    {
-     case FMODE_WO:
-     case FMODE_WOB:
-         return 0;
-    }
-    return 1;
-}
-
-/*
- * Called before trying to write to a file.
- * Checks if you may, maybe fseeks() so you can.
- */
-static int
-p4_can_write (p4_File *fid)
-{
-    switch (fid->mode)		/* check permission */
-    {
-     case FMODE_RO:
-     case FMODE_ROB:
-         return 0;
-    }
-    return 1;
-}
-
-/**
  * read file
  */
 _export int
-p4_read_file (void *p, p4ucell *n, p4_File *fid)
+p4_read_file (void *p, p4ucell *n, FILE *fid)
 {
     int m;
-
-    if (!p4_can_read (fid))
-        return EPERM;
     errno = 0;
-    m = fread (p, 1, *n, fid->f);
+    m = fread (p, 1, *n, fid);
     if (m != (int) *n)
     {
         *n = m;
@@ -440,26 +324,23 @@ p4_read_file (void *p, p4ucell *n, p4_File *fid)
  * write file
  */
 _export int
-p4_write_file (void *p, p4ucell n, p4_File *fid)
+p4_write_file (void *p, p4ucell n, FILE *fid)
 {
-    if (!p4_can_write (fid))
-        return EPERM;
-    errno = 0;
-    return (p4ucell) fwrite (p, 1, n, fid->f) != n ? errno : 0;
+    return (p4ucell) fwrite (p, 1, n, fid) != n ? errno : 0;
 }
 
 /**
  * resize file
  */
 _export int
-p4_resize_file (p4_File *fid, _p4_off_t size)
+p4_resize_file (FILE *fid, _p4_off_t size)
 {
     _p4_off_t pos;
 
-    if (fid == NULL || fid->f == NULL)
+    if (fid == NULL )
         p4_throw (P4_ON_FILE_NEX);
 
-    pos = ftell (fid->f);
+    pos = ftell (fid);
     if (pos == -1)
         return -1;
     
@@ -468,9 +349,9 @@ p4_resize_file (p4_File *fid, _p4_off_t size)
 //    fid->f = fopen (fid->name, fid->mdstr);
     
     if (pos < size)
-        fseek (fid->f, pos, SEEK_SET);
+        fseek (fid, pos, SEEK_SET);
     else
-        fseek (fid->f, 0, SEEK_END);
+        fseek (fid, 0, SEEK_END);
     return 0;
 }
 
@@ -478,31 +359,29 @@ p4_resize_file (p4_File *fid, _p4_off_t size)
  * read line
  */
 _export int
-p4_read_line (void* buf, p4ucell *u, p4_File *fid, p4cell *ior)
+p4_read_line (void* buf, p4ucell *u, FILE *fid, p4cell *ior)
 {
     int c, n; char* p = buf;
     
-    if (!p4_can_read (fid))
-        return EPERM;
 //    fid->line.pos = ftell (fid->f); /* fixme: the only reference to it!*/
     for (n = 0; (p4ucell) n < *u; n++)
     {
-        switch (c = getc (fid->f))
+        switch (c = getc (fid))
         {
          default:
              *p++ = c;
              continue;
          case EOF:
              *u = n;
-             if (ferror (fid->f))
+             if (ferror (fid))
                  *ior = errno;
              else
                  *ior = 0;
              return((n>0) ? P4_TRUE : P4_FALSE);
          case '\r':
-             c = getc (fid->f);
+             c = getc (fid);
              if (c != '\n')
-                 ungetc (c, fid->f);
+                 ungetc (c, fid);
          case '\n':
              goto happy;
         }
@@ -529,14 +408,8 @@ FCode (p4_bin)
  */
 FCode (p4_close_file)
 {
-    register File *fid = (File *) SP[0];
-
-    if (_is_nullfile(fid)) goto nullfile;
-    SP[0] = p4_close_file (fid) ? errno : 0;
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    //P4_warn ("close on NULL file");
+    register FILE *fid = (FILE *) SP[0];
+    SP[0] = fclose(fid) ? errno : 0;
 }
 
 /** CREATE-FILE ( name-ptr name-len open-mode# -- name-file* name-errno# ) [ANS]
@@ -550,7 +423,7 @@ FCode (p4_create_file)
     register p4_char_t *fn = (p4_char_t *) SP[2]; /* c-addr, name */
     register p4ucell u = SP[1];	                  /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
-    File *fid = p4_create_file (fn, u, fam);
+    FILE *fid = p4_create_file (fn, u, fam);
     
     SP += 1;
     SP[1] = (p4cell) fid;
@@ -574,12 +447,11 @@ FCode (p4_delete_file)
  */
 FCode (p4_file_position)
 {
-    register File *fid = (File *) SP[0];	/* file-id */
+    register FILE *fid = (FILE *) SP[0];	/* file-id */
     register _p4_off_t pos;
 
     SP -= 2;
-    if (_is_nullfile(fid)) goto nullfile;
-    pos = ftell (fid->f);
+    pos = ftell (fid);
     if (pos != -1)
     {
 	SP[2] = (p4ucell)(pos);
@@ -593,12 +465,6 @@ FCode (p4_file_position)
 	SP[1] = (p4ucell)-1;
         SP[0] = errno;	/* ior */
     }
-    return;
- nullfile:
-    SP[2] = 0;
-    SP[1] = 0;
-    SP[0] = EINVAL;
-    //P4_warn ("trying seek on NULL file");
 }
 
 /** FILE-SIZE ( some-file* -- s,size# some-errno# ) [ANS]
@@ -607,11 +473,10 @@ FCode (p4_file_position)
  */
 FCode (p4_file_size)
 {
-    File *fid = (File *) SP[0];	/* fileid */
+    FILE *fid = (FILE *) SP[0];	/* fileid */
     _p4_off_t size;
 
-    if (_is_nullfile(fid)) goto nullfile;
-    size = p4_file_size (fid->f);
+    size = p4_file_size (fid);
     SP -= 2;
     if (size != -1)
     {
@@ -626,12 +491,6 @@ FCode (p4_file_size)
 	SP[1] = (p4ucell)-1;
         SP[0] = errno;	/* ior */
     }
-    return;
- nullfile:
-    SP[2] = 0;
-    SP[1] = 0;
-    SP[0] = EINVAL;
-    //P4_warn ("trying seek on NULL file");
 }
 
 
@@ -645,7 +504,7 @@ FCode (p4_open_file)
     register p4_char_t *fn = (p4_char_t *) SP[2]; /* c-addr, name */
     register p4ucell u = SP[1];	                  /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
-    register File *fid = p4_open_file (fn, u, fam);
+    register FILE *fid = p4_open_file (fn, u, fam);
 
     SP += 1;
     SP[1] = (p4cell) fid;
@@ -664,16 +523,10 @@ FCode (p4_read_file)
 {
     register p4_char_t *  buf = (p4_char_t *) SP[2];
     register p4ucell len = SP[1];
-    register File *  fid = (File *) SP[0];
+    register FILE *  fid = (FILE *) SP[0];
     SP += 1;
-    if (_is_nullfile(fid)) goto nullfile;
     SP[1] = len;
     SP[0] = p4_read_file (buf, ((p4ucell*)SP) + 1, fid);
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    SP[1] = 0;
-    pf_outs("\nERROR: trying read from NULL file" CHECKFILE);
 }
 
 /** READ-LINE ( buf-ptr buf-len some-file* -- buf-count buf-flag some-errno# ) [ANS]
@@ -688,16 +541,9 @@ FCode (p4_read_line)
 {
     register p4_char_t *  buf = (p4_char_t *) SP[2];
     register p4ucell len = SP[1];
-    register File *  fid = (File *) SP[0];
-    if (_is_nullfile(fid)) goto nullfile;
+    register FILE *  fid = (FILE *) SP[0];
     SP[2] = len;
     SP[1] = p4_read_line (buf, ((p4ucell*)SP) + 2, fid, & SP[0]);
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    SP[1] = EINVAL;
-    SP[2] = 0;
-    pf_outs("\nERROR: trying read from NULL file" CHECKFILE);
 }
 
 /** REPOSITION-FILE ( o,offset# some-file* -- some-errno# ) [ANS]
@@ -706,7 +552,7 @@ FCode (p4_read_line)
  */
 FCode (p4_reposition_file)
 {
-    register File *fid = (File *) SP[0];
+    register FILE *  fid = (FILE *) SP[0];
     register _p4_off_t pos;
     if (sizeof (*SP) >= sizeof(pos))  /* compile-time decision !*/
     {
@@ -719,12 +565,7 @@ FCode (p4_reposition_file)
     }
 
     SP += 2;
-    if (_is_nullfile(fid)) goto nullfile;
-    SP[0] = p4_reposition_file (fid, pos);
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    //P4_warn ("trying seek on NULL file");
+    SP[0] = fseek (fid, pos, SEEK_SET) ? errno : 0;
 }
 
 /** RESIZE-FILE ( s,size# some-file* -- some-errno# ) [ANS]
@@ -732,7 +573,7 @@ FCode (p4_reposition_file)
  */
 FCode (p4_resize_file)
 {
-    register File *fid = (File *) SP[0];
+    register FILE *  fid = (FILE *) SP[0];
     register _p4_off_t size;
     if (sizeof (*SP) >= sizeof(size))  /* compile-time decision !*/
     {
@@ -745,16 +586,10 @@ FCode (p4_resize_file)
     }
 
     SP += 2;
-    if (_is_nullfile(fid)) goto nullfile;
     if (p4_resize_file (fid, size) != 0)
         *SP = errno;
     else
         *SP = 0;
-//, fid->size = (p4ucell) (size / BPBUF);
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    pf_outs("\nERROR: trying seek on NULL file" CHECKFILE);
 }
 
 /** WRITE-FILE ( buf-ptr buf-len some-file* -- some-errno# ) [ANS]
@@ -765,15 +600,10 @@ FCode (p4_write_file)
 {
     register char *  buf = (char *) SP[2];
     register p4ucell len = SP[1];
-    register File *  fid = (File *) SP[0];
+    register FILE *  fid = (FILE *) SP[0];
 
     SP += 2;
-    if (_is_nullfile(fid)) goto nullfile;
     SP[0] = p4_write_file (buf, len, fid);
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    pf_outs("\nERROR: trying write on NULL file" CHECKFILE);
 }
 
 /** WRITE-LINE ( buf-ptr buf-len some-file* -- some-errno# ) [ANS]
@@ -785,16 +615,11 @@ FCode (p4_write_line)
 {
     register char *  buf = (char *) SP[2];
     register p4ucell len = SP[1];
-    register File *  fid = (File *) SP[0];
+    register FILE *  fid = (FILE *) SP[0];
 
     SP += 2;
-    if (_is_nullfile(fid)) goto nullfile;
     if (! (SP[0] = p4_write_file (buf, len, fid)))
-        putc ('\n', fid->f);
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    pf_outs("\nERROR: trying write on NULL file" CHECKFILE);
+        putc ('\n', fid);
 }
 
 /** FILE-STATUS ( file-ptr file-len -- file-subcode# file-errno# ) [ANS]
@@ -823,17 +648,12 @@ FCode (p4_file_status)
  */
 FCode (p4_flush_file)
 {
-    register File *fid = (File *) SP[0];
+    register FILE *fid = (FILE *) SP[0];
 
-    if (_is_nullfile(fid)) goto nullfile;
-    if (fflush (fid->f))
+    if (fflush (fid))
 	SP[0] = errno;
     else
 	SP[0] = 0;
-    return;
- nullfile:
-    SP[0] = EINVAL;
-    //P4_warn ("trying flush on NULL file");
 }
 
 /** RENAME-FILE ( oldname-ptr oldname-len newname-ptr newname-len -- newname-errno# ) [ANS]

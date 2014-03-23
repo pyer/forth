@@ -39,28 +39,17 @@
 #include "interpret.h"
 #include "terminal.h"
 
-void init_stdio( void );
-void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused);
 
 #define ___ {
 #define ____ }
-
-#ifndef HISTORY_SIZE	        /* USER-CONFIG: */
-#define HISTORY_SIZE	0x1000  /* size of command line history buffer */
-#endif
-
-/* minimum space for <# # #S HOLD #> etc. */
-#define MIN_HOLD	0x100
-/* minimum free space in PAD */
-#define MIN_PAD 	0x400
 
 /* if true: reset search order on ABORT */
 #define RESET_ORDER 	P4_TRUE
 /************************************************************************/
 
-int p4_close_file (p4_File *fid);
 FCode    (p4_only_RT);
 #define p4_longjmp_exit()	(p4_longjmp_loop('X'))
+
 /************************************************************************/
 int exitcode = 0;
 void* dictfence = NULL;
@@ -98,18 +87,6 @@ p4_dict_allocate (int items, int size, int align,
     return (PFE.dictlimit = memtop);
 }
 /************************************************************************/
-void close_files (void)
-{
-    File *f = 0;
-    for (f = PFE.files; f < PFE.files_top - 3; f++)
-    {
-        if (f->f)
-	{
-            p4_close_file (f);
-	}
-    }
-}
-
 /*
  * things => QUIT has to initialize
  */
@@ -137,10 +114,7 @@ void abort_system (void)
         memcpy (CONTEXT, p4_DFORDER, ORDER_LEN);
         CURRENT = p4_DFCURRENT;
     }
-
     BASE = 10;
-    /* close open filedescriptors except stdin, stdout and stderr */
-    close_files();
 }
 
 /** BYE ( -- ) no-return
@@ -148,7 +122,6 @@ void abort_system (void)
  */
 FCode (p4_bye)
 {
-    close_files();
     pf_outs ("\nGoodbye!\n");
     p4_longjmp_exit ();
 }
@@ -220,10 +193,6 @@ void pf_cold_system(void)
 //    FLOAT_INPUT = P4_opt.float_input;
 
 //    PFE.local = (char (*)[P4_LOCALS]) PFE.stack; /* locals are stored as zstrings */
-
-    memset (PFE.files_top - 3, 0, sizeof (File) * 3);
-
-    init_stdio();
 
     REDEFINED_MSG = P4_FALSE;
 
@@ -347,8 +316,6 @@ int pf_init_system (p4_Thread* th) /* main_init */
 
     p4_dict_allocate (HISTORY_SIZE, sizeof(char), sizeof(char),
                       (void**) & PFE.history, (void**) & PFE.history_top);
-    p4_dict_allocate (P4_MAX_FILES, sizeof(File), PFE_ALIGNOF_CELL,
-                      (void**) & PFE.files, (void**) & PFE.files_top);
 //    p4_dict_allocate (TIB_SIZE, sizeof(char), sizeof(char),
 //                      (void**) & PFE.tib, (void**) & PFE.tib_end);
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
