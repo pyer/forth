@@ -175,7 +175,7 @@ static const char* p4_loader_next_wordset (p4_Decompile* decomp)
 	if (! decomp->next) return 0;
 	xt = pf_name_from (decomp->next);
 	decomp->next = *P4_TO_LINK(xt);
-    } while (*P4_TO_CODE(xt) != P4CODE(pf_forget_wordset_RT));
+    } while (*xt != P4CODE(pf_forget_wordset_RT));
     /* assert xt is wordset_RT */
     /* FIXME: forget-layout? BODY[0] has the value? */
     ___ p4Words* ws = *(p4Words**) P4_TO_BODY(xt); 
@@ -256,39 +256,7 @@ p4_name_walk_next(p4_name_Walk* walk) {
 /* decompiler                                                           */
 /************************************************************************/
 
-#ifdef WRONG_SPRINTF		/* provision for buggy sprintf (SunOS) */
-#define SPRFIX(X) strlen(X)
-#else
-#define SPRFIX(X) X
-#endif
-
-#define UDDOTR(UD,W,BUF) pf_outs (p4_str_ud_dot_r (UD, &(BUF)[sizeof (BUF)], W,BASE))
-#define DDOTR(D,W,BUF)	pf_outs (p4_str_d_dot_r (D, &(BUF) [sizeof (BUF)], W, BASE))
-#define DOT(N,BUF)	pf_outs (p4_str_dot (N, &(BUF) [sizeof (BUF)], BASE))
-
-/* ----------------------------------------------------------------------- */
-
 typedef p4xcode* (*func_SEE) (p4xcode* , char*, p4_Semant*);
-/*
-_export p4xcode*
-p4_locals_bar_SEE (p4xcode* ip, char* p, p4_Semant* s)
-{
-    int i;
-    p += SPRFIX (sprintf (p, "LOCALS| "));
-    for (i = ((p4cell*)ip)[1]; --i >= 0;)
-        p += SPRFIX (sprintf (p, "<%c> ", 
-          'A'-1 + (unsigned)(((p4ucell*)ip)[1]) - i));
-    p += SPRFIX (sprintf (p, "| "));
-    return (ip+=2);
-}
-
-_export p4xcode* 
-p4_local_SEE (p4xcode* ip, char* p, p4_Semant* s)
-{
-    sprintf (p, "<%c> ", 'A' - 1 +  (int) *(p4cell *) ip);
-    return ++ip;
-}
-*/
 
 _export p4xcode*
 pf_literal_SEE (p4xcode* ip, char* p, p4_Semant* s)
@@ -430,59 +398,10 @@ p4_decompile_word (p4xcode* ip, char *p, p4_Decomp *d)
         return ip;
     }else{
 	/* the prim-name (or colon-name) */
-#      ifndef PFE_CALL_THREADING
         register p4char* nfa = pf_to_name (xt);
         sprintf (p, (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE) ? "POSTPONE %.*s " : "%.*s ",
 		 NAMELEN(nfa), NAMEPTR(nfa));
         return ip;
-#      else
-	/* actually, we need to find the item. In other words, we need to
-	 * find the NFA with the given CODE execution - and if it is not a
-	 * primitive then it must also match the body code. When it is a
-	 * non-primitive, then the decompiler must also skip the next 
-	 * cell (the body-reference) in the decompiled sequence.
-	 */
-#      ifdef PFE_AVOID_BUILTIN_MEMCPY
-	auto p4_Decompile decomp; 
-	memset ((&decomp), 0, sizeof (decomp)); decomp.next = PFE.atexit_wl->thread[0];
-#      else
-	auto p4_Decompile decomp = { PFE.atexit_wl->thread[0] };
-#      endif
-	while (p4_loader_next (&decomp))
-	{
-	    switch (decomp.word->loader->type)
-	    {
-	    case p4_FXCO:
-	    case p4_IXCO:
-		if (decomp.word->value.ptr != xt) continue;
-		sprintf (p, decomp.word->loader->lencode & P4xIMMEDIATE 
-			 ? "POSTPONE %s " : "%s ", decomp.word->loader->name);
-		return ip;
-	    case p4_SXCO:
-		if (decomp.word->value.semant->exec[0] != xt &&
-		    decomp.word->value.semant->exec[1] != xt) continue;
-		/* FIXME: fetch the SEE routine and decompile */
-		sprintf (p, "PoSTPoNe %s ",        decomp.word->loader->name);
-		return ip;
-	    case p4_RTCO:
-		if (decomp.word->value.runtime->exec[0] != xt) continue;
-		if (decomp.word->value.runtime->flag & P4_ONLY_CODE1)
-		    goto ouch;
-		/* we assume the next cell is the pointer to BODY: */
-		___ p4char* nfa = pf_to_name (P4_BODY_FROM(*ip)); ip++; 
-		sprintf (p, (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE)
-			 ? "POSTPONE %.*s " : "%.*s ",
-			 NAMELEN(nfa), NAMEPTR(nfa)); ____;
-		return ip;
-	    ouch:
-		/* OUCH! There is no body, so the real name is lost */
-		sprintf (p, "POSTPONe %s ",        decomp.word->loader->name);
-		return ip;
-	    }
-	}
-	strcpy (p, "?""?""?"" ");
-        return ip;
-#      endif
     }
 }
 
@@ -593,11 +512,11 @@ p4_decompile (p4_namebuf_t* nfa, p4xt xt)
     *buf = '\0';
 
     FCode (pf_cr);
-    if (     *P4_TO_CODE(xt) == P4CODE(pf_colon_RT) || 
-	     *P4_TO_CODE(xt) == P4CODE(p4_debug_colon_RT))
+    if (     *xt == P4CODE(pf_colon_RT) || 
+	     *xt == P4CODE(p4_debug_colon_RT))
     { rest = pf_colon_RT_SEE(buf,xt,nfa); goto decompile; }
-    else if (*P4_TO_CODE(xt) == P4CODE(pf_does_RT)|| 
-	     *P4_TO_CODE(xt) == P4CODE(p4_debug_does_RT))
+    else if (*xt == P4CODE(pf_does_RT)|| 
+	     *xt == P4CODE(p4_debug_does_RT))
     { rest = pf_does_RT_SEE(buf,xt,nfa); goto decompile; }
 
 #  if !defined PFE_CALL_THREADING
@@ -629,7 +548,7 @@ p4_decompile (p4_namebuf_t* nfa, p4xt xt)
 	switch (decomp.word->loader->type)
 	{
 	case p4_RTCO:
-	    if (*P4_TO_CODE(xt) != decomp.word->value.runtime->exec[0])
+	    if (*xt != decomp.word->value.runtime->exec[0])
 		continue;
 	    /* we have it! */
 	    if (decomp.word->value.runtime->run.see)
@@ -648,14 +567,14 @@ p4_decompile (p4_namebuf_t* nfa, p4xt xt)
 	case p4_FXCO:
 	case p4_IXCO:
 	case p4_XXCO:
-	    if (*P4_TO_CODE(xt) != (p4code) decomp.word->value.ptr)
+	    if (*xt != (p4code) decomp.word->value.ptr)
 	    	continue;
 	    pf_dot_name (nfa);
 	    pf_outs ((P4_NAMEFLAGS(nfa) & P4xIMMEDIATE) ? " IMMEDIATE " : "        ");
 	    print_comment ("A Prim ", decomp.wordset);
 	    goto primitive;
 	case p4_SXCO:
-	    if (*P4_TO_CODE(xt) != (p4code) decomp.word->value.semant->comp)
+	    if (*xt != (p4code) decomp.word->value.semant->comp)
 		continue;
 	    pf_dot_name (nfa);
 	    pf_outs (" ..."); 
@@ -739,11 +658,7 @@ display (p4xcode *ip)
     }
     FCode (pf_cr);
     p4_decompile_word (ip, buf, &style);
-# ifndef PFE_CALL_THREADING 
     pf_outf ("%*s%c %s", indent, "", p4_category (**ip), buf);
-# else
-    pf_outf ("%*s%c %s", indent, "", ' ',buf);
-# endif
 }
 
 static void
@@ -789,7 +704,6 @@ interaction (p4xcode *ip)
              debugging = 0;
              p4_throw (P4_ON_QUIT);
          case ' ':
-#          ifndef PFE_CALL_THREADING /*FIXME*/
              switch (p4_category (**ip))
              {
               default:
@@ -802,13 +716,9 @@ interaction (p4xcode *ip)
                   break;
               case 'd':
                   pf_outs ("\nDOES>");
-#               ifndef PFE_CALL_THREADING /*FIXME*/
                   p4_decompile_rest ((p4xt *) (*ip)[-1], 0, 4, P4_FALSE);
-#               endif
                   break;
              }
-#          endif
-             // FCode (pf_cr);
              FX (pf_cr);
              continue;
          case 'r':
@@ -834,15 +744,7 @@ interaction (p4xcode *ip)
     }
 }
 
-
-#  if !defined PFE_CALL_THREADING
-#  define  p__do_adjust_level(xt) do_adjust_level(xt);
-#  else
-#  define  p__do_adjust_level(xt) do_adjust_level (*P4_TO_CODE(xt));
-#  endif
-
-static void
-do_adjust_level (const p4xcode xt)
+static void do_adjust_level (const p4xcode xt)
 {
     if (*xt == P4CODE(pf_colon_RT) ||
 	*xt == P4CODE(p4_debug_colon_RT) ||
@@ -858,7 +760,7 @@ void pf_normal_execute (p4xt xt); // in main.c
 
 static void p4_debug_execute (p4xt xt)
 {
-    p__do_adjust_level (xt);
+    do_adjust_level (xt);
     pf_normal_execute (xt);
 }
 
@@ -972,21 +874,29 @@ FCode (p4_no_debug)
         p4_throw (P4_ON_ARG_TYPE);
 }
 
-/** (SEE) ( some-xt* -- ) [FTH]
- * decompile the token-sequence - used
- * by => SEE name
+/** SEE ( "word" -- )
+ *  decompile word - tries to show it in re-compilable form.
+ *
+ *  => (SEE) tries to display the word as a reasonable indented
+ *  source text. If you defined your own control structures or
+ *  use extended control-flow patterns, the indentation may be
+ *  suboptimal.
+ simulate:
+   : SEE  [COMPILE] ' (SEE) ; 
  */
-FCode (p4_paren_see)
+
+FCode (pf_see)
 {
-    p4_decompile (0, (void*)*SP++);
+    p4char *nfa = pf_tick_nfa();
+    p4_decompile (nfa, pf_name_from(nfa));
 }
 
 P4_LISTWORDS (debug) =
 {
 //    P4_INTO ("FORTH", 0),
-    P4_FXco ("DEBUG",		p4_debug),
-    P4_FXco ("NO-DEBUG",	p4_no_debug),
-    P4_FXco ("(SEE)",		p4_paren_see),
+    P4_FXco ("DEBUG",        p4_debug),
+    P4_FXco ("NO-DEBUG",     p4_no_debug),
+    P4_FXco ("SEE",          pf_see),
 };
 P4_COUNTWORDS (debug, "Debugger words");
 

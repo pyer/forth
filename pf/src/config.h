@@ -11,9 +11,11 @@
 #if defined ARM
 #include "config_arm.h"
 #define PF_BOOT_FILE "/etc/pf.fth"
+#define PF_HELP_FILE "/share/pf.help"
 #else
 #include "config_x86.h"
 #define PF_BOOT_FILE "/usr/local/etc/pf.fth"
+#define PF_HELP_FILE "/usr/local/share/pf.help"
 #endif
 
 #define TOTAL_SIZE (1024*1024) /* the shorthand for default-computations */

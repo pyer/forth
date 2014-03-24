@@ -66,7 +66,6 @@ struct p4_Thread
 
     p4_Wordl *voc_link;		/* link to chained word lists */
     p4_Wordl **context;	        /* dictionary search order */
-//    p4_Wordl *only__;		/* ONLY is always searched OBSOLETE */
     p4_Wordl *current;		/* points to vocabulary in extension */
     p4_Wordl **dforder;	        /* default dictionary search order */
     p4_Wordl *dfcurrent;        /* default definition wordlist */

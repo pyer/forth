@@ -237,7 +237,6 @@ void pf_boot_system(void)
      * so it can arrange for a different the DEFAULT-ORDER incl. CURRENT.
      */
     CURRENT = PFE.forth_wl;
-//    FX (pf_default_order);
 
     FENCE = DP;
     LAST  = NULL;

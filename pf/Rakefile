@@ -26,6 +26,7 @@ task :x86 do
   Rake::Task[:install].invoke
   sh "sudo install -m 755 pf /usr/local/bin/pf"
   sh "sudo install -m 755 pf.fth /usr/local/etc/pf.fth"
+  sh "sudo install -m 755 pf.help /usr/local/share/pf.help"
   sh "rm pf"
 end
 

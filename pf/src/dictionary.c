@@ -445,11 +445,7 @@ p4_Semant * p4_to_semant (p4xt xt)
 
 p4char** pf_name_to_link (const p4char* p)
 {
-#  ifdef PFE_WITH_ZNAME
-    return (p4char **) pf_aligned ((p4cell) (strchr((const char*) NAMEPTR(p), '\0')+1) );
-# else
     return (p4char **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
-# endif
 }
 
 p4char * pf_to_name (p4xt xt)
@@ -470,19 +466,6 @@ p4char * pf_to_name (p4xt xt)
          if (n > NAME_ALIGN_WIDTH)
             return NULL;
 
-#  ifdef PFE_WITH_ZNAME
-    /* Scan for flag byte. Note: this is not reliable! */
-      for (;;)
-      {
-          /* traditional: search for CHAR of name-area with a hi-bit set
-           * and assume that it is the flags/count field for the NAME */
-          if (P4_NAMEFLAGS(p) & 0x80)
-              return p;
-          if (! isprintable (*p))
-              return NULL;
-          p--;
-      }
-#  else
   /* Scan for count byte. Note: not reliable even that limits are used. */
     for (n = 0; n < (NAME_SIZE_MAX + NAME_ALIGN_WIDTH); n++, p--)
     {
@@ -493,7 +476,6 @@ p4char * pf_to_name (p4xt xt)
         if (! isprint(*p))
             return NULL;
     }
-#  endif
     return NULL;
 }
 

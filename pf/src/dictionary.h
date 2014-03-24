@@ -25,12 +25,7 @@
 #define P4_TO_DOES_BODY(C)  ((p4cell *)((p4xt)(C) + 2))
 #define P4_TO_DOES_CODE(C)  ((p4xcode **)((p4xt)(C) + 1))
 
-#ifdef PFE_CALL_THREADING
-extern const p4xcode* p4_to_code (p4xt xt);
-# define P4_TO_CODE(C)     (p4_to_code((p4xt)C))
-#else
 # define P4_TO_CODE(C)     (C)
-#endif
 
 p4char ** p4_topmost (p4_Wordl *w);
 

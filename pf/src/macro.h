@@ -24,21 +24,8 @@
 #   define NAME_SIZE_MAX     31                  /* used for buffer-sizes */
 # endif
 
-/* a ZNAME header (using a zero-terminated string as in C) does  
- * always need a seperate FFA before the name to store name flags 
- * but it does not have a seperate count byte. So, the name-pointer
- * points to the string content. In a hybrid mode however that is
- * different - the name-pointer goes to the count/flag-byte before. */
-# if defined PFE_WITH_ZNAME && defined PFE_WITH_FFA
-#   define NAMEPTR(X)   (X)
-#   define NAMELEN(X)   strlen((const char*) NAMEPTR(X))
-# elif defined PFE_WITH_ZNAME         /* hybrid mode */
-#   define NAMEPTR(X)   (((p4_namebuf_t*)(X))+1)
-#   define NAMELEN(X)   strlen((const char*) NAMEPTR(X))
-# else                                /* counted string */
 #   define NAMEPTR(X)   (((p4_namebuf_t*)(X))+1)
 #   define NAMELEN(X)   P4_NAME_MASK_LEN(*(p4_namebuf_t*)X)
-# endif
 
 # define P4_NAMESTART(X)  P4_NAME_TO_FLAGS(X)
 # define P4_NAMEFLAGS(X)  P4_NAME_USEFLAGS(X)

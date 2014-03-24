@@ -38,7 +38,6 @@
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
 #define HEXWIDTH (sizeof (p4cell) * 2)
 
-void p4_decompile (p4char* nfa, p4xt xt);
 char p4_category (p4code p);
 /* ----------------------------------------------------------------------- */
 static void pf_prCell (p4cell n)
@@ -164,6 +163,43 @@ FCode (pf_dot_status)
 }
 
 /************************************************************************/
+/** HELP ( -- )
+ *
+ */
+void pf_help(const char *name, int len)
+{
+    char buffer[256];
+    auto p4_char_t upper[UPPERMAX];
+        UPPERCOPY (upper, name, len);
+        /* this thread does contain some upper-case defs 
+           AND lower-case input shall match those definitions */
+    int found = 0;
+    FILE *fh = fopen( PF_HELP_FILE, "r" );
+    if( fh != NULL ) {
+        while( fgets( buffer, 255, fh ) != NULL ) {
+            if( found == 0 && strncmp(buffer,(char *)upper,len) == 0 ) {
+                found = 1;
+            }
+            if( found ) {
+                int buflen = strlen(buffer);
+                if( buflen < 2 )
+                    break;
+                pf_type(buffer,buflen);
+            }
+        }
+        fclose( fh );
+    } else {
+        printf( "File %s not found\n", PF_HELP_FILE );
+    }
+}
+FCode (pf_help)
+{
+    const char *fn = pf_word (' ');
+    char len = *fn++;
+    pf_help( fn, len );
+}
+
+/************************************************************************/
 
 /** DUMP ( addr len -- )
  * show a hex-dump of the given area, if it's more than a screenful
@@ -200,23 +236,6 @@ FCode (pf_dump)
     FX (pf_space);
 }
 
-/** SEE ( "word" -- )
- *  decompile word - tries to show it in re-compilable form.
- *
- *  => (SEE) tries to display the word as a reasonable indented
- *  source text. If you defined your own control structures or
- *  use extended control-flow patterns, the indentation may be
- *  suboptimal.
- simulate:
-   : SEE  [COMPILE] ' (SEE) ; 
- */
-
-FCode (pf_see)
-{
-    p4char *nfa = pf_tick_nfa();
-    p4_decompile (nfa, pf_name_from(nfa));
-}
-
 /* ----------------------------------------------------------------------- */
 /** WORDS ( -- )
  * uses CONTEXT and lists the words defined in that vocabulary.
@@ -242,7 +261,7 @@ FCode (pf_words)
     {
         p4char *w = *t;
         p4char **s = pf_name_to_link (w);
-	char c = p4_category (*P4_TO_CODE(P4_LINK_FROM (s)));
+	char c = p4_category (*P4_LINK_FROM (s));
 //        w++;
 //        int l = strlen((char *)w);
         int l = *w++;
@@ -272,8 +291,8 @@ P4_LISTWORDS (tools) =
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".MEMORY",      pf_dot_memory),
     P4_FXco (".STATUS",      pf_dot_status),
+    P4_FXco ("HELP",         pf_help),
     P4_FXco ("DUMP",         pf_dump),
-    P4_FXco ("SEE",          pf_see),
     P4_FXco ("WORDS",        pf_words),
 };
 P4_COUNTWORDS (tools, "Tools words");

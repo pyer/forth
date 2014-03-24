@@ -183,7 +183,6 @@ void p4_upper (p4_char_t *p, int n)
 static p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl)
 {
     auto p4_char_t upper[UPPERMAX];
-
         UPPERCOPY (upper, nm, l);
         /* this thread does contain some upper-case defs 
            AND lower-case input shall match those definitions */
@@ -707,55 +706,22 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
 {
     int hc;
     
-    /* p4_ZNAMES_ALLOWED might be runtime configurable in hybrid mode */
-#  if defined PFE_WITH_ZNAME
-#  define p4_ZNAMES_ALLOWED 1
-#  else 
-#  define p4_ZNAMES_ALLOWED 0
-#  endif
-
     /* move exception handling to the end of this word - esp. nametoolong */
     if (len == 0)
         p4_throw (P4_ON_ZERO_NAME);
     
-    if (! p4_ZNAMES_ALLOWED)
+#   define CHAR_SIZE_MAX      ((1 << CHAR_BIT)-1)
+    if (len > NAME_SIZE_MAX || len > CHAR_SIZE_MAX)
     {
-#       define CHAR_SIZE_MAX      ((1 << CHAR_BIT)-1)
-        if (len > NAME_SIZE_MAX || len > CHAR_SIZE_MAX)
-        {
 	    pf_outf("\nERROR: name too long '%.*s'", len, name);
 	    p4_throw (P4_ON_NAME_TOO_LONG);
-	}
     }
 
     if (REDEFINED_MSG && p4_search_wordlist (name, len, wid))
         pf_outf ("\n\"%.*s\" is redefined ", len, name);
 
     /* and now, do the p4_string_comma ... */
-# if defined PFE_WITH_ZNAME && defined PFE_WITH_FFA
-    /* the pure ZNAME style uses a flag-byte before and a zero-byte
-     * after the string - but there is no count-byte on its own. 
-     * All name-pointers go the zstring and not the flag-byte */
-    DP += 2; DP += len; FX (pf_align); 
-    LAST = DP-len -1;
-    memmove (LAST, name, len);
-    LAST[len] = '\0';      /* mark the end-of-string */
-    LAST[-1] = '\x80';     /* mark the flag-byte (see NAME-FROM) */    
-# elif defined PFE_WITH_ZNAME
-    /* in hybrid mode the name-pointer (e.g. LAST) points to the
-     * flag-byte which has also some bits left for a count. That 
-     * part is set if lower than SIZE_MAX to be compatible with
-     * old code that uses "COUNT 31 AND" to handle NAME-strings. 
-     * Since : N>LINK COUNT 31 AND 1+ ; does not work anyway we
-     * can just as well optimize to avoid copying if WORD $HEADER
-     * was used - look below for "traditional mode" for details */
-    LAST = DP++;
-    if (name != DP) memcpy(DP, name, len);
-    DP += len; *DP++ = '\0';             /* mark the end-of-string */
-    FX (pf_align);               /* will add additional '\0' zeros */ 
-    *LAST = (len > NAME_SIZE_MAX) ? 0 : len;
-    *LAST |= '\x80';     /* mark the flag-byte */    
-# elif defined PFE_WITH_FFA
+# if defined PFE_WITH_FFA
     /* for the FFA style we have to insert a flag byte before the 
      * string that might be HERE via a WORD call. However that makes
      * the string to move UP usually - so we have to compute the overall 

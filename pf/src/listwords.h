@@ -272,36 +272,4 @@ struct p4_Seman2		/* for words with different compilation */
 #define P4_STKi( NM, INFO)      { "M\377"NM, (p4code)(INFO) } /*stackhelp*/
 #define P4_STKx( NM, PCODE)     { "N\377"NM, &P4CODE(PCODE) } /*stackhelp*/
 
-#ifdef _P4_SOURCE
-/* macros to build entries in the wordlists: */
-
-#define CO(NM,PCODE)    { "p\237"NM, &P4CODE (PCODE) }
-#define CI(NM,PCODE)    { "P\377"NM, &P4CODE (PCODE) }
-#define CS(NM,SEM)      { "X\377"NM, (p4code)&P4SEMANTICS(SEM) }
-#define CX(NM,PCODE)    { "x\237"NM, &P4CODE (PCODE) } /* AUTO-INIT */
-
-#define OV(NM)          { "v\237"NM, ((p4code)0) }
-#define OC(NM,VAL)      { "c\237"NM, (p4code)(VAL) }
-#define OL(NM,VAL)      { "l\237"NM, (p4code)(VAL) }
-#define OT(NM,VAL)      { "o\237"NM, (p4code)(VAL) }
-
-#define IV(NM)          { "V\377"NM, (p4code)0) }
-#define IC(NM,VAL)      { "C\377"NM, (p4code)(VAL) }
-#define IL(NM,VAL)      { "L\377"NM, (p4code)(VAL) }
-
-/* #define VO(NM,LIST)   { "\112"NM, (p4code)(&P4WORDS(LIST,WList)) } */
-
-# if defined __IBMC__ && defined __OS2__
-  /* IBM C Set/2 thinks OFFSET_OF is no constant expr */
-# define DV(NM,MEMBER)  { "m\237"NM, (p4code)do_##MEMBER }
-# define DC(NM,MEMBER)  { "n\237"NM, (p4code)do_##MEMBER }
-# else
-# define DV(NM,MEMBER)  { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) }
-# define DC(NM,MEMBER)  { "n\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) }
-# endif
-
-#endif
-
-/*@}*/
 #endif 
-
