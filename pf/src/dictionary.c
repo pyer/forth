@@ -307,81 +307,6 @@ p4_preload_only (void)
     PFE.atexit_wl->flag |= WORDL_NOHASH; /* see environment_dump in core.c */
 }
 
-/* ---------------------------------------------------------------------- *
- * initial dictionary setup                                             
- */
-
-static void p4_load_into (const p4char* vocname, int vocname_len)
-{
-    if (! vocname) return;
-
-    ___ Wordl* voc = p4_find_wordlist (vocname, vocname_len);
-//    if (! voc) goto search_failed;
-    if (voc)
-       return;
-    ___ register int i;
-    for (i=ORDER_LEN; --i > 0; )
-    {
-	if (CONTEXT[i] == voc) 
-	{
-	    //P4_info2 ("search also '%.*s' : already there", vocname_len, vocname);
-	    return;
-	}
-    }; ____;
-    FX (pf_also);    /* the top-of-order (CONTEXT) isn't changed */
-    CONTEXT [1] = voc; /* instead we place it under-the-top */
-    //P4_info2 ("search also '%.*s' : done", vocname_len, vocname);
-    return; ____;
-// search_failed:
-    // P4_warn3 ("search also failed: no '%.*s' vocabulary (%u)", vocname_len, vocname, (unsigned) vocname_len);
-} 
-
-/* ------------------------------------------------------------------- */
-
-static FCode (p4_load_into)
-{
-    register char* vocname = (void*) *SP++;
-
-    PFE.word.len = strlen ((char*) PFE.word.ptr);
-printf("p4_load_into %s: word= %s",vocname,PFE.word.ptr);
-    /* assume: PFE.word.ptr points to the static_string we like to have */
-    TO_IN=0;
-    *DP=0; /* PARSE-WORD-NOHERE */
-    ___ register void* p = p4_find_wordlist (PFE.word.ptr, PFE.word.len);
-    if (p) 
-    {   
-puts(" YES");
-//	P4_debug1 (13, "load into old '%s'", PFE.word.ptr);
-	CURRENT = p;
-    }else{
-puts(" NO");
-	Wordl* current = 0;
-	if (vocname) {
-	    current = p4_find_wordlist (vocname, strlen(vocname));
-	//  if (! current) 
-	//	P4_warn1 ("could not find also-voc %s",  vocname);
-	}
-	if (! current) current = CURRENT;
-	//P4_info2 ("load into new '%.*s'", (int) PFE.word.len, PFE.word.ptr);
-	p4_header_comma (PFE.word.ptr, PFE.word.len, current);
-	//P4_info1 ("did comma '%p'", LAST);
-	FX_RUNTIME1 (pf_vocabulary);
-        P4_NAMEFLAGS(p4_LAST) |= P4xIMMEDIATE;
-	//P4_info1 ("done runtime '%p'", LAST);
-	CURRENT = p4_make_wordlist (LAST);
-	//P4_info1 ("load into current '%p'", CURRENT);
-    }; ____;
-    
-    if (vocname) 
-    {
-	if (! CURRENT->also)
-	    CURRENT->also = p4_find_wordlist (vocname, strlen(vocname));
-
-	/* FIXME: it does nest for INTO and ALSO ? */
-	p4_load_into (PFE.word.ptr, PFE.word.len); /* search-also */
-    }
-} 
-
 /* ------------------------------------------------------------------- */
 /**
  * (DICTVAR) forth-thread variable runtime, => VARIABLE like
@@ -591,9 +516,6 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	{
 	case p4_LOAD:
 	    FX (p4_load_words); /* RECURSION !! */
-	    continue;
-	case p4_INTO:
-	    FX (p4_load_into);
 	    continue;
 	case p4_EXPT:
 	    FX (pf_exception_string);

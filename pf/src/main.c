@@ -134,7 +134,7 @@ extern const p4Words
 P4_LISTWORDS(forth) =
 {
     P4_FXco ("BYE", p4_bye),
-    P4_INTO ("FORTH", 0),
+//    P4_INTO ("FORTH", 0),
     P4_LOAD ("", core),
     P4_LOAD ("", exception),
     P4_LOAD ("", compiler),
