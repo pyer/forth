@@ -22,14 +22,8 @@
 #include "terminal.h"
 
 #define PF_VERSION  "2.0a"
-
-#ifndef MAKETIME
 #define MAKETIME __TIME__
-#endif
-
-#ifndef MAKEDATE 
 #define MAKEDATE __DATE__
-#endif
 
 const char* pf_version_string(void)
 {

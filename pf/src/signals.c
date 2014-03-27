@@ -78,12 +78,12 @@
 #include "compiler.h"
 #include "dictionary.h"
 #include "exception.h"
-//#include "interpret.h"
+#include "interpret.h"
 
 #define ___ {
 #define ____ }
 
-char* p4_header_comma (const char *name, int len, p4_Wordl *wid);
+//char* p4_header_comma (const char *name, int len, p4_Wordl *wid);
 //FCode_RT (pf_constant_RT);
 
 typedef void (*SigHdl) (int);	/* signal handler function type */
@@ -540,7 +540,7 @@ void p4_load_signals (p4_Wordl *wid)
 
     for (s = siginfo; s < siginfo + DIM (siginfo); s++)
     {
-        p4_header_comma ((char*) s->name, strlen (s->name), wid);
+        p4_header_comma ((const p4char*) s->name, strlen (s->name), wid);
         //FX_RCOMMA (pf_constantRuntime.exec[0]);
 	FX_RUNTIME1(pf_constant);
         FX_UCOMMA (s->sig);

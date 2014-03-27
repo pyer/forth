@@ -165,19 +165,4 @@
 #define	P4_ON_INDEX_RANGE	-2051
 #define P4_ON_COMPILE_FAIL      -2052
 
-/* dstrings module (ifdef PFE_WITH_DSTRINGS_EXT) */
-# define P4_ON_SCOUNT_OVERFLOW  -2053
-# define P4_ON_SSPACE_OVERFLOW  -2054
-# define P4_ON_SGARBAGE_LOCK    -2055
-# define P4_ON_SSTACK_UNDERFLOW -2056
-# define P4_ON_SCAT_LOCK        -2057
-# define P4_ON_DSCOUNT_OVERFLOW -2058
-# define P4_ON_SFRAME_OVERFLOW  -2059
-# define P4_ON_SFRAME_ITEMS     -2060
-# define P4_ON_SFRAME_UNDERFLOW -2061
-
-/* defer-ext module */
-# define P4_ON_SYNONYM_CALLED   -2069
-
 #endif
-

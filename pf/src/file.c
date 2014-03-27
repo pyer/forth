@@ -44,10 +44,6 @@
 
 # define PFE_DIR_DELIMITER	'/'
 
-#ifndef _NULLFILE_ROBUST   /* USER-CONFIG */
-#define _NULLFILE_ROBUST 0
-#endif
-
 #define CHECKFILE " (did some FILE-OPEN fail?)"
 
 /* ================================================================= */

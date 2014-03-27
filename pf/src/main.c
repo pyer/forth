@@ -43,8 +43,6 @@
 #define ___ {
 #define ____ }
 
-/* if true: reset search order on ABORT */
-#define RESET_ORDER 	P4_TRUE
 /************************************************************************/
 
 FCode    (p4_only_RT);
@@ -106,14 +104,6 @@ void quit_system (void)
 void abort_system (void)
 {
     PFE.sp = PFE.s0;		/* stacks */
-    if (RESET_ORDER) {
-        /* reset search order:
-         * load the => DEFAULT-ORDER into the current search => ORDER
-         * - this is implicitly done when a trap is encountered.
-         */
-        memcpy (CONTEXT, p4_DFORDER, ORDER_LEN);
-        CURRENT = p4_DFCURRENT;
-    }
     BASE = 10;
 }
 
@@ -124,18 +114,6 @@ FCode (p4_bye)
 {
     pf_outs ("\nGoodbye!\n");
     p4_longjmp_exit ();
-}
-
-/************************************************************************/
-/** DEFAULT-ORDER ( -- )
- * nail the current search => ORDER so that it will even
- * survive a trap-condition. This default-order can be
- * explicitly loaded with => RESET-ORDER
- */
-FCode (pf_default_order)
-{
-    memcpy (p4_DFORDER, CONTEXT, ORDER_LEN);
-    p4_DFCURRENT = CURRENT;
 }
 
 /************************************************************************/
@@ -171,79 +149,6 @@ P4_LISTWORDS(forth) =
     P4_LOAD ("", version),
 };
 P4_COUNTWORDS(forth, "Forth Base system");
-/************************************************************************/
-/**
- * setup all system variables and initialize the dictionary
- * to reach a very clean status as if right after cold boot.
- */
-void pf_cold_system(void)
-{
-    PFE.sp = PFE.s0;
-#  ifndef P4_NO_FP
-    PFE.fp = PFE.f0;
-#  endif
-    PFE.rp = PFE.r0;
-    PFE.word.len = -1;
-    BASE = 10;
-    p4_DPL = -1;
-    PRECISION = 6;
-//    WORDL_FLAG = 0; /* implicitly enables HASHing */
-//    WORDL_FLAG |= WORDL_NOCASE;
-//    WORDL_FLAG |= WORDL_UPPER_CASE;
-//    FLOAT_INPUT = P4_opt.float_input;
-
-//    PFE.local = (char (*)[P4_LOCALS]) PFE.stack; /* locals are stored as zstrings */
-
-    REDEFINED_MSG = P4_FALSE;
-
-    /* Wipe the dictionary: */
-    memset (PFE.dict, 0, (PFE.dictlimit - PFE.dict));
-    p4_preload_only ();
-    p4_only_RT_();
-    //FX (p4_only_RT);
-    p4_load_words (&P4WORDS (forth), ONLY, 0);
-    /* last step of bootup default search-order is
-       FORTH DEFINITIONS a.k.a.  FORTH-WORDLIST CONTEXT ! DEFINITIONS
-    */
-    CURRENT = CONTEXT[0] = PFE.forth_wl; /* points to FORTH vocabulary */
-    pf_default_order_();
-    //FX (pf_default_order);
-
-    REDEFINED_MSG = P4_TRUE;
-}
-
-/**
- * setup all system variables and initialize the dictionary
- */
-void pf_boot_system(void)
-{
-    /* Action of COLD ABORT and QUIT, but don't enter the interactive QUIT */
-    REDEFINED_MSG = P4_FALSE;
-    abort_system ();
-    quit_system ();
-    REDEFINED_MSG = P4_FALSE;
-    pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-
-    /* According to the ANS Forth description, the order after BOOT must
-     * include the FORTH-WORDLIST, and the CURRENT definition-wordlist
-     * must be the FORTH-WORDLIST. Here we assume that the various LOADs
-     * before have kept atleast one occurence of FORTH-WORDLIST in the
-     * search-order but we explicitly set the CURRENT definition-wordlist
-     * Then we do DEFAULT-ORDER so it can pop up in a RESET-ORDER on ABORT
-     * BEWARE: a bootscript can arrange the items in the search-order but
-     * it can not arrange to set the CURRENT definitions-wordlist as well.
-     * Note that ONLY is always searched, so one can always get back at FORTH
-     * OTOH, in main-sub, the first include-file is loaded after boot_system
-     * so it can arrange for a different the DEFAULT-ORDER incl. CURRENT.
-     */
-    CURRENT = PFE.forth_wl;
-
-    FENCE = DP;
-    LAST  = NULL;
-
-    REDEFINED_MSG = P4_TRUE;
-}
-
 /************************************************************************/
 /* Here's main()                                                        */
 /************************************************************************/
@@ -327,7 +232,7 @@ int pf_init_system (p4_Thread* th) /* main_init */
     p4_dict_allocate (ORDER_LEN+1, sizeof(void*), sizeof(void*),
                       (void**) & PFE.context, (void**) 0);
     p4_dict_allocate (ORDER_LEN, sizeof(void*), sizeof(void*),
-                      (void**) & PFE.dforder, (void**) 0);
+                      (void**) & DFORDER, (void**) 0);
 
     if (PFE.dictlimit < PFE.dict + MIN_PAD + MIN_HOLD + 0x4000)
     {
@@ -337,9 +242,34 @@ int pf_init_system (p4_Thread* th) /* main_init */
     }
 
     /*  -- cold boot stage -- */
-    pf_cold_system();
+    PFE.sp = PFE.s0;
+#  ifndef P4_NO_FP
+    PFE.fp = PFE.f0;
+#  endif
+    PFE.rp = PFE.r0;
+    PFE.word.len = -1;
+    BASE = 10;
+    p4_DPL = -1;
+    PRECISION = 6;
+    /* Wipe the dictionary: */
+    memset (PFE.dict, 0, (PFE.dictlimit - PFE.dict));
+    p4_preload_only ();
+    p4_only_RT_();
+    //FX (p4_only_RT);
+    p4_load_words (&P4WORDS (forth), ONLY, 0);
+    /* last step of bootup default search-order is
+       FORTH DEFINITIONS a.k.a.  FORTH-WORDLIST CONTEXT ! DEFINITIONS
+    */
+    CURRENT = CONTEXT[0] = PFE.forth_wl; /* points to FORTH vocabulary */
+    // Default order
+    memcpy (DFORDER, CONTEXT, ORDER_LEN);
     /* -------- warm boot stage ------- */
-    pf_boot_system();
+    abort_system ();
+    quit_system ();
+    pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
+    CURRENT = PFE.forth_wl;
+    FENCE = DP;
+    LAST  = NULL;
     return exitcode;
 }
 

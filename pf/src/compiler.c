@@ -228,6 +228,7 @@ FCode (pf_reveal)
 FCode_XE (pf_semicolon_execution);
 FCode (pf_semicolon);
 
+/*
 #define P4RUNTIMES1_(C,E1,FLAGS,SEE)            \
 p4_Runtime2 P4RUNTIME_(C) =                     \
 { (const p4char*) "@",                          \
@@ -235,7 +236,7 @@ p4_Runtime2 P4RUNTIME_(C) =                     \
   P4CODE(C), { P4CODE(E1), NULL },              \
   { SEE, NULL, NULL }                           \
 }
-
+*/
 static P4_CODE_RUN(pf_builds_RT_SEE)
 {
     strcat (p, "CREATE ");

@@ -40,6 +40,14 @@
 #define ___ {
 #define ____ }
 
+typedef struct p4_Exception p4_Exception;
+struct p4_Exception
+{
+    struct p4_Exception* next;
+    p4cell id;
+    char const * name;
+};
+
 p4cell next_exception = 0;
 p4_Exception* exception_link;
 

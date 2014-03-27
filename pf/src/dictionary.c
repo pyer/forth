@@ -133,6 +133,15 @@ FCode (pf_also)
       CONTEXT[i] = CONTEXT[i - 1];
 }
 
+/** DEFINITIONS ( -- )
+ * make the current context-vocabulary the definition-vocabulary,
+ * that is where new names are declared in. see => ORDER
+ */
+FCode (pf_definitions)
+{
+    CURRENT = CONTEXT[0];
+}
+
 /** GET-ORDER ( -- vocn ... voc1 n )
  * get the current search order onto the stack, see => SET-ORDER
  */
@@ -165,7 +174,8 @@ FCode (pf_order)
         pf_dot_name (w->nfa);
     }
     pf_dot_name (CURRENT->nfa);
-    pf_outs ("DEFINITIONS           ");
+    pf_cr_();
+    pf_outs ("DEFINITIONS: ");
     pf_dot_name (ONLY->nfa);
 }
 
@@ -215,11 +225,6 @@ p4_Wordl * p4_find_wordlist (const p4_char_t* nm, int nmlen)
             return wl;
     } ____;
     return 0;
-}
-
-p4_Wordl * p4_find_wordlist_str (const char* nm)
-{
-    return p4_find_wordlist((p4_char_t*) nm, strlen(nm));
 }
 
 /* ---------------------------
@@ -338,18 +343,21 @@ static FCode (p4_load_into)
     register char* vocname = (void*) *SP++;
 
     PFE.word.len = strlen ((char*) PFE.word.ptr);
+printf("p4_load_into %s: word= %s",vocname,PFE.word.ptr);
     /* assume: PFE.word.ptr points to the static_string we like to have */
     TO_IN=0;
     *DP=0; /* PARSE-WORD-NOHERE */
     ___ register void* p = p4_find_wordlist (PFE.word.ptr, PFE.word.len);
     if (p) 
     {   
+puts(" YES");
 //	P4_debug1 (13, "load into old '%s'", PFE.word.ptr);
 	CURRENT = p;
     }else{
+puts(" NO");
 	Wordl* current = 0;
 	if (vocname) {
-	    current = p4_find_wordlist_str (vocname);
+	    current = p4_find_wordlist (vocname, strlen(vocname));
 	//  if (! current) 
 	//	P4_warn1 ("could not find also-voc %s",  vocname);
 	}
@@ -367,7 +375,7 @@ static FCode (p4_load_into)
     if (vocname) 
     {
 	if (! CURRENT->also)
-	    CURRENT->also = p4_find_wordlist_str (vocname);
+	    CURRENT->also = p4_find_wordlist (vocname, strlen(vocname));
 
 	/* FIXME: it does nest for INTO and ALSO ? */
 	p4_load_into (PFE.word.ptr, PFE.word.len); /* search-also */
@@ -591,12 +599,7 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	    FX (pf_exception_string);
 	    continue;
 	case p4_SXCO:
-#         ifndef HOST_WIN32
 	    ___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
-#          else  /* on WIN32, the ptr is a function that returns a SemantP */
-	    ___ p4_Semant* semant = ((p4_Semant*(*)()) (void*)(*SP++)) ();
-#         endif
-
 	    p4_header_in(CURRENT);
 	    FX_COMMA ( semant->comp );
 	    if (! (semant ->name))
@@ -728,9 +731,9 @@ FCode (pf_forget_dp)
                     CONTEXT[i] = NULL;
                 }
             
-                if (PFE.dforder[i] == VOC_LINK) 
+                if (DFORDER[i] == VOC_LINK) 
                 {
-                    PFE.dforder[i] = NULL;
+                    DFORDER[i] = NULL;
                 }
             }
         }
@@ -747,9 +750,9 @@ FCode (pf_forget_dp)
 
       for (i=0, j=0; i < ORDER_LEN; i++)
       {
-        if (PFE.dforder[i]) PFE.dforder[j++] = PFE.dforder[i];
+        if (DFORDER[i]) DFORDER[j++] = DFORDER[i];
       }
-      while (j < ORDER_LEN) PFE.dforder[j++] = NULL;
+      while (j < ORDER_LEN) DFORDER[j++] = NULL;
     }
     /* free dictionary space: */
     DP = (p4char *) new_dp; 
@@ -819,8 +822,8 @@ static void pf_create_marker (const p4_char_t* name, p4cell len, p4_Wordl* wordl
     FX_UCOMMA (0);
 
     for (i=0; i < ORDER_LEN ; i++)
-        if (p4_DFORDER[i]) 
-            FX_PCOMMA (p4_DFORDER[i]); 
+        if (DFORDER[i]) 
+            FX_PCOMMA (DFORDER[i]); 
     FX_UCOMMA (0);
 }
 */
@@ -871,9 +874,9 @@ FCode_RT (pf_marker_RT)
     for (i=0; i < ORDER_LEN ; i++)
     {
         if (! *RT)
-            p4_DFORDER[i] = 0; /* no RT++ !! */
+            DFORDER[i] = 0; /* no RT++ !! */
         else
-            p4_DFORDER[i] = (Wordl*) (*RT++);
+            DFORDER[i] = (Wordl*) (*RT++);
     }
     pf_forget (forget_address); /* will set the PFE.dp */
     /* MARKER RT wants (FORGET) to prune VOC_LINK and run DESTROYERs */
@@ -938,10 +941,12 @@ P4_LISTWORDS (dictionary) =
 //    P4_INTO ("FORTH", 0),
     P4_DVaL ("CONTEXT",      context),
     P4_DVaR ("CURRENT",      current),
+    P4_DVaL ("FORTH-WORDLIST", forth_wl),
     P4_FXco (">BODY",        pf_to_body),
     P4_FXco (">NAME",        pf_to_name),
     P4_FXco ("LATEST",       pf_latest),
     P4_FXco ("ALSO",         pf_also),
+    P4_FXco ("DEFINITIONS",  pf_definitions),
     P4_FXco ("ORDER",        pf_order),
     P4_FXco ("FORGET",	     pf_forget),
     P4_RTco ("MARKER",       pf_marker),

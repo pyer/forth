@@ -16,7 +16,7 @@
 
 struct p4_Runtime2              /* describes characteristics of CFA code */
 {
-    const p4char* type;         /* in place of p4_Word.name */
+    const char* type;         /* in place of p4_Word.name */
     long magic;                 /* mark begin of structure */
     p4cell flag;                /* the call-threading flags for the exec[]s */
     char const *name;           /* the header name for it */
@@ -67,7 +67,7 @@ p4_Semant P4SEMANTICS(C) =			\
 
 #define P4RUNTIMES1_(C,E1,FLAGS,SEE)            \
 p4_Runtime2 P4RUNTIME_(C) =                     \
-{ (const p4char*) "@",                          \
+{ (const char*) "@",                          \
   P4_RUNTIME_MAGIC, FLAGS, 0,                   \
   P4CODE(C), { P4CODE(E1), NULL },              \
   { SEE, NULL, NULL }                           \
@@ -75,7 +75,7 @@ p4_Runtime2 P4RUNTIME_(C) =                     \
 
 #define P4RUNTIMES2_(C,E1,E2,FLAGS,SEE)         \
 p4_Runtime2 P4RUNTIME_(C) =                     \
-{ (const p4char*) "@",                          \
+{ (const char*) "@",                          \
   P4_RUNTIME_MAGIC, FLAGS, 0,                   \
   P4CODE(C), { P4CODE(E1), P4CODE(E2) },        \
   { SEE, NULL, NULL },                          \

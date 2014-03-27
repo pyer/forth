@@ -26,6 +26,9 @@
 #include "terminal.h"
 
 /* -------------------------------------------------------------- */
+// display a message when a word is redefined
+int redefined_msg = 0;
+/* -------------------------------------------------------------- */
 // input buffer
 char* source;
 int length = 0;
@@ -596,7 +599,7 @@ int pf_convert_number(void)
     if (STATE)
     {
 	FX_COMPILE (pf_literal);
-        P4_COMMA_(p4_DP,value,'S',p4cell);
+        FX_SCOMMA(value);
     }else{
 	*--SP = value;
     }
@@ -717,7 +720,8 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
 	    p4_throw (P4_ON_NAME_TOO_LONG);
     }
 
-    if (REDEFINED_MSG && p4_search_wordlist (name, len, wid))
+    //if (REDEFINED_MSG && p4_search_wordlist (name, len, wid))
+    if (redefined_msg && p4_search_wordlist (name, len, wid))
         pf_outf ("\n\"%.*s\" is redefined ", len, name);
 
     /* and now, do the p4_string_comma ... */
@@ -831,6 +835,7 @@ void pf_convert_string(void)
  */
 void pf_interpret(char *buf, int len)
 {
+    redefined_msg = 1;
     source = buf;
     length = len;
 //             PFE.tib = buf;

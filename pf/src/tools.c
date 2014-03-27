@@ -155,9 +155,6 @@ FCode (pf_dot_status)
 {
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
     pf_outf ("\nmaximum wordlists in search order %u", ORDER_LEN);
-
-#  define flag(X) ((X) ? "ON " : "OFF")
-    pf_outf ("\nREDEFINED-MSG  %s", flag (REDEFINED_MSG));
     pf_outf ("\nPRECISION     %3d", (int) PRECISION);
     FX (pf_cr);
 }
@@ -250,11 +247,9 @@ FCode (pf_words)
     /* Wordl wcopy = *wl;          // clobbered while following it */
     Wordl wcopy; memcpy (&wcopy, wl, sizeof(wcopy));
 
-# ifndef WILD_TAB
 //# define WILD_TAB 26 /* traditional would be 20 (26*4=80), now 26*3=78 */
 # define WILD_TAB 20 /* traditional would be 20 (26*4=80), now 26*3=78 */
-# endif
-    
+
     FX (pf_more);
     FX (pf_cr);
     for (t = p4_topmost (&wcopy); *t; t = p4_topmost (&wcopy))

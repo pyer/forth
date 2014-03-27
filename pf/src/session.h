@@ -9,8 +9,8 @@
 */
 
 typedef struct p4_Thread	p4_Thread;
-
 typedef struct _p4_term_struct  p4_term_struct;
+typedef struct p4_Except p4_Except; /* an exception frame */
 
 #define PATH_LENGTH 256
 
@@ -24,14 +24,6 @@ struct p4_Except
     double *fpp;                /* P4_REGFP_T */
     jmp_buf jmp;
     p4_Except *prev;
-};
-
-typedef struct p4_Exception p4_Exception;
-struct p4_Exception
-{
-    struct p4_Exception* next;
-    p4cell id;
-    char const * name;
 };
 
 struct p4_Thread
@@ -68,7 +60,7 @@ struct p4_Thread
     p4_Wordl **context;	        /* dictionary search order */
     p4_Wordl *current;		/* points to vocabulary in extension */
     p4_Wordl **dforder;	        /* default dictionary search order */
-    p4_Wordl *dfcurrent;        /* default definition wordlist */
+//    p4_Wordl *dfcurrent;        /* default definition wordlist */
     p4_char_t *hld;		/* auxiliary pointer for number output */
     p4cell dpl;			/* position of input decimal point */
 
@@ -89,7 +81,7 @@ struct p4_Thread
 
 //    p4cell wordl_flag;		/* do toupper() before dictionary search */
 //    p4cell lower_case_fn;	/* do tolower() on file names */
-    p4cell redefined_msg;	/* no `"xxx" is redefined' msg if false */
+//    p4cell redefined_msg;	/* no `"xxx" is redefined' msg if false */
 //    p4cell float_input;		/* don't try floating pt input when false */
 
 //    p4ucell more;		/* for a more-like effect */
@@ -146,16 +138,13 @@ struct p4_Thread
 # define p4_DPL		(PFE.dpl)
 # define p4_FENCE	(PFE.fence)
 # define p4_LAST	(PFE.last)
-# define p4_VOC_LINK	(PFE.voc_link)
-# define p4_DFORDER     (PFE.dforder)
-# define p4_DFCURRENT   (PFE.dfcurrent)
+# define VOC_LINK	(PFE.voc_link)
+# define DFORDER     (PFE.dforder)
 
 # define DP		p4_DP
 # define DPL		p4_DPL
 # define FENCE		p4_FENCE
 # define LAST		p4_LAST
-# define VOC_LINK	p4_VOC_LINK
-# define DEFAULT_ORDER	p4_DFORDER
 
 # define p4_DP_CHAR     p4_DP
 # define p4_DP_CELL     ((p4cell*)(p4_DP))
@@ -167,14 +156,12 @@ struct p4_Thread
 # define p4_CSP			(PFE.csp)
 # define p4_BASE		(PFE.base)
 # define p4_PRECISION		(PFE.precision)
-# define p4_REDEFINED_MSG	(PFE.redefined_msg)
 
 # define SCR		p4_SCR
 # define STATE		p4_STATE
 # define CSP		p4_CSP
 # define BASE		p4_BASE
 # define PRECISION	p4_PRECISION
-# define REDEFINED_MSG	p4_REDEFINED_MSG
 
 typedef p4_Wordl 	Wordl;
 typedef p4_Except	Except;

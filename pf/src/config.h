@@ -18,6 +18,9 @@
 #define PF_HELP_FILE "/usr/local/share/pf.help"
 #endif
 
+#define PFE_WITH_FFA    1       /* use seperate FlagField */
+
+
 #define TOTAL_SIZE (1024*1024) /* the shorthand for default-computations */
 struct p4_Thread* p4TH;
 #define PFE (*p4TH)
@@ -66,7 +69,6 @@ struct p4_Thread* p4TH;
 # endif
 #endif
 
-#define PFE_WITH_FFA    1       /* use seperate FlagField */
 
 #if defined PFE_HAVE_FTELLO && defined PFE_HAVE_FSEEKO
 #define PFE_USE_FSEEKO

@@ -13,7 +13,7 @@
 #endif
 
  
-typedef unsigned char  p4char; /* hopefully an 8-bit type */
+typedef char  p4char; /* hopefully an 8-bit type */
 //typedef unsigned short p4word; /* hopefully a 16-bit type */
 
 /* a cell has atleast the size of a pointer but the type of an integer */

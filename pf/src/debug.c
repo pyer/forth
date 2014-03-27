@@ -519,19 +519,10 @@ p4_decompile (p4_namebuf_t* nfa, p4xt xt)
 	     *xt == P4CODE(p4_debug_does_RT))
     { rest = pf_does_RT_SEE(buf,xt,nfa); goto decompile; }
 
-#  if !defined PFE_CALL_THREADING
     if (*xt == (p4code) P4_TO_BODY(xt)) {
         iscode = P4_TRUE;
         rest = p4_code_RT_SEE(buf,xt,nfa); goto decompile;
     }
-#  else
-    switch (*xt->type->def) {
-    case 0:       /* code trampolin */
-    case p4_NEST: /* sbr-threading colon start */
-        iscode = P4_TRUE;
-        rest = p4_code_RT_SEE(buf,xt,nfa); goto decompile;
-    }
-#  endif
     
     /* new variant: we walk the atexit-list looking for WORDSET 
      * registerations. We walk each entry in the wordset looking for

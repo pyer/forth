@@ -13,22 +13,19 @@
 /* either have a seperate Flag-Field-Area before name or use flags
  * integrated in the (hi bits of the) count-byte of a bstring */
 # if defined PFE_WITH_FFA
-#   define P4_NAME_USEFLAGS(X)   (((p4char*)X)[-1]) /* == (*P4_NFA2FLAGS(X)) */
-#   define P4_NAME_TO_FLAGS(X)  (&((p4char*)X)[-1]) /* NFA -> FFA w/ FFA-byte */
+#   define P4_NAMEFLAGS(X)   (((p4char*)X)[-1]) /* == (*P4_NFA2FLAGS(X)) */
+#   define P4_NAMESTART(X)  (&((p4char*)X)[-1]) /* NFA -> FFA w/ FFA-byte */
 #   define P4_NAME_MASK_LEN(X)  (X)
 #   define NAME_SIZE_MAX     127                 /* C99 defines SIZE_MAX for size_t */
 # else
-#   define P4_NAME_USEFLAGS(X) (*(p4char*)X)        /* == (*P4_NFA2FLAGS(X)) */
-#   define P4_NAME_TO_FLAGS(X)  ((p4char*)X)        /* NFA -> FFA w/o FFA-byte */
+#   define P4_NAMEFLAGS(X) (*(p4char*)X)        /* == (*P4_NFA2FLAGS(X)) */
+#   define P4_NAMESTART(X)  ((p4char*)X)        /* NFA -> FFA w/o FFA-byte */
 #   define P4_NAME_MASK_LEN(X)  ((X)&31)            /* NFA -> count of namefield */
 #   define NAME_SIZE_MAX     31                  /* used for buffer-sizes */
 # endif
 
 #   define NAMEPTR(X)   (((p4_namebuf_t*)(X))+1)
 #   define NAMELEN(X)   P4_NAME_MASK_LEN(*(p4_namebuf_t*)X)
-
-# define P4_NAMESTART(X)  P4_NAME_TO_FLAGS(X)
-# define P4_NAMEFLAGS(X)  P4_NAME_USEFLAGS(X)
 
 /* useful shortcuts */
 #define P4_INC(P,T)	((*(T **)&(P))++)
@@ -41,13 +38,16 @@
 
 /* P:dictpointer X:value Y:hintchar T:typedef */
 #define	P4_COMMA_(P,X,Y,T) (*(T *)(P) = (T)(X), P4_INC (P, T))
+
 #define P4_COMMA(P,X,Y)  P4_COMMA_(P,X,Y,p4cell)
 #define P4_BCOMMA(P,X)   P4_COMMA_(P,X,0,unsigned char)
 #define P4_WCOMMA(P,X)   P4_COMMA_(P,X,0,unsigned short)
 #define P4_LCOMMA(P,X)   P4_COMMA_(P,X,0,p4ucell)
 #define P4_PCOMMA(P,X)   P4_COMMA_(P,X,0,void*)
+
 #define	FX_COMMA(X)	 P4_COMMA(p4_DP,X,0)
-#define	FX_COMMA_(X,Y)	 P4_COMMA(p4_DP,X,Y)
+//#define	FX_COMMA_(X,Y)	 P4_COMMA(p4_DP,X,Y)
+
 #define FX_FCOMMA(X)	 P4_COMMA_(p4_DP,(X),'F',double)
 #define FX_XCOMMA(X)     P4_COMMA_(p4_DP,(X),'X',p4xt)
 #define FX_ZCOMMA(X)     P4_COMMA_(p4_DP,(X),'Z',p4xt)

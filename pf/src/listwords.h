@@ -59,8 +59,6 @@ typedef p4cell  (*p4cell_p4code) (void); /* very useful sometimes */
 typedef p4ucell (*p4ucell_p4code) (void); /* very useful sometimes */
 
 typedef struct p4_Wordl  p4_Wordl;  /* body of a word list */
-//typedef struct p4_File 	 p4_File;   /* neccessary information about open files */
-typedef struct p4_Except p4_Except; /* an exception frame */
 
 struct p4_Wordl			/* a word list */
 {				/* a word list identifier is a (Wordl *) */
@@ -259,11 +257,9 @@ struct p4_Seman2		/* for words with different compilation */
 #define P4_OVOC( NM, CHAIN)     { "w\237"NM, (p4code)(CHAIN) } 
 #define P4_IVOC( NM, CHAIN)     { "W\237"NM, (p4code)(CHAIN) } 
 #define P4_NEED( NM)            { "q\237"NM }
-#ifndef __WATCOMC__
+
 #define P4_INTO( NM, DESCR)     { "i\377"NM, (p4code)(DESCR) } /*search-also*/
-#else
-#define P4_INTO( NM, DESCR)     { "i\377"NM, 0 } /*search-also*/
-#endif
+
 #define P4_LOAD( NM, WORDS)     { "I\377"NM, (p4code)(&P4WORDS(WORDS)) }
 
 #define P4_EXPT( NM, ID)        { "e\237"NM, (p4code)(ID) } /*exception*/
