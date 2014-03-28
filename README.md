@@ -11,11 +11,13 @@ My goals are just to use rake, from Ruby, and have a Forth environment on my Ubu
 Do not use my 'pf', unless you know what you want.
 Please visit the website for the project at http://pfe.sourceforge.net 
 
-TRUNK
+*TRUNK*
+
 Full pf with vocabularies
 
-BRANCH one_dictionary
-In this branch, pf has no search-order extensions, only on dictionary of Forth words.
+*BRANCH* one\_dictionary
+
+In this branch, pf has no search-order extensions, only one dictionary of Forth words.
 Words current, context, only, order, etc... are removed.
 
 
