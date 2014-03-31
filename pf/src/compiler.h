@@ -198,6 +198,4 @@ FCode  (pf_variable);
 
 FCode_XE (pf_literal_execution);
 
-
-FCode_RT (pf_vocabulary_RT);
 #endif

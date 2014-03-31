@@ -45,7 +45,6 @@
 
 /************************************************************************/
 
-FCode    (p4_only_RT);
 #define p4_longjmp_exit()	(p4_longjmp_loop('X'))
 
 /************************************************************************/
@@ -121,7 +120,6 @@ extern const p4Words
     P4WORDS(core),
     P4WORDS(exception),
     P4WORDS(compiler),
-    P4WORDS(dictionary),
     P4WORDS(interpret),
     P4WORDS(file),
     P4WORDS(terminal),
@@ -138,7 +136,6 @@ P4_LISTWORDS(forth) =
     P4_LOAD ("", core),
     P4_LOAD ("", exception),
     P4_LOAD ("", compiler),
-    P4_LOAD ("", dictionary),
     P4_LOAD ("", interpret),
     P4_LOAD ("", file),
     P4_LOAD ("", terminal),
@@ -149,10 +146,28 @@ P4_LISTWORDS(forth) =
     P4_LOAD ("", version),
 };
 P4_COUNTWORDS(forth, "Forth Base system");
-/************************************************************************/
-/* Here's main()                                                        */
-/************************************************************************/
 
+/************************************************************************/
+p4_Wordl * _make_wordlist (p4char* nfa)
+{
+    p4_Wordl *w = (Wordl *) DP; /* allocate word list in HERE */
+    P4_INC (DP, Wordl);
+    w->link = nfa;
+    LATEST = nfa;
+    return w;
+}
+
+void pf_preload_forth (void)
+{
+    auto p4_Wordl only;                   /* scratch ONLY word list */
+    memset (&only, 0, sizeof only);
+
+    p4_header_comma ("FORTH", 5, &only);
+    CURRENT = _make_wordlist (LATEST); 
+    P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+}
+
+//    LATEST = pf_create_header ("FORTH", 5);
 /**
  * note the argument
  */
@@ -229,10 +244,8 @@ int pf_init_system (p4_Thread* th) /* main_init */
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.stack, (void**) & PFE.s0);
 
-    p4_dict_allocate (ORDER_LEN+1, sizeof(void*), sizeof(void*),
-                      (void**) & PFE.context, (void**) 0);
-    p4_dict_allocate (ORDER_LEN, sizeof(void*), sizeof(void*),
-                      (void**) & DFORDER, (void**) 0);
+//    p4_dict_allocate (ORDER_LEN+1, sizeof(void*), sizeof(void*),
+//                      (void**) & PFE.context, (void**) 0);
 
     if (PFE.dictlimit < PFE.dict + MIN_PAD + MIN_HOLD + 0x4000)
     {
@@ -249,27 +262,19 @@ int pf_init_system (p4_Thread* th) /* main_init */
     PFE.rp = PFE.r0;
     PFE.word.len = -1;
     BASE = 10;
-    p4_DPL = -1;
+    DPL = -1;
     PRECISION = 6;
     /* Wipe the dictionary: */
     memset (PFE.dict, 0, (PFE.dictlimit - PFE.dict));
-    p4_preload_only ();
-    p4_only_RT_();
-    //FX (p4_only_RT);
-    p4_load_words (&P4WORDS (forth), ONLY, 0);
-    /* last step of bootup default search-order is
-       FORTH DEFINITIONS a.k.a.  FORTH-WORDLIST CONTEXT ! DEFINITIONS
-    */
-    CURRENT = CONTEXT[0] = PFE.forth_wl; /* points to FORTH vocabulary */
-    // Default order
-    memcpy (DFORDER, CONTEXT, ORDER_LEN);
+    DP = (p4char *) PFE.dict;
+    pf_preload_forth();
+    //p4_load_words (&P4WORDS (forth), ONLY, 0);
+    p4_load_words (&P4WORDS (forth), CURRENT, 0);
     /* -------- warm boot stage ------- */
     abort_system ();
     quit_system ();
     pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-    CURRENT = PFE.forth_wl;
     FENCE = DP;
-    LAST  = NULL;
     return exitcode;
 }
 
@@ -278,6 +283,8 @@ int pf_init_system (p4_Thread* th) /* main_init */
 static char memory[TOTAL_SIZE]; /* BSS */
 //struct p4_Thread* p4TH;
 
+/************************************************************************/
+/* Here's main()                                                        */
 /************************************************************************/
 int main (int argc, char** argv)
 {

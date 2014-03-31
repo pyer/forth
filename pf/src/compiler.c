@@ -218,10 +218,7 @@ FCode (pf_forward_resolve)
  */
 FCode (pf_reveal)
 {
-    if (LAST)
-        P4_NAMEFLAGS(LAST) &= ~P4xSMUDGED;
-    else
-        p4_throw (P4_ON_ARG_TYPE);
+    P4_NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
 }
 
 /* -------------------------------------------------------------- */
@@ -278,7 +275,7 @@ p4_Runtime2 pf_buildsRuntime;
 FCode (pf_builds)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_builds);
     FX_RCOMMA (pf_buildsRuntime.exec[0]);
     FX_RCOMMA (0);
@@ -291,10 +288,7 @@ P4RUNTIMES1_(pf_builds, pf_builds_RT, 0, pf_builds_RT_SEE);
 FCode_XE (pf_does_execution)
 {
     p4xt xt;
-    if (! LAST)
-        p4_throw (P4_ON_ARG_TYPE);
-
-    xt = pf_name_from (LAST);
+    xt = pf_name_from (LATEST);
     P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
     *P4_TO_DOES_CODE(xt) = PFE.ip; /* into CFA[1] */
     FX (pf_semicolon_execution);   /* double-EXIT */
@@ -316,11 +310,9 @@ FCode (pf_does)
     }else{
         /* NOTE: some details depend on pf_does_execution above */
         p4xt xt;
-        if (! LAST)
-            p4_throw (P4_ON_ARG_TYPE);
         FX (pf_align);
 
-        xt = pf_name_from (LAST);
+        xt = pf_name_from (LATEST);
         P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
         *P4_TO_DOES_CODE(xt) = (p4xcode*) DP; /* into CFA[1] */
 
@@ -372,8 +364,9 @@ FCode (pf_colon)
 {
     FX (pf_Q_exec);
 //  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
-    P4_NAMEFLAGS(p4_LAST) |= P4xSMUDGED;
+    p4_header_in(CURRENT);
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+    P4_NAMEFLAGS(LATEST) |= P4xSMUDGED;
     //FX_RUNTIME1 (pf_colon);
     FX_RCOMMA (pf_colonRuntime.exec[0]);
     FX (pf_store_csp);
@@ -415,10 +408,7 @@ P4COMPILES (pf_semicolon, pf_semicolon_execution, P4_SKIPS_NOTHING, P4_SEMICOLON
  */
 FCode (pf_immediate)
 {
-    if (LAST)
-        P4_NAMEFLAGS(LAST) |= P4xIMMEDIATE;
-    else
-        p4_throw (P4_ON_ARG_TYPE);
+    P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
 }
 
 /* -------------------------------------------------------------- */
@@ -553,7 +543,8 @@ p4_Runtime2 pf_constantRuntime;
 FCode (pf_constant)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT);
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_constant);
     FX_RCOMMA (pf_constantRuntime.exec[0]);
     FX_VCOMMA (*SP++);
@@ -586,7 +577,8 @@ p4_Runtime2 pf_valueRuntime;
 FCode (pf_value)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT);
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_value);
     FX_RCOMMA (pf_valueRuntime.exec[0]);
     FX_VCOMMA (*SP++);
@@ -611,7 +603,8 @@ p4_Runtime2 pf_variableRuntime;
 FCode (pf_variable)
 {
 //  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT); P4_NAMEFLAGS(p4_LAST) |= P4xISxRUNTIME;
+    p4_header_in(CURRENT);
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1(pf_variable);
     FX_RCOMMA (pf_variableRuntime.exec[0]);
     FX_VCOMMA (0);

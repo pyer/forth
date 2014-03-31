@@ -154,7 +154,6 @@ FCode (pf_dot_memory)
 FCode (pf_dot_status)
 {
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
-    pf_outf ("\nmaximum wordlists in search order %u", ORDER_LEN);
     pf_outf ("\nPRECISION     %3d", (int) PRECISION);
     FX (pf_cr);
 }
@@ -235,47 +234,25 @@ FCode (pf_dump)
 
 /* ----------------------------------------------------------------------- */
 /** WORDS ( -- )
- * uses CONTEXT and lists the words defined in that vocabulary.
- * usually the vocabulary to list is named directly in before.
- example:
-    FORTH WORDS  or  LOADED WORDS
+ * lists the words defined in that vocabulary.
  */
 FCode (pf_words)
 {
-    Wordl *wl = CONTEXT [0] ? CONTEXT [0] : ONLY;
-    p4char **t;
-    /* Wordl wcopy = *wl;          // clobbered while following it */
-    Wordl wcopy; memcpy (&wcopy, wl, sizeof(wcopy));
-
+    p4_namebuf_t *nfa = LATEST;		/* NFA of most recently CREATEd header */
 //# define WILD_TAB 26 /* traditional would be 20 (26*4=80), now 26*3=78 */
 # define WILD_TAB 20 /* traditional would be 20 (26*4=80), now 26*3=78 */
-
     FX (pf_more);
     FX (pf_cr);
-    for (t = p4_topmost (&wcopy); *t; t = p4_topmost (&wcopy))
+    while (nfa)
     {
-        p4char *w = *t;
-        p4char **s = pf_name_to_link (w);
-	char c = p4_category (*P4_LINK_FROM (s));
-//        w++;
-//        int l = strlen((char *)w);
-        int l = *w++;
-/*
-        if (get_outs()+WILD_TAB - get_outs()%WILD_TAB + 2 + l > get_cols() ||
-            get_outs()+WILD_TAB - get_outs()%WILD_TAB + WILD_TAB*2/3 > get_cols())
-        {
-            if (pf_more_Q())
-                break;
-        }
-*/
-        //pf_outf ("%c %.*s ", c, l, w);
+	char c = 'p'; //p4_category (pf_name_from(&nfa));
         pf_outc(c); pf_outc(' ');
-        pf_type((char *)w,l);
+        pf_dot_name(nfa);
         pf_tab (WILD_TAB);
         if (get_outs()+WILD_TAB > get_cols()) {
             FX (pf_cr);
         }
-        *t = *s;
+        nfa = *pf_name_to_link (nfa);
     }
 }
 

@@ -62,17 +62,18 @@ typedef struct p4_Wordl  p4_Wordl;  /* body of a word list */
 
 struct p4_Wordl			/* a word list */
 {				/* a word list identifier is a (Wordl *) */
-    p4char* thread[THREADS];	/* field of ptrs to first NFA of chain */
-    p4_Wordl *prev;		/* word lists are chained */
-    p4_Wordl *also;		/* search also this dictionary, kinda FIG*/
-    p4_namebuf_t* nfa;          /* corresponding vocabulary NFA */
-    p4cell  flag;		/* do to_upper, a copy of sys.world_flag */
-#define WORDL_NOCASE     (1<<0) /* FIND will match any case with any case */
-#define WORDL_NOHASH     (1<<1) /* WORDLIST not hashed into multiple buckets */
-#define WORDL_CURRENT    (1<<2) /* on new WORDLIST, make it chain to CURRENT */
-#define WORDL_UPPER_CASE (1<<3) /* FIND will match uppercased entries too */
-#define WORDL_UPPER_DEFS (1<<4) /* new definitions are placed uppercase */
-    p4ucell id;                 /* used to speed up order search (p4_find) */
+      char *link;
+////    p4char* thread[THREADS];	/* field of ptrs to first NFA of chain */
+//    p4_Wordl *prev;		/* word lists are chained */
+//    p4_Wordl *also;		/* search also this dictionary, kinda FIG*/
+//    p4_namebuf_t* nfa;          /* corresponding vocabulary NFA */
+//    p4cell  flag;		/* do to_upper, a copy of sys.world_flag */
+//#define WORDL_NOCASE     (1<<0) /* FIND will match any case with any case */
+//#define WORDL_NOHASH     (1<<1) /* WORDLIST not hashed into multiple buckets */
+//#define WORDL_CURRENT    (1<<2) /* on new WORDLIST, make it chain to CURRENT */
+//#define WORDL_UPPER_CASE (1<<3) /* FIND will match uppercased entries too */
+//#define WORDL_UPPER_DEFS (1<<4) /* new definitions are placed uppercase */
+//    p4ucell id;                 /* used to speed up order search (p4_find) */
 };
 
 /* ---------------------- Decomp support -------------------- */
@@ -158,7 +159,6 @@ struct p4_Seman2		/* for words with different compilation */
 #define p4_FXCO 'p'     /* CO */ /* ordinary primitive (code) */
 #define p4_IXCO 'P'     /* CI */ 
 #define p4_SXCO 'X'     /* CS */ /* smart-word (semant) */
-#define p4_XXCO 'x'     /* CX */ /* auto-init */
 #define p4_RTCO 'r'     /* RT */ /* creates a word with special runtime */
  
 #define p4_OVAR 'v'     /* OV */ /* ordinary variable */
@@ -211,13 +211,11 @@ struct p4_Seman2		/* for words with different compilation */
 #define P4_FXCO( NM, PCODE)     { "p\237"NM, &P4CODE (PCODE) }
 #define P4_IXCO( NM, PCODE)     { "P\377"NM, &P4CODE (PCODE) }
 #define P4_SXCO( NM, SEM)       { "X\377"NM, (p4code)&P4SEMANTICS(SEM) }
-#define P4_XXCO( NM, PCODE)     { "x\237"NM, &P4CODE (PCODE) } /* AUTO-INIT */
 #define P4_RTCO( NM, RUN)       { "r\237"NM, (p4code)&P4RUNTIME_(RUN) }
 
 #define P4_FXco( NM, PCODE)     { "p\237"NM, &P4CODE (PCODE) }
 #define P4_IXco( NM, PCODE)     { "P\377"NM, &P4CODE (PCODE) }
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&P4SEMANTICS(SEM) }
-#define P4_XXco( NM, PCODE)     { "x\237"NM, &P4CODE (PCODE) } /* AUTO-INIT */
 #define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&P4RUNTIME_(RUN) }
 
 #define P4_OVAR( NM)            { "v\237"NM, ((p4code)0) }

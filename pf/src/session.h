@@ -54,13 +54,17 @@ struct p4_Thread
        			   /* here thus C-stack gets cleaned up too */
 /*Dict*/
     p4_byte_t *fence;		/* can't forget below that address */
-    p4_namebuf_t *last;		/* NFA of most recently CREATEd header */
+//    p4_namebuf_t *last;		/* NFA of most recently CREATEd header */
+    p4_namebuf_t *latest;	/* NFA of most recently CREATEd header */
 
-    p4_Wordl *voc_link;		/* link to chained word lists */
-    p4_Wordl **context;	        /* dictionary search order */
-    p4_Wordl *current;		/* points to vocabulary in extension */
-    p4_Wordl **dforder;	        /* default dictionary search order */
+//    p4_Wordl *voc_link;		/* link to chained word lists */
+//    p4_Wordl **context;	        /* dictionary search order */
+//    p4_Wordl *current;		/* points to vocabulary in extension */
+//    p4_Wordl **dforder;	        /* default dictionary search order */
 //    p4_Wordl *dfcurrent;        /* default definition wordlist */
+/* new forth-wordlist mechanism */
+    p4_Wordl *forth_wl;
+
     p4_char_t *hld;		/* auxiliary pointer for number output */
     p4cell dpl;			/* position of input decimal point */
 
@@ -97,7 +101,6 @@ struct p4_Thread
 /* main-sub / dict-sub */
 //    int exitcode;
 //    void (*system_terminal)(void);
-    p4_Wordl *atexit_wl;	     /* atexit dictionary holder */
     p4_byte_t* volatile forget_dp;   /* temporary of forget */
 
 /* term*.c */
@@ -113,17 +116,11 @@ struct p4_Thread
     void (*on_winchg) (void);   /* = p4_query_winsize; */
     void (*on_sigalrm) (void);  /* really from signal.c */
 
-/* new forth-wordlist mechanism */
-    p4_Wordl* forth_wl;
 
     struct {
 	const p4_char_t* ptr;
 	unsigned len;          /* p4ucell is 8byte on x86_64 but */
     } word;                    /* parsing is not exceeding 16bit anyway */
-
-    void* chain_link;          /* see chain-ext.c */
-    p4_Wordl* abort_wl;        /* see engine-sub/chainlist-ext REDO-WL */
-    p4_Wordl* prompt_wl;       /* see engine-sub/chainlist-ext DO-WL */
 
     double asinh_MAX_over_4;          /* see complex-ext.c */
     double sqrt_MAX_over_4;           /* see complex-ext.c */
@@ -134,34 +131,22 @@ struct p4_Thread
 # define p4_F0 PFE.f0
 # define p4_R0 PFE.r0
 
-# define p4_DP          (PFE.dp)
-# define p4_DPL		(PFE.dpl)
-# define p4_FENCE	(PFE.fence)
-# define p4_LAST	(PFE.last)
-# define VOC_LINK	(PFE.voc_link)
-# define DFORDER     (PFE.dforder)
+# define DP     (PFE.dp)
+# define DPL	(PFE.dpl)
+# define FENCE	(PFE.fence)
+#define LATEST	(PFE.latest)
+#define CURRENT	(PFE.forth_wl)
 
-# define DP		p4_DP
-# define DPL		p4_DPL
-# define FENCE		p4_FENCE
-# define LAST		p4_LAST
-
-# define p4_DP_CHAR     p4_DP
-# define p4_DP_CELL     ((p4cell*)(p4_DP))
+# define p4_DP_CHAR     DP
+# define p4_DP_CELL     ((p4cell*)(DP))
 
 # define P4_UPPER_CASE_FLAGS (WORDL_NOCASE|WORDL_UPPER_CASE|WORDL_UPPER_DEFS)
 
-# define p4_SCR			(PFE.scr)
-# define p4_STATE		(PFE.state)
-# define p4_CSP			(PFE.csp)
-# define p4_BASE		(PFE.base)
-# define p4_PRECISION		(PFE.precision)
-
-# define SCR		p4_SCR
-# define STATE		p4_STATE
-# define CSP		p4_CSP
-# define BASE		p4_BASE
-# define PRECISION	p4_PRECISION
+# define SCR		(PFE.scr)
+# define STATE		(PFE.state)
+# define CSP		(PFE.csp)
+# define BASE		(PFE.base)
+# define PRECISION	(PFE.precision)
 
 typedef p4_Wordl 	Wordl;
 typedef p4_Except	Except;

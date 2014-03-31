@@ -8,6 +8,9 @@
 void p4_lower (p4_char_t *p, int n);
 void p4_upper (p4_char_t *p, int n);
 
+// display a message when a word is redefined
+int redefined_msg;
+
 #define UPPERMAX 32
 #define UPPERCOPY(_upper_, _nm_, _l_) \
         if ((_l_) < UPPERMAX) {       \
@@ -16,6 +19,9 @@ void p4_upper (p4_char_t *p, int n);
         } else { \
           *(int*)(_upper_) = 0; \
         }
+
+p4cell * cfa_to_body (p4xt xt);
+
 
 void pf_call (p4xt xt);
 void pf_normal_execute (p4xt xt);
@@ -29,6 +35,11 @@ FCode (pf_parse_comma_quote);
 
 p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid);
 p4char* p4_header_in (p4_Wordl* wid);
+p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl);
+
+void pf_dot_name (const p4_namebuf_t *nfa);
+char pf_category (p4code p);
+
 char* pf_word ( char );
 
 FCode (pf_tick);
@@ -37,4 +48,6 @@ FCode (pf_reveal);
 void p4_interpret(void);
 void pf_interpret( char *buf, int len );
 void pf_include(const char *name, int len);
+
+void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused);
 #endif

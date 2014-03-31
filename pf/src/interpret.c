@@ -26,6 +26,19 @@
 #include "terminal.h"
 
 /* -------------------------------------------------------------- */
+
+#define ___ {
+#define ____ }
+
+/* -------------------------------------------------------------- */
+FCode (pf_exception_string);
+FCode_RT (pf_defer_RT);
+
+FCode (p4_debug_colon_RT);
+FCode (p4_debug_colon);
+FCode (p4_debug_does_RT);
+FCode (p4_debug_does);
+/* -------------------------------------------------------------- */
 // display a message when a word is redefined
 int redefined_msg = 0;
 /* -------------------------------------------------------------- */
@@ -47,6 +60,16 @@ FCode (pf_source)
     *--SP = (p4cell) source;
     *--SP = (p4cell) length;
 }
+
+/* -------------------------------------------------------------- */
+/** LATEST ( -- nfa )
+ * return the NFA of the latest created word
+ */
+FCode (pf_latest)			
+{
+    *--SP = (p4cell) LATEST;
+}
+
 
 /* **********************************************************************
  * inner and outer interpreter
@@ -112,7 +135,6 @@ void pf_normal_execute (p4xt xt)
 }
 
 /* -------------------------------------------------------------- */
-
 /** number to digit ( val -- c )
  * make digit
  */
@@ -183,7 +205,7 @@ void p4_upper (p4_char_t *p, int n)
 
 /* -------------------------------------------------------------- */
 
-static p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl)
+p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl)
 {
     auto p4_char_t upper[UPPERMAX];
         UPPERCOPY (upper, nm, l);
@@ -217,29 +239,7 @@ static p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wo
  */
 p4char * pf_find (const p4_char_t *nm, int l)
 {
-    register Wordl **p;
-    register Wordl *wordl;
-    register p4char *w = NULL;
-    register int n = p4_wl_hash (nm, l);
-    register p4ucell searched = 0;
-    
-    for (p = CONTEXT; p <= &ONLY; p++)
-    {
-        for (wordl = *p; wordl ; wordl=wordl->also)
-	{
-	    if (searched&wordl->id)
-		continue;
-	    searched |= wordl->id;
-
-            if( wordl->flag & WORDL_NOHASH )
-                w = search_thread (nm, l, wordl->thread[0], wordl );
-            else
-                w = search_thread (nm, l, wordl->thread[n], wordl );
-
-	    if (w) return w;
-        }
-    }
-    return w; /*0*/
+    return search_thread (nm, l, CURRENT->link, CURRENT );
 }
 
 /** FIND ( name-bstr* -- name-bstr* 0 | name-xt* -1|1 ) [ANS]
@@ -265,21 +265,6 @@ FCode (pf_find)
         *--SP = 0;
 }
 
-_export p4char*
-p4_search_wordlist (const p4_char_t *nm, int l, const p4_Wordl *w)
-{
-    if( w->flag & WORDL_NOHASH )
-    { return search_thread (nm, l, w->thread[0], w ); }
-    else
-    { return search_thread (nm, l, w->thread[p4_wl_hash (nm, l)], w ); }
-}
-
-_export p4char*
-p4_next_search_wordlist (p4char* last, const p4_char_t* nm, int l, const p4_Wordl* w)
-{
-    if (! last) return last;
-    return search_thread (nm, l, *pf_name_to_link(last), w );
-}
 /* -------------------------------------------------------------- */
 /** HERE ( -- here* ) [ANS]
  * used with => WORD and many compiling words
@@ -488,7 +473,7 @@ p4_number_question (const p4_char_t *p, p4ucell n, p4dcell *d)
         base = BASE;
 
     d->lo = d->hi = 0;
-    p4_DPL = -1;
+    DPL = -1;
     p = pf_to_number (p, &n, (p4cell *) d->lo, base);
     if (n == 0)
         goto happy;
@@ -696,6 +681,219 @@ FCode (pf_backslash)
 }
 
 /* -------------------------------------------------------------- */
+void pf_dot_name (const p4_namebuf_t *nfa)
+{
+    if (! nfa || ! (P4_NAMEFLAGS(nfa) & 0x80)) {
+        pf_outs ("<?""?""?> ");  /* avoid C preprocessor trigraph */
+    } else {
+        pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
+        FX (pf_space);
+    }
+}
+
+/* -------------------------------------------------------------- */
+/**
+ * (DICTVAR) forth-thread variable runtime, => VARIABLE like
+ */
+FCode_RT (pf_dictvar_RT)
+{
+    *--SP = (p4cell) ((char *) p4TH + (WP_PFA)[0]);
+}
+
+/**
+ * (DICTGET) forth-thread constget runtime, => VALUE like
+ */
+FCode_RT (pf_dictget_RT)
+{
+    *--SP = *(p4cell *) ((char *) p4TH + (WP_PFA)[0]);
+}
+
+/** ((DEFER)) ( -- )
+ * runtime of => DEFER words
+ */
+FCode_RT (pf_defer_RT)
+{
+    register p4xt xt;
+    xt = * (p4xt*) P4_TO_DOES_BODY(P4_BODY_FROM((WP_PFA))); /* check IS-field */
+    if (xt) {
+        PFE.execute (xt);
+    }
+}
+
+/** DEFER ( 'word' -- )
+ * create a new word with ((DEFER))-semantics
+ simulate:
+   : DEFER  CREATE 0, DOES> ( the ((DEFER)) runtime ) 
+      @ ?DUP IF EXECUTE THEN ;
+   : DEFER  DEFER-RT HEADER 0 , ;
+ *
+ * declare as <c>"DEFER deferword"</c>  <br>
+ * and set as <c>"['] executionword IS deferword"</c>
+ * (in pfe, you can also use <c>TO deferword</c> to set the execution)
+ */
+FCode (pf_defer)
+{
+//    FX_RUNTIME_HEADER;
+    p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+    FX_RUNTIME1 (pf_defer);
+    FX_XCOMMA (0); /* <-- leave it blank (may become chain-link later) */
+    FX_XCOMMA (0); /* <-- put XT here in fig-mode */
+}
+P4RUNTIME1(pf_defer, pf_defer_RT);
+
+/* -------------------------------------------------------------- */
+char pf_category (p4code p)
+{
+    if (p == P4CODE(pf_colon_RT) || p == P4CODE(p4_debug_colon_RT))
+        return ':';
+    if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_value_RT) || p == P4CODE(pf_builds_RT))
+        return 'V';
+    if (p == P4CODE(pf_constant_RT))
+        return 'C';
+//    if (p == P4CODE(p4_vocabulary_RT))
+//        return 'W';
+    if (p == P4CODE(pf_does_RT) || p == P4CODE(p4_debug_does_RT))
+        return 'D';
+//    if (p == P4CODE(p4_marker_RT))
+//        return 'M';
+    if (p == P4CODE(pf_defer_RT))
+        return 'F'; 
+    /* must be primitive */
+    return 'p';
+}
+
+/* -------------------------------------------------------------- */
+/* >BODY is known to work on both DOES-style and VAR-style words
+ * and it will even return the thread-local address of remote-style words
+ * (DOES-style words are <BUILDS CREATE and DEFER in ans-forth-mode)
+ */
+p4cell * cfa_to_body (p4xt xt)
+{
+    if (! xt) return P4_TO_BODY (xt);
+
+    if (P4_XT_VALUE(xt) == FX_GET_RT (pf_dictvar) || 
+	P4_XT_VALUE(xt) == FX_GET_RT (pf_dictget)) 
+        return ((p4cell*)( (char*)p4TH + P4_TO_BODY(xt)[0] ));
+    else if (P4_XT_VALUE(xt) == FX_GET_RT (pf_builds) ||
+             P4_XT_VALUE(xt) == FX_GET_RT (pf_does) || 
+             P4_XT_VALUE(xt) == FX_GET_RT (pf_defer))
+        return P4_TO_DOES_BODY(xt); 
+    else /* it's not particularly right to let primitives return a body... */
+        /* but otherwise we would have to if-check all known var-RTs ... */
+        return P4_TO_BODY(xt);
+}
+/* -------------------------------------------------------------- */
+static FCode (p4_load_words)
+{
+    void* p = (void*) *SP++;
+    if (p) p4_load_words (p, CURRENT, 0);
+}
+
+void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
+{
+    Wordl* save_current = CURRENT;
+    int k = ws->n;
+    const p4Word* w = ws->w;
+    char dictname[NAME_SIZE_MAX+1]; char* dn;
+
+    if (!wid) wid = CURRENT;
+    
+    if (ws->name) 
+    {  
+        //P4_info1 ("load '%s'", (ws->name));
+        strncpy (dictname, ws->name, NAME_SIZE_MAX);
+        dictname[NAME_SIZE_MAX] = '\0';
+        if ((dn= strchr (dictname, ' '))
+            ||  (dn= strchr (dictname, '(')))
+            *dn = '\0';
+    }else{
+        sprintf (dictname, "%p", DP);
+    }
+    ___
+    for ( ; --k >= 0; w++)
+    {
+        if (! w) continue;
+	/* the C-name is really type-byte + count-byte away */
+	___ char type = *w->name;
+
+	PFE.word.ptr = ((p4_char_t*)(w->name+2));
+	PFE.word.len = -1;
+        *--SP = (p4cell)(w->ptr);
+	
+	switch (type)
+	{
+	case p4_LOAD:
+	    FX (p4_load_words); /* RECURSION !! */
+	    continue;
+	case p4_EXPT:
+	    FX (pf_exception_string);
+	    continue;
+	case p4_SXCO:
+	    ___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
+	    p4_header_in(CURRENT);
+	    FX_COMMA ( semant->comp );
+	    if (! (semant ->name))
+		semant ->name = (p4_namebuf_t*)( PFE.word.ptr-1 ); 
+	    /* discard const */
+	    /* BEWARE: the arg' name must come from a wordset entry to
+	       be both static and have a byte in front that could be 
+	       a maxlen
+	    */
+	    break; ____;
+	case p4_RTCO:
+	    ___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
+	    p4_header_in(CURRENT);
+	    FX_COMMA ( runtime->comp );
+	    break; ____;
+	case p4_IXCO:         /* these are real primitives which do */
+	case p4_FXCO:         /* not reference an info-block but just */
+	    p4_header_in(CURRENT);        /* the p4code directly */
+	    FX_COMMA ( *SP ); 
+	    P4_INC(SP,p4cell);
+	    break;
+	case p4_DVAR:
+//          FX_RUNTIME_HEADER;
+            p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+	    FX_RUNTIME1_RT (pf_dictvar);
+	    FX_COMMA (*SP++);
+	    break;
+	case p4_DCON:
+//          FX_RUNTIME_HEADER;
+            p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+	    FX_RUNTIME1_RT (pf_dictget);
+	    FX_COMMA (*SP++);
+	    break;
+	case p4_OVAL:
+	case p4_IVAL:
+	    FX (pf_value);
+	    break;
+	case p4_OVAR:
+	case p4_IVAR:
+	    FX (pf_variable);
+	    break;
+	case p4_OCON:
+	case p4_ICON:
+	    FX (pf_constant);
+	    break;
+	default:
+	    pf_outf("\nERROR: unknown typecode for loadlist entry "
+		      "0x%x -> \"%s\"", 
+		      type, PFE.word.ptr);
+	} /*switch*/
+	
+	/* implicit IMMEDIATE still around: */
+	if ('A' <= type && type <= 'Z')
+            P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+	____;
+    } /* for w in ws->w */
+
+    CURRENT = save_current; /* should save_current moved to the caller? */
+    LATEST = CURRENT->link;
+    ____;
+}
+
+
+/* -------------------------------------------------------------- */
 /**
  * make a new dictionary entry in the word list identified by wid 
  *                   ( TODO: delete the externs in other code portions)
@@ -707,8 +905,6 @@ FCode (pf_backslash)
  */
 p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
 {
-    int hc;
-    
     /* move exception handling to the end of this word - esp. nametoolong */
     if (len == 0)
         p4_throw (P4_ON_ZERO_NAME);
@@ -720,8 +916,7 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
 	    p4_throw (P4_ON_NAME_TOO_LONG);
     }
 
-    //if (REDEFINED_MSG && p4_search_wordlist (name, len, wid))
-    if (redefined_msg && p4_search_wordlist (name, len, wid))
+    if (redefined_msg && search_thread (name, len, wid->link, wid ))
         pf_outf ("\n\"%.*s\" is redefined ", len, name);
 
     /* and now, do the p4_string_comma ... */
@@ -732,9 +927,9 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
      * size of the namefield first and its gaps, then move it */ 
     DP += 2; DP += len; FX (pf_align); 
     memmove (DP-len, name, len); /* i.e. #define NFA2LFA(p) (p+1+*p) */
-    LAST = DP-len -1;      /* point to count-byte before the name */
-    *LAST = len;           /* set the count-byte */
-    LAST[-1] = '\x80';     /* set the flag-byte before the count-byte */
+    LATEST = DP-len -1;      /* point to count-byte before the name */
+    *LATEST = len;           /* set the count-byte */
+    LATEST[-1] = '\x80';     /* set the flag-byte before the count-byte */
 # else
     /* traditional way - avoid copying if using WORD. Just look for the
      * only if() in this code which will skip over the memcpy() call if
@@ -744,18 +939,17 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
      * that this could fail. That's the responsibility of the user code
      * to avoid this by copying into a scratch pad first. Easy I'd say.
      */
-    LAST = DP++;
+    LATEST = DP++;
     if (name != DP) memcpy(DP, name, len);
-    *LAST = len;
-    *LAST |= '\x80'; 
+    *LATEST = len;
+    *LATEST |= '\x80'; 
     DP += len; FX (pf_align); 
 # endif
 
-    /* and register in LAST and the correct (hashed) WORDLIST thread */
-    hc = (wid->flag & WORDL_NOHASH) ? 0 : p4_wl_hash (NAMEPTR(LAST), len); 
-    FX_PCOMMA (wid->thread[hc]); /* create the link field... */
-    wid->thread[hc] = LAST;
-    return LAST;
+    FX_PCOMMA (wid->link); /* create the link field... */
+    //wid->thread[hc] = LATEST;
+    wid->link = LATEST;
+    return LATEST;
 }
 
 /* -------------------------------------------------------------- */
@@ -952,7 +1146,7 @@ P4_LISTWORDS (interpret) =
 //    P4_INTO ("FORTH", 0),
     P4_DVaR ("BASE",         base),
     P4_FXco ("SOURCE",       pf_source),
-    P4_DVaR (">IN",          to_in),
+    P4_FXco ("LATEST",       pf_latest),
     P4_FXco ("SIGN",         pf_sign),
     P4_FXco ("<#",           pf_less_sh),
     P4_FXco ("#",            pf_sh),
