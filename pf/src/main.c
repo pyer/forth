@@ -35,7 +35,6 @@
 #include "listwords.h"
 #include "session.h"
 
-#include "dictionary.h"
 #include "interpret.h"
 #include "terminal.h"
 

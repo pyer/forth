@@ -38,8 +38,8 @@ CLEAN.include('target')
 
 directory 'target'
 
-file 'pf' => ['target','target/main.o','target/compiler.o','target/core.o','target/dictionary.o','target/exception.o','target/interpret.o','target/file.o','target/debug.o','target/terminal.o','target/shell.o','target/signals.o','target/tools.o','target/version.o' ] do
-  sh "gcc -D#{ARCH} -g -Wall -Wstrict-prototypes -W,--warn-common -funsigned-char -fPIC -rdynamic -o pf target/main.o target/compiler.o target/core.o target/dictionary.o target/exception.o target/interpret.o target/file.o target/debug.o target/terminal.o target/shell.o target/signals.o target/tools.o target/version.o -lm"
+file 'pf' => ['target','target/main.o','target/compiler.o','target/core.o','target/exception.o','target/interpret.o','target/file.o','target/debug.o','target/terminal.o','target/shell.o','target/signals.o','target/tools.o','target/version.o' ] do
+  sh "gcc -D#{ARCH} -g -Wall -Wstrict-prototypes -W,--warn-common -funsigned-char -fPIC -rdynamic -o pf target/main.o target/compiler.o target/core.o target/exception.o target/interpret.o target/file.o target/debug.o target/terminal.o target/shell.o target/signals.o target/tools.o target/version.o -lm"
 end
 
 rule /target\/.*\.o/ => proc {|t| t.pathmap('src/%n.c')} do |t|

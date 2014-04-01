@@ -32,7 +32,6 @@
 #include "listwords.h"
 #include "session.h"
 #include "interpret.h"
-#include "dictionary.h"
 #include "terminal.h"
 
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
@@ -245,14 +244,14 @@ FCode (pf_words)
     FX (pf_cr);
     while (nfa)
     {
-	char c = 'p'; //p4_category (pf_name_from(&nfa));
+	char c = pf_category (*name_to_cfa(nfa));
         pf_outc(c); pf_outc(' ');
         pf_dot_name(nfa);
         pf_tab (WILD_TAB);
         if (get_outs()+WILD_TAB > get_cols()) {
             FX (pf_cr);
         }
-        nfa = *pf_name_to_link (nfa);
+        nfa = *name_to_link (nfa);
     }
 }
 

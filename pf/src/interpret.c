@@ -20,7 +20,6 @@
 #include "session.h"
 
 #include "compiler.h"
-#include "dictionary.h"
 #include "exception.h"
 #include "interpret.h"
 #include "terminal.h"
@@ -70,6 +69,64 @@ FCode (pf_latest)
     *--SP = (p4cell) LATEST;
 }
 
+/* -------------------------------------------------------------- */
+p4char** name_to_link (const p4char* p)
+{
+    return (p4char **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
+}
+
+p4xt name_to_cfa (const p4_namebuf_t *p)
+{
+    return LINK_TO_CFA (name_to_link (p));
+}
+
+p4_Semant * p4_to_semant (p4xt xt)
+{
+   /* I don't like this either. :-) */
+# define TO_SEMANT(XT,ELEMENT) \
+    ((p4_Semant *)((char *)XT - OFFSET_OF (p4_Semant, ELEMENT)))
+    p4_Semant *s;
+
+    s = TO_SEMANT (xt, exec[0]);
+    if (s->magic == P4_SEMANT_MAGIC)
+        return s;
+    s = TO_SEMANT (xt, exec[1]);
+    if (s->magic == P4_SEMANT_MAGIC)
+        return s;
+    return NULL;
+# undef TO_SEMANT
+}
+
+p4char * cfa_to_name (p4xt xt)
+{
+    /* cfa to lfa */
+    p4_Semant *s = p4_to_semant (xt);
+    p4_namebuf_t ** cfa = (s ? name_to_link (s->name) : (p4_namebuf_t**)( xt - 1 )); 
+    /* cfa to lfa
+     * scan backward for count byte preceeding name of definition
+     * returns pointer to count byte of name field or NULL
+     */
+    p4_char_t * p = (p4_char_t *) cfa;
+    unsigned n;
+
+#   define NAME_ALIGN_WIDTH sizeof(p4cell) /* one or two byte */
+  /* Skip possible alignment padding: (and ZNAME end-of-string) */
+    for (n = 0; *--p == '\0'; n++)
+         if (n > NAME_ALIGN_WIDTH)
+            return NULL;
+
+  /* Scan for count byte. Note: not reliable even that limits are used. */
+    for (n = 0; n < (NAME_SIZE_MAX + NAME_ALIGN_WIDTH); n++, p--)
+    {
+        /* traditional: search for CHAR of name-area with a hi-bit set
+         * and assume that it is the flags/count field for the NAME */
+        if ((P4_NAMEFLAGS(p) & 0x80) && ((unsigned)NAMELEN(p) == n))
+            return p;
+        if (! isprint(*p))
+            return NULL;
+    }
+    return NULL;
+}
 
 /* **********************************************************************
  * inner and outer interpreter
@@ -218,7 +275,7 @@ p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl
                 if (!memcmp (nm, NAMEPTR(t), l))  break;
                 if (!memcmp (upper, NAMEPTR(t), l)) break;
             }
-            t = *pf_name_to_link (t);
+            t = *name_to_link (t);
         }
     return t;
 }
@@ -258,7 +315,7 @@ FCode (pf_find)
     p = pf_find (p + 1, *p);
     if (p)
     {
-        *SP = (p4cell) pf_name_from (p);
+        *SP = (p4cell) name_to_cfa (p);
         *--SP = (P4_NAMEFLAGS(p) & P4xIMMEDIATE) ? P4_POSITIVE : P4_NEGATIVE;
     }
     else
@@ -422,7 +479,7 @@ p4char * pf_tick_nfa (void)
  */
 p4xt pf_tick_cfa (void)
 {
-    return pf_name_from (pf_tick_nfa ());
+    return name_to_cfa (pf_tick_nfa ());
 }
 
 /** "'" ( 'name' -- name-xt* ) [ANS]
@@ -510,7 +567,7 @@ int pf_find_word(void)
     if (! nfa)
         return 0;
 
-    xt = pf_name_from (nfa);
+    xt = name_to_cfa (nfa);
     if (! STATE || (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE))
     {
 	pf_call (xt);           /* execute it now */
@@ -742,6 +799,8 @@ FCode (pf_defer)
 P4RUNTIME1(pf_defer, pf_defer_RT);
 
 /* -------------------------------------------------------------- */
+/* return the category of the word which nfa is p
+ */
 char pf_category (p4code p)
 {
     if (p == P4CODE(pf_colon_RT) || p == P4CODE(p4_debug_colon_RT))
@@ -782,6 +841,7 @@ p4cell * cfa_to_body (p4xt xt)
         /* but otherwise we would have to if-check all known var-RTs ... */
         return P4_TO_BODY(xt);
 }
+
 /* -------------------------------------------------------------- */
 static FCode (p4_load_words)
 {

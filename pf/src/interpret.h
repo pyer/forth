@@ -20,8 +20,21 @@ int redefined_msg;
           *(int*)(_upper_) = 0; \
         }
 
+/* you must differentiate between VAR-style body and DOES-style body */
+#define CFA_TO_LINK(C)   ((p4char**)(C) - 1 )
+#define LINK_TO_CFA(C)   ((p4xt)(C) + 1 )
+
+#define P4_TO_BODY(C)     ((p4cell *)((p4xt)(C) + 1))
+#define P4_BODY_FROM(P)   ((p4xt)((p4cell *)(P) - 1))
+#define P4_TO_DOES_BODY(C)  ((p4cell *)((p4xt)(C) + 2))
+#define P4_TO_DOES_CODE(C)  ((p4xcode **)((p4xt)(C) + 1))
+
+p4char** name_to_link (const p4char* p);
+p4xt name_to_cfa (const p4char *p);
+p4char * cfa_to_name (p4xt xt);
 p4cell * cfa_to_body (p4xt xt);
 
+char pf_category (p4code p);
 
 void pf_call (p4xt xt);
 void pf_normal_execute (p4xt xt);
@@ -38,7 +51,6 @@ p4char* p4_header_in (p4_Wordl* wid);
 p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl);
 
 void pf_dot_name (const p4_namebuf_t *nfa);
-char pf_category (p4code p);
 
 char* pf_word ( char );
 

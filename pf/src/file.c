@@ -37,7 +37,6 @@
 #include "session.h"
 
 #include "compiler.h"
-#include "dictionary.h"
 #include "exception.h"
 #include "interpret.h"
 #include "terminal.h"

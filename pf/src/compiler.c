@@ -28,7 +28,6 @@
 #include "session.h"
 
 #include "compiler.h"
-#include "dictionary.h"
 #include "exception.h"
 #include "interpret.h"
 
@@ -288,7 +287,7 @@ P4RUNTIMES1_(pf_builds, pf_builds_RT, 0, pf_builds_RT_SEE);
 FCode_XE (pf_does_execution)
 {
     p4xt xt;
-    xt = pf_name_from (LATEST);
+    xt = name_to_cfa (LATEST);
     P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
     *P4_TO_DOES_CODE(xt) = PFE.ip; /* into CFA[1] */
     FX (pf_semicolon_execution);   /* double-EXIT */
@@ -312,7 +311,7 @@ FCode (pf_does)
         p4xt xt;
         FX (pf_align);
 
-        xt = pf_name_from (LATEST);
+        xt = name_to_cfa (LATEST);
         P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
         *P4_TO_DOES_CODE(xt) = (p4xcode*) DP; /* into CFA[1] */
 

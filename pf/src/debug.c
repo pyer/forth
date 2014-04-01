@@ -98,7 +98,6 @@
 #include "session.h"
 
 #include "compiler.h"
-#include "dictionary.h"
 #include "exception.h"
 #include "interpret.h"
 #include "terminal.h"
@@ -173,7 +172,7 @@ static const char* p4_loader_next_wordset (p4_Decompile* decomp)
     p4xt xt;
     do {
 	if (! decomp->next) return 0;
-	xt = pf_name_from (decomp->next);
+	xt = name_to_cfa (decomp->next);
 	decomp->next = *CFA_TO_LINK(xt);
     } while (*xt != P4CODE(pf_forget_wordset_RT));
     /* assert xt is wordset_RT */
@@ -237,7 +236,7 @@ p4_lit_to_token_SEE (p4xcode* ip, char* p, p4_Semant* s)
     {
 	register p4char* itemnfa;
         xt = *ip++;
-        itemnfa = pf_to_name (xt);
+        itemnfa = cfa_to_name (xt);
         sprintf (p, "%.*s %.*s ", 
           NAMELEN(s->name), NAMEPTR(s->name),
           NAMELEN(itemnfa), NAMEPTR(itemnfa));
@@ -352,7 +351,7 @@ p4_decompile_word (p4xcode* ip, char *p, p4_Decomp *d)
         return ip;
     }else{
 	/* the prim-name (or colon-name) */
-        register p4char* nfa = pf_to_name (xt);
+        register p4char* nfa = cfa_to_name (xt);
         sprintf (p, (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE) ? "POSTPONE %.*s " : "%.*s ",
 		 NAMELEN(nfa), NAMEPTR(nfa));
         return ip;
@@ -626,7 +625,7 @@ interaction (p4xcode *ip)
              switch (pf_category (**ip))
              {
               default:
-                  p4_decompile (pf_to_name (*ip), *ip);
+                  p4_decompile (cfa_to_name (*ip), *ip);
                   break;
               case ':':
                  // FCode (pf_cr);
@@ -796,7 +795,7 @@ FCode (p4_no_debug)
 FCode (pf_see)
 {
     p4char *nfa = pf_tick_nfa();
-    p4_decompile (nfa, pf_name_from(nfa));
+    p4_decompile (nfa, name_to_cfa(nfa));
 }
 
 P4_LISTWORDS (debug) =
