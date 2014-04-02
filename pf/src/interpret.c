@@ -29,6 +29,8 @@
 #define ___ {
 #define ____ }
 
+#define PAD	((p4_char_t *)PFE.dp + MIN_HOLD)
+#define HLD	hold
 /* -------------------------------------------------------------- */
 FCode (pf_exception_string);
 FCode_RT (pf_defer_RT);
@@ -41,9 +43,12 @@ FCode (p4_debug_does);
 // display a message when a word is redefined
 int redefined_msg = 0;
 /* -------------------------------------------------------------- */
+p4_char_t *hold;		/* auxiliary pointer for number output */
+/* -------------------------------------------------------------- */
 // input buffer
 char* source;
 int length = 0;
+int to_in = 0;
 
 void print_source(void)
 {
@@ -151,10 +156,10 @@ void pf_call_loop (p4xt xt)
     p4_Except stop;
 
     static p4code call_stop = P4CODE (pf_call_stop);
-    p4xcode list[3];
+    p4xt list[3];
     list[0] = xt;
     list[1] = &call_stop;
-    list[2] = (p4xcode) &stop;
+    list[2] = (p4xt) &stop;
 
     PFE.ip = list;
     PFE.wp = *PFE.ip;
@@ -176,7 +181,7 @@ void pf_call_loop (p4xt xt)
  */
 void pf_call (p4xt xt)
 {
-    p4xcode *saved_ip = PFE.ip;
+    p4xt *saved_ip = PFE.ip;
     pf_call_loop (xt);
     PFE.ip = saved_ip;
 }
@@ -261,25 +266,6 @@ void p4_upper (p4_char_t *p, int n)
 }
 
 /* -------------------------------------------------------------- */
-
-p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl)
-{
-    auto p4_char_t upper[UPPERMAX];
-        UPPERCOPY (upper, nm, l);
-        /* this thread does contain some upper-case defs 
-           AND lower-case input shall match those definitions */
-        while (t)
-        {
-            if (! (P4_NAMEFLAGS(t) & P4xSMUDGED) && NAMELEN(t) == l)
-            {
-                if (!memcmp (nm, NAMEPTR(t), l))  break;
-                if (!memcmp (upper, NAMEPTR(t), l)) break;
-            }
-            t = *name_to_link (t);
-        }
-    return t;
-}
-
 /* search all word lists in the search order for name, return NFA 
  * (we use the id speedup here - the first WLs have each a unique bitmask
  *  in the wl->id. Especially the FORTH wordlist can be present multiple
@@ -294,9 +280,21 @@ p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl
  *  where that is really a problem - in my setups it happens that the ORDER
  *  overflows much before getting duplicates other than the basic wordlists.
  */
-p4char * pf_find (const p4_char_t *nm, int l)
+p4char* pf_find (const p4_char_t *nm, int l)
 {
-    return search_thread (nm, l, CURRENT->link, CURRENT );
+    auto p4_char_t upper[UPPERMAX];
+        UPPERCOPY (upper, nm, l);
+        /* this thread does contain some upper-case defs 
+           AND lower-case input shall match those definitions */
+        p4_namebuf_t *nfa = LATEST;		/* NFA of most recently CREATEd header */
+        while (nfa) {
+            if (! (P4_NAMEFLAGS(nfa) & P4xSMUDGED) && NAMELEN(nfa) == l) {
+                if (!memcmp (nm, NAMEPTR(nfa), l))  break;
+                if (!memcmp (upper, NAMEPTR(nfa), l)) break;
+            }
+            nfa = *name_to_link (nfa);
+        }
+    return nfa;
 }
 
 /** FIND ( name-bstr* -- name-bstr* 0 | name-xt* -1|1 ) [ANS]
@@ -430,11 +428,11 @@ void pf_skip_spaces(void)
 //    const p4_char_t *q = PFE.tib;
     char *q=source;
     int   n = length;
-    int   i = TO_IN;
+    int   i = to_in;
 
     while ( i < n && isascii (q[i]) && isspace (q[i]) )
              i++;
-    TO_IN = i;
+    to_in = i;
 }
 
 void pf_parse_word( char delimiter )
@@ -442,19 +440,18 @@ void pf_parse_word( char delimiter )
 //    const p4_char_t *q = PFE.tib;
     char *q=source;
     int   n = length;
-    int   i = TO_IN;
+    int   i = to_in;
 
     PFE.word.ptr = (p4_char_t*) q + i;
     PFE.word.len = 0;
 
-//printf("n=%d >IN=%d [%s]\n",n,(int)TO_IN,TIB);
     /* BL && QUOTED -> before whitespace and after doublequote */
     while ( i < n && q[i]>=' ' && q[i]!=delimiter ) {
         i++;
     }
-    PFE.word.len = i - TO_IN;
+    PFE.word.len = i - to_in;
     /* put the ">IN" pointer just after the delimiter that was found */
-    TO_IN = i+1;
+    to_in = i+1;
 }
 
 /* -------------------------------------------------------------- */
@@ -530,7 +527,6 @@ p4_number_question (const p4_char_t *p, p4ucell n, p4dcell *d)
         base = BASE;
 
     d->lo = d->hi = 0;
-    DPL = -1;
     p = pf_to_number (p, &n, (p4cell *) d->lo, base);
     if (n == 0)
         goto happy;
@@ -656,6 +652,7 @@ FCode (pf_dot)
 {
     char sign=' ';
     FX (pf_less_sh);
+    pf_hold (' ');
 
     if (*SP < 0) {
         sign = '-';
@@ -734,7 +731,7 @@ FCode (pf_paren)
  */
 FCode (pf_backslash)
 {
-        TO_IN = length;
+        to_in = length;
 }
 
 /* -------------------------------------------------------------- */
@@ -791,7 +788,8 @@ FCode_RT (pf_defer_RT)
 FCode (pf_defer)
 {
 //    FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+    p4_header_in();
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (pf_defer);
     FX_XCOMMA (0); /* <-- leave it blank (may become chain-link later) */
     FX_XCOMMA (0); /* <-- put XT here in fig-mode */
@@ -843,21 +841,18 @@ p4cell * cfa_to_body (p4xt xt)
 }
 
 /* -------------------------------------------------------------- */
-static FCode (p4_load_words)
+static FCode (pf_load_words)
 {
     void* p = (void*) *SP++;
-    if (p) p4_load_words (p, CURRENT, 0);
+    if (p) pf_load_words (p);
 }
 
-void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
+void pf_load_words (const p4Words* ws)
 {
-    Wordl* save_current = CURRENT;
     int k = ws->n;
     const p4Word* w = ws->w;
     char dictname[NAME_SIZE_MAX+1]; char* dn;
 
-    if (!wid) wid = CURRENT;
-    
     if (ws->name) 
     {  
         //P4_info1 ("load '%s'", (ws->name));
@@ -869,7 +864,7 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
     }else{
         sprintf (dictname, "%p", DP);
     }
-    ___
+
     for ( ; --k >= 0; w++)
     {
         if (! w) continue;
@@ -883,14 +878,14 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	switch (type)
 	{
 	case p4_LOAD:
-	    FX (p4_load_words); /* RECURSION !! */
+	    FX (pf_load_words); /* RECURSION !! */
 	    continue;
 	case p4_EXPT:
 	    FX (pf_exception_string);
 	    continue;
 	case p4_SXCO:
 	    ___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
-	    p4_header_in(CURRENT);
+	    p4_header_in();
 	    FX_COMMA ( semant->comp );
 	    if (! (semant ->name))
 		semant ->name = (p4_namebuf_t*)( PFE.word.ptr-1 ); 
@@ -902,24 +897,24 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	    break; ____;
 	case p4_RTCO:
 	    ___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
-	    p4_header_in(CURRENT);
+	    p4_header_in();
 	    FX_COMMA ( runtime->comp );
 	    break; ____;
 	case p4_IXCO:         /* these are real primitives which do */
 	case p4_FXCO:         /* not reference an info-block but just */
-	    p4_header_in(CURRENT);        /* the p4code directly */
+	    p4_header_in();   /* the p4code directly */
 	    FX_COMMA ( *SP ); 
 	    P4_INC(SP,p4cell);
 	    break;
 	case p4_DVAR:
-//          FX_RUNTIME_HEADER;
-            p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+            p4_header_in();
+            P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictvar);
 	    FX_COMMA (*SP++);
 	    break;
 	case p4_DCON:
-//          FX_RUNTIME_HEADER;
-            p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+            p4_header_in();
+            P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictget);
 	    FX_COMMA (*SP++);
 	    break;
@@ -947,9 +942,6 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
 	____;
     } /* for w in ws->w */
 
-    CURRENT = save_current; /* should save_current moved to the caller? */
-    LATEST = CURRENT->link;
-    ____;
 }
 
 
@@ -963,8 +955,10 @@ void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused)
  * each variant has restrictions on header field alignments.
  * 
  */
-p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
+p4char* p4_header_comma (const p4char *name, int len)
 {
+//printf("\nlatest %x  link %x",LATEST,wid->link);
+    p4char *last = LATEST;
     /* move exception handling to the end of this word - esp. nametoolong */
     if (len == 0)
         p4_throw (P4_ON_ZERO_NAME);
@@ -976,7 +970,7 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
 	    p4_throw (P4_ON_NAME_TOO_LONG);
     }
 
-    if (redefined_msg && search_thread (name, len, wid->link, wid ))
+    if (redefined_msg && pf_find(name, len))
         pf_outf ("\n\"%.*s\" is redefined ", len, name);
 
     /* and now, do the p4_string_comma ... */
@@ -1005,27 +999,23 @@ p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid)
     *LATEST |= '\x80'; 
     DP += len; FX (pf_align); 
 # endif
-
-    FX_PCOMMA (wid->link); /* create the link field... */
-    //wid->thread[hc] = LATEST;
-    wid->link = LATEST;
+    FX_PCOMMA (last); /* create the link field... */
     return LATEST;
 }
 
 /* -------------------------------------------------------------- */
-p4char* p4_header_in (p4_Wordl* wid)
+p4char* p4_header_in (void)
 {
-//printf("PFE.word.len=%d\n",PFE.word.len);
     /* quick path for wordset-loader: */
     if (PFE.word.len == -1) {
       PFE.word.len = strlen ((char*) PFE.word.ptr);
-      TO_IN = 0;
     } else {
       pf_skip_spaces();
       pf_parse_word(' ');
     }
     *DP = 0; /* PARSE-WORD-NOHERE */
-    return p4_header_comma (PFE.word.ptr, PFE.word.len, wid);
+    p4char *h = p4_header_comma (PFE.word.ptr, PFE.word.len);
+    return h;
 }
 
 /* -------------------------------------------------------------- */
@@ -1081,11 +1071,6 @@ void pf_convert_string(void)
 /* -------------------------------------------------------------- */
 /**
  * the => INTERPRET as called by the outer interpreter
-    char *q=source;
-    int   n = length;
-    int   i = TO_IN;
-
-    PFE.word.ptr = (p4_char_t*) q + i;
  */
 void pf_interpret(char *buf, int len)
 {
@@ -1093,15 +1078,15 @@ void pf_interpret(char *buf, int len)
     source = buf;
     length = len;
 //             PFE.tib = buf;
-    TO_IN = 0;
-    while( TO_IN < length ) {
+    to_in = 0;
+    while( to_in < length ) {
 	/* the parsed string is in PFE.word.ptr / PFE.word.len,
 	 * and by setting the HERE-string to length null, THROW
 	 * will not try to report it but instead it prints PFE.word.
 	 */
         pf_skip_spaces();
-        if ( *(source + TO_IN) == '"' ) {
-            TO_IN++;
+        if ( *(source + to_in) == '"' ) {
+            to_in++;
             pf_parse_word('"');
             pf_convert_string();
             continue;

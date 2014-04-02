@@ -276,6 +276,7 @@ FCode (p4_to_r)
     FX (pf_Q_comp);
     FX_COMPILE (p4_to_r);
 }
+
 FCode_XE (p4_to_r_execution)
 {
 //#define P4_PUSH(X,P)    (*P4_DEC (P, p4cell) = (X))
@@ -284,8 +285,7 @@ FCode_XE (p4_to_r_execution)
 //    *P4_DEC (RP, p4cell) = *SP++;
     *(--(*(p4cell **)&(RP))) = *SP++;
 }
-P4COMPILES (p4_to_r, p4_to_r_execution,
-	    P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILES (p4_to_r, p4_to_r_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 
 /** ?DUP ( 0 -- 0 | value! -- value! value! | value -- 0 | value! value! ) [ANS]

@@ -135,23 +135,15 @@ FCode (pf_dot_s)
 # endif
 }
 
-/** .MEMORY ( -- ) [FTH]
+/** .STATUS ( -- ) [FTH]
+ * display internal variables and memory status
  */
-FCode (pf_dot_memory)
+FCode (pf_dot_status)
 {
     pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4celll) (PFE.dictlimit - PFE.dict),(p4celll) (PFE.dp - PFE.dict));
     pf_outf ("\nStack space:         %7ld cells",  (p4celll) (PFE.s0 - PFE.stack));  /* sizeof (p4cell) */
     pf_outf ("\nFloating stack space:%7ld floats", (p4celll) (PFE.f0 - PFE.fstack)); /* sizeof (double) */
     pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4celll) (PFE.r0 - PFE.rstack));  /* sizeof (p4xt**) */
-    FX (pf_cr);
-}
-
-/** .STATUS ( -- ) [FTH]
- * display internal variables
- : .STATUS .SEARCHPATHS .DICTVARS .REGSUSED ;
- */
-FCode (pf_dot_status)
-{
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
     pf_outf ("\nPRECISION     %3d", (int) PRECISION);
     FX (pf_cr);
@@ -260,7 +252,6 @@ P4_LISTWORDS (tools) =
 {
 //    P4_INTO ("FORTH", 0),
     P4_FXco (".S",           pf_dot_s),
-    P4_FXco (".MEMORY",      pf_dot_memory),
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco ("HELP",         pf_help),
     P4_FXco ("DUMP",         pf_dump),

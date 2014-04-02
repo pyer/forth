@@ -90,9 +90,6 @@ Display copyright information.
 Display license information.
 The basic PF system is licensed under the terms of the LGPL (Lesser GNU Public License)
 
-.MEMORY
-Display memory information.
-
 .S
 Display the stack contents.
 
@@ -445,8 +442,6 @@ FILL
 FIND
 
 FLUSH-FILE
-
-FORGET
 
 FORTH ( -- )
 Transform the search order consisting of widn, . . . wid2, wid1 (where wid1 is searched

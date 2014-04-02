@@ -84,7 +84,6 @@ typedef p4cell p4_bool_t;          /* and as boolean flag */
 
 typedef void (*p4code) (void);		/* pointer to executable code */
 typedef p4code *p4xt;			/* type of the "execution token" */
-typedef p4xt    p4xcode;                /* compiled "execution token" */
 
 /* declare a primitive */
 #define  FCode(X)    void X##_(void) 

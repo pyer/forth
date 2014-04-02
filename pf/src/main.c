@@ -35,6 +35,7 @@
 #include "listwords.h"
 #include "session.h"
 
+#include "exception.h"
 #include "interpret.h"
 #include "terminal.h"
 
@@ -43,24 +44,7 @@
 #define ____ }
 
 /************************************************************************/
-
-#define p4_longjmp_exit()	(p4_longjmp_loop('X'))
-
-/************************************************************************/
 int exitcode = 0;
-void* dictfence = NULL;
-
-jmp_buf loop_jump;       /* QUIT and ABORT do a THROW which longjmp() */
-		    /* here thus C-stack gets cleaned up too */
-
-/************************************************************************/
-/**
- * just call longjmp on PFE.loop
- */
-void p4_longjmp_loop(int arg)
-{
-    longjmp (PFE.loop, arg);
-}
 
 /************************************************************************/
 /**
@@ -95,7 +79,6 @@ void quit_system (void)
     PFE.execute = pf_normal_execute;
 }
 
-
 /*
  * things => ABORT has to initialize
  */
@@ -111,7 +94,7 @@ void abort_system (void)
 FCode (p4_bye)
 {
     pf_outs ("\nGoodbye!\n");
-    p4_longjmp_exit ();
+    pf_longjmp_exit ();
 }
 
 /************************************************************************/
@@ -131,7 +114,6 @@ extern const p4Words
 P4_LISTWORDS(forth) =
 {
     P4_FXco ("BYE", p4_bye),
-//    P4_INTO ("FORTH", 0),
     P4_LOAD ("", core),
     P4_LOAD ("", exception),
     P4_LOAD ("", compiler),
@@ -147,26 +129,6 @@ P4_LISTWORDS(forth) =
 P4_COUNTWORDS(forth, "Forth Base system");
 
 /************************************************************************/
-p4_Wordl * _make_wordlist (p4char* nfa)
-{
-    p4_Wordl *w = (Wordl *) DP; /* allocate word list in HERE */
-    P4_INC (DP, Wordl);
-    w->link = nfa;
-    LATEST = nfa;
-    return w;
-}
-
-void pf_preload_forth (void)
-{
-    auto p4_Wordl only;                   /* scratch ONLY word list */
-    memset (&only, 0, sizeof only);
-
-    p4_header_comma ("FORTH", 5, &only);
-    CURRENT = _make_wordlist (LATEST); 
-    P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
-}
-
-//    LATEST = pf_create_header ("FORTH", 5);
 /**
  * note the argument
  */
@@ -211,40 +173,30 @@ int pf_init_system (p4_Thread* th) /* main_init */
 
     /* _______________ dictionary block __________________ */
 
-    if (! dictfence)
-    {
-        dictfence = calloc (1, (size_t) total_size);
-        if (dictfence)
-        {
+    PFE.dict = calloc (1, (size_t) total_size);
+    if (PFE.dict) {
             printf("[%p] newmem at %p len %lu\n",
-		      p4TH, dictfence, total_size);
-        }else{
+		      p4TH, PFE.dict, total_size);
+    }else{
             printf("[%p] FAILED to alloc any base memory (len %lu): %s\n",
 		      p4TH, total_size, strerror(errno));
             puts ("ERROR: out of memory");
 	    exitcode = 6;
-	    p4_longjmp_exit ();
-        }
+	    pf_longjmp_exit ();
     }
 
     /* ________________ initialize dictionary _____________ */
 
-    PFE.dict = dictfence;
     PFE.dictlimit = PFE.dict + total_size;
 
     p4_dict_allocate (HISTORY_SIZE, sizeof(char), sizeof(char),
                       (void**) & PFE.history, (void**) & PFE.history_top);
-//    p4_dict_allocate (TIB_SIZE, sizeof(char), sizeof(char),
-//                      (void**) & PFE.tib, (void**) & PFE.tib_end);
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.rstack, (void**) & PFE.r0);
     p4_dict_allocate (stack_size, sizeof(p4cell),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.stack, (void**) & PFE.s0);
-
-//    p4_dict_allocate (ORDER_LEN+1, sizeof(void*), sizeof(void*),
-//                      (void**) & PFE.context, (void**) 0);
 
     if (PFE.dictlimit < PFE.dict + MIN_PAD + MIN_HOLD + 0x4000)
     {
@@ -261,26 +213,24 @@ int pf_init_system (p4_Thread* th) /* main_init */
     PFE.rp = PFE.r0;
     PFE.word.len = -1;
     BASE = 10;
-    DPL = -1;
     PRECISION = 6;
     /* Wipe the dictionary: */
     memset (PFE.dict, 0, (PFE.dictlimit - PFE.dict));
     DP = (p4char *) PFE.dict;
-    pf_preload_forth();
-    //p4_load_words (&P4WORDS (forth), ONLY, 0);
-    p4_load_words (&P4WORDS (forth), CURRENT, 0);
+    /* Create first word */
+    p4_header_comma ("FORTH", 5);
+    P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+    /* and load other words */
+    pf_load_words (&P4WORDS (forth));
     /* -------- warm boot stage ------- */
     abort_system ();
     quit_system ();
     pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-    FENCE = DP;
     return exitcode;
 }
 
-
 /************************************************************************/
 static char memory[TOTAL_SIZE]; /* BSS */
-//struct p4_Thread* p4TH;
 
 /************************************************************************/
 /* Here's main()                                                        */
@@ -294,7 +244,8 @@ int main (int argc, char** argv)
     memset (thread, 0, sizeof(p4_Thread));
     pf_init_system(thread);
     exitcode = 0;
-    switch (setjmp (thread->loop))
+    //switch (setjmp (thread->loop))
+    switch (setjmp (jump_loop))
     {           /* classify unhandled throw codes */
     case 'A': /* do abort */
          abort_system();

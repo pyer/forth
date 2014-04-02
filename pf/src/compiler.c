@@ -213,7 +213,6 @@ FCode (pf_forward_resolve)
  * the FIG definition toggles the => SMUDGE bit, and not all systems have
  * a smudge bit - instead one should use => REVEAL or => HIDE
  : REVEAL LAST @ FLAGS@ SMUDGE-MASK INVERT AND LAST @ FLAGS! ;
- : REVEAL LAST @ CHAIN-INTO-CURRENT ;
  */
 FCode (pf_reveal)
 {
@@ -273,8 +272,8 @@ FCode (pf_builds_RT)
 p4_Runtime2 pf_buildsRuntime;
 FCode (pf_builds)
 {
-//  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT); P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+    p4_header_in();
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_builds);
     FX_RCOMMA (pf_buildsRuntime.exec[0]);
     FX_RCOMMA (0);
@@ -313,7 +312,7 @@ FCode (pf_does)
 
         xt = name_to_cfa (LATEST);
         P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
-        *P4_TO_DOES_CODE(xt) = (p4xcode*) DP; /* into CFA[1] */
+        *P4_TO_DOES_CODE(xt) = (p4xt*) DP; /* into CFA[1] */
 
         /* now, see pf_colon */
         FX (pf_store_csp);
@@ -342,7 +341,7 @@ P4RUNTIME1(pf_does, pf_does_RT);
 FCode_RT (pf_colon_RT)
 {
     *--RP = IP;
-    IP = (p4xcode *) WP_PFA;
+    IP = (p4xt *) WP_PFA;
 }
 
 FCode (pf_colon_EXIT)
@@ -362,8 +361,7 @@ p4_Runtime2 pf_colonRuntime;
 FCode (pf_colon)
 {
     FX (pf_Q_exec);
-//  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT);
+    p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     P4_NAMEFLAGS(LATEST) |= P4xSMUDGED;
     //FX_RUNTIME1 (pf_colon);
@@ -541,8 +539,7 @@ FCode_RT (pf_constant_RT)
 p4_Runtime2 pf_constantRuntime;
 FCode (pf_constant)
 {
-//  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT);
+    p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_constant);
     FX_RCOMMA (pf_constantRuntime.exec[0]);
@@ -575,8 +572,7 @@ FCode_RT (pf_value_RT)
 p4_Runtime2 pf_valueRuntime;
 FCode (pf_value)
 {
-//  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT);
+    p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1 (pf_value);
     FX_RCOMMA (pf_valueRuntime.exec[0]);
@@ -601,8 +597,7 @@ FCode_RT (pf_variable_RT)
 p4_Runtime2 pf_variableRuntime;
 FCode (pf_variable)
 {
-//  FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT);
+    p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     //FX_RUNTIME1(pf_variable);
     FX_RCOMMA (pf_variableRuntime.exec[0]);
@@ -702,7 +697,7 @@ FCode (pf_bracket_compile)
 }
 
 /* -------------------------------------------------------------- */
-#define	FX_BRANCH	(IP = (p4xcode*)*IP)
+#define	FX_BRANCH	(IP = (p4xt*)*IP)
 #define FX_SKIP_BRANCH  (IP++)
 
 /** "(?BRANCH)" ( -- ) [HIDDEN]
@@ -844,6 +839,128 @@ FCode (pf_again)
     FX (pf_backward_resolve);
 }
 P4COMPILES (pf_again, pf_branch_execution, P4_SKIPS_OFFSET, P4_AGAIN_STYLE);
+
+
+/* implementation detail:
+ * DO will compile (DO) and forward-address to LOOP
+ * (DO) will set RP[2] to its point after that forward-adress
+ * LOOP can just jump to RP[2]
+ * LEAVE can jump via RP[2][-1] forward-address
+ */
+
+/** "((DO))" ( end# start# -- ) [HIDDEN]
+ * compiled by => DO
+ */
+FCode (pf_do_execution)
+{
+    RP -= 3;                     /* push onto return-stack: */
+    RP[2] = ++IP;                /* IP to BRANCH back to just after DO */
+    RP[1] = (p4xt *) SP[1];   /* upper limit */
+    RP[0] = (p4xt *) SP[0];   /* lower limit and counter */
+    SP +=2;
+}
+
+/** DO ( end# start# | end* start* -- R: some,loop ) [ANS] [LOOP]
+ *  pushes $end and $start onto the return-stack ( => >R )
+ *  and starts a control-loop that ends with => LOOP or
+ *  => +LOOP and may get a break-out with => LEAVE . The
+ *  loop-variable can be accessed with => I
+ */
+FCode (pf_do)
+{
+    FX_COMPILE (pf_do);
+    FX (pf_forward_mark);
+    *--SP = (p4cell) P4_LOOP_MAGIC;
+}
+P4COMPILES (pf_do, pf_do_execution, P4_SKIPS_OFFSET, P4_DO_STYLE);
+
+/** "((LOOP))" ( -- ) [HIDDEN]
+ * execution compiled by => LOOP
+ */
+FCode (pf_loop_execution)
+{
+    RP[0] = (p4xt *)((p4cell)(*RP) + 1);
+    if (RP[0]<RP[1])	/* counter < upper limit ? */
+    {
+        IP = RP[2];     /* if yes: loop back (BRANCH) */
+    } else
+    {
+        RP += 3;        /* if no: terminate loop */
+    }
+}
+
+/** LOOP ( R: some,loop -- ) [ANS] [REPEAT]
+ * resolves a previous => DO thereby compiling => ((LOOP)) which
+ * does increment/decrement the index-value and branch back if
+ * the end-value of the loop has not been reached.
+ */
+FCode (pf_loop)
+{
+    pf_Q_pairs (P4_LOOP_MAGIC);
+    FX_COMPILE (pf_loop);
+    FX (pf_forward_resolve);
+}
+P4COMPILES (pf_loop, pf_loop_execution, P4_SKIPS_OFFSET, P4_LOOP_STYLE);
+
+/** "((+LOOP))" ( increment# -- ) [HIDDEN]
+ * compiled by => +LOOP
+ */
+FCode (pf_plus_loop_execution)
+{
+    p4cell i = *SP++;
+    RP[0] = (p4xt *)((p4cell)(*RP) + i);
+    if (RP[0]<RP[1])	/* counter < upper limit ? */
+    {
+        IP = RP[2];     /* if yes: loop back (BRANCH) */
+    } else
+    {
+        RP += 3;        /* if no: terminate loop */
+    }
+}
+
+/** +LOOP ( increment# R: some,loop -- ) [ANS]
+ * compile => ((+LOOP)) which will use the increment
+ * as the loop-offset instead of just 1. See the
+ * => DO and => LOOP construct.
+ */
+FCode (pf_plus_loop)
+{
+    pf_Q_pairs (P4_LOOP_MAGIC);
+    FX_COMPILE (pf_plus_loop);
+    FX (pf_forward_resolve);
+}
+P4COMPILES (pf_plus_loop, pf_plus_loop_execution, P4_SKIPS_NOTHING, P4_LOOP_STYLE);
+
+/** I ( R: some,loop -- S: i# ) [ANS]
+ * returns the index-value of the innermost => DO .. => LOOP
+ */
+FCode (pf_i)
+{
+    FX_COMPILE (pf_i);
+}
+
+FCode (pf_i_execution)
+{
+    *--SP = (p4cell)RP[0];
+}
+P4COMPILES (pf_i, pf_i_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+
+/** J ( R: some,loop -- S: j# ) [ANS]
+ * get the current => DO ... => LOOP index-value being
+ * the not-innnermost. (the second-innermost...)
+ * see also for the other loop-index-values at
+ * => I and => K
+ */
+FCode (pf_j)
+{
+    FX_COMPILE (pf_j);
+}
+
+FCode (pf_j_execution)
+{
+    *--SP = (p4cell)RP[3];
+}
+P4COMPILES (pf_j, pf_j_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 /*
    : X ( n -- )
@@ -1003,6 +1120,12 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("WHILE",        pf_while),
     P4_SXco ("REPEAT",       pf_repeat),
     P4_SXco ("AGAIN",        pf_again),
+
+    P4_SXco ("DO",           pf_do),
+    P4_SXco ("LOOP",         pf_loop),
+    P4_SXco ("+LOOP",        pf_plus_loop),
+    P4_SXco ("I",            pf_i),
+    P4_SXco ("J",            pf_j),
 
     P4_SXco ("CASE",         pf_case),
     P4_SXco ("OF",           pf_of),

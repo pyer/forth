@@ -1,9 +1,6 @@
 #ifndef __INTERPRET_H
 #define __INTERPRET_H
 
-#define TO_IN		PFE.to_in
-#define PAD		((p4_char_t *)PFE.dp + MIN_HOLD)
-#define HLD		(PFE.hld)
 
 void p4_lower (p4_char_t *p, int n);
 void p4_upper (p4_char_t *p, int n);
@@ -27,12 +24,16 @@ int redefined_msg;
 #define P4_TO_BODY(C)     ((p4cell *)((p4xt)(C) + 1))
 #define P4_BODY_FROM(P)   ((p4xt)((p4cell *)(P) - 1))
 #define P4_TO_DOES_BODY(C)  ((p4cell *)((p4xt)(C) + 2))
-#define P4_TO_DOES_CODE(C)  ((p4xcode **)((p4xt)(C) + 1))
+#define P4_TO_DOES_CODE(C)  ((p4xt **)((p4xt)(C) + 1))
 
 p4char** name_to_link (const p4char* p);
 p4xt name_to_cfa (const p4char *p);
 p4char * cfa_to_name (p4xt xt);
 p4cell * cfa_to_body (p4xt xt);
+
+void pf_load_words (const p4Words* ws);
+p4char* p4_header_comma (const p4char *name, int len);
+p4char* p4_header_in (void);
 
 char pf_category (p4code p);
 
@@ -46,10 +47,6 @@ void pf_skip_spaces(void);
 void pf_parse_word( char delimiter );
 FCode (pf_parse_comma_quote);
 
-p4char* p4_header_comma (const p4char *name, int len, p4_Wordl *wid);
-p4char* p4_header_in (p4_Wordl* wid);
-p4char* search_thread (const p4_char_t *nm, int l, p4char *t, const p4_Wordl* wl);
-
 void pf_dot_name (const p4_namebuf_t *nfa);
 
 char* pf_word ( char );
@@ -61,5 +58,4 @@ void p4_interpret(void);
 void pf_interpret( char *buf, int len );
 void pf_include(const char *name, int len);
 
-void p4_load_words (const p4Words* ws, p4_Wordl* wid, int unused);
 #endif

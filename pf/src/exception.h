@@ -12,23 +12,18 @@
  *  @version $Revision: 1.6 $
  *     (modified $Date: 2008-05-04 02:57:30 $)
  */
-
-#define p4_jmp_buf jmp_buf
+/*
 #define p4_setjmp(_buf) setjmp((_buf), 1)
 #define p4_longjmp(_buf,_val) longjmp((_buf), (_val))
+*/
+jmp_buf jump_loop;
+void pf_longjmp_loop(int arg);
 
-#define p4_longjmp_abort()	(p4_longjmp_loop('A'))
-#define p4_longjmp_exit()	(p4_longjmp_loop('X'))
-#define p4_longjmp_quit()	(p4_longjmp_loop('Q'))
-#define p4_longjmp_yield()	(p4_longjmp_loop('S'))
+#define pf_longjmp_abort()	(pf_longjmp_loop('A'))
+#define pf_longjmp_exit()	(pf_longjmp_loop('X'))
+#define pf_longjmp_quit()	(pf_longjmp_loop('Q'))
+#define pf_longjmp_yield()	(pf_longjmp_loop('S'))
 
-
-FCode (p4_cr_show_input);
-
-/**
- * just call longjmp on PFE.loop
- */
-void p4_longjmp_loop(int arg) ; /*{*/
 
 /**
  * the CATCH impl

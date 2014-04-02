@@ -82,8 +82,6 @@
 #define ___ {
 #define ____ }
 
-//char* p4_header_comma (const char *name, int len, p4_Wordl *wid);
-//FCode_RT (pf_constant_RT);
 
 typedef void (*SigHdl) (int);	/* signal handler function type */
 
@@ -368,7 +366,7 @@ sig_handler (int sig)		/* Signal handler for all signals */
 	    puts("forth-signal callback does not work!"); /* FIXME: */
 	    /* assume that s->hdl is a colon word */
             (*--PFE.rp) = PFE.ip;
-	    PFE.ip = (p4xcode *) P4_TO_BODY (s->hdl);
+	    PFE.ip = (p4xt *) P4_TO_BODY (s->hdl);
         } else {
 	    ___
             const char* msg = s->msg;
@@ -383,7 +381,7 @@ sig_handler (int sig)		/* Signal handler for all signals */
                  p4_throwstr (-256 - sig, msg);
              case Fatal:		/* a signal that kills us */
                  printf("Received signal %s, %s", s->name, msg);
-                 p4_longjmp_exit ();
+                 pf_longjmp_exit ();
             }
 	    ____;
         }
@@ -532,15 +530,13 @@ p4xt p4_forth_signal (int sig, p4xt xt)
 /**
  * Load constants for each signal found into the dictionary.
  */
-//p4_Runtime2 pf_constantRuntime;
-void p4_load_signals (p4_Wordl *wid)
+void p4_load_signals (void)
 {
     Siginfo *s;
 
     for (s = siginfo; s < siginfo + DIM (siginfo); s++)
     {
-        p4_header_comma ((const p4char*) s->name, strlen (s->name), wid);
-        //FX_RCOMMA (pf_constantRuntime.exec[0]);
+        p4_header_comma ((const p4char*) s->name, strlen (s->name));
 	FX_RUNTIME1(pf_constant);
         FX_UCOMMA (s->sig);
     }
@@ -555,7 +551,7 @@ void p4_load_signals (p4_Wordl *wid)
  */
 FCode (p4_load_signals)
 {
-    p4_load_signals (CURRENT);
+    p4_load_signals ();
 }
 
 

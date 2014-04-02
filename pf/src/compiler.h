@@ -97,17 +97,6 @@ char * p4_str_dot (p4cell n, char *p, int base);
 p4cell pf_aligned (p4cell n);
 FCode (pf_align);
 
-/** VLIST ( -- )
- *  The VLIST command had been present in FIG and other forth
- *  implementations. It has to list all accessible words. In PFE
- *  it list all words in the search order. Well, the point is,
- *  that we do really just look into the search order and are
- *  then calling => WORDS on that Wordl. That way you can see
- *  all accessible words in the order they might be found.
- *  Uses => ?CR
- */
-FCode (p4_vlist);
-
 /** !CSP ( -- )
  * put => SP into => CSP
  * <br> used in control-words
@@ -158,17 +147,6 @@ FCode (pf_Q_pairs);
  * and if such an error condition is detected => THROW
  */
 FCode (pf_Q_stack);
-
-/** (DICTLIMIT)   ( -- constvalue )
- * the upper limit of the forth writeable memory space,
- * the variable => DICTLIMIT must be below this line.
- * stack-space and other space-areas are often allocated
- * above => DICTLIMIT upto this constant.
- *
- * => DICTFENCE is the lower end of the writeable dictionary
- */
-FCode(p4_paren_dictlimit);
-
 
 /* FORTH-83 style system extension words */
 FCode (pf_backward_mark);

@@ -209,10 +209,9 @@ static p4_char_t p4_loader_next (p4_Decompile* decomp)
 /* decompiler                                                           */
 /************************************************************************/
 
-typedef p4xcode* (*func_SEE) (p4xcode* , char*, p4_Semant*);
+typedef p4xt* (*func_SEE) (p4xt* , char*, p4_Semant*);
 
-_export p4xcode*
-pf_literal_SEE (p4xcode* ip, char* p, p4_Semant* s)
+p4xt* pf_literal_SEE (p4xt* ip, char* p, p4_Semant* s)
 {
     char buf[80];
     if (s) 
@@ -228,10 +227,9 @@ pf_literal_SEE (p4xcode* ip, char* p, p4_Semant* s)
     return ++ip;
 }
 
-_export p4xcode* /* P4_SKIPS_TO_TOKEN */
-p4_lit_to_token_SEE (p4xcode* ip, char* p, p4_Semant* s)
+p4xt* p4_lit_to_token_SEE (p4xt* ip, char* p, p4_Semant* s)
 {
-    register p4xcode xt = ip[-1];
+    register p4xt xt = ip[-1];
     if (*xt == s->exec[0])
     {
 	register p4char* itemnfa;
@@ -257,8 +255,7 @@ p4_lit_to_token_SEE (p4xcode* ip, char* p, p4_Semant* s)
     }
 }
 
-_export p4xcode* /* P4_SKIPS_STRING */
-p4_lit_string_SEE (p4xcode* ip, char* p, p4_Semant* s)
+p4xt* p4_lit_string_SEE (p4xt* ip, char* p, p4_Semant* s)
 {
     sprintf (p, "%.*s %.*s\" ",
       NAMELEN(s->name), NAMEPTR(s->name),
@@ -267,8 +264,7 @@ p4_lit_string_SEE (p4xcode* ip, char* p, p4_Semant* s)
     return ip;
 }
 
-_export p4xcode* /* P4_SKIPS_2STRINGS */
-p4_lit_2strings_SEE (p4xcode* ip, char* p, p4_Semant* s)
+p4xt* p4_lit_2strings_SEE (p4xt* ip, char* p, p4_Semant* s)
 {
     p4char *s1 = (p4char *) ip;
     PF_SKIP_STRING;
@@ -282,33 +278,30 @@ p4_lit_2strings_SEE (p4xcode* ip, char* p, p4_Semant* s)
 static P4_CODE_RUN(p4_code_RT_SEE)
 {
     sprintf(p, "CODE %.*s ", NAMELEN(nfa), NAMEPTR(nfa));
-    ___ p4xcode* ip = (p4xcode*) P4_TO_BODY(xt);
+    ___ p4xt* ip = (p4xt*) P4_TO_BODY(xt);
     return ip;
     ____;
 }
 
 static const p4_Decomp default_style = {P4_SKIPS_NOTHING, 0, 0, 0, 0, 0};
 
-static p4xcode *
-p4_decompile_comma (p4xcode* ip, char *p)
+static p4xt * p4_decompile_comma (p4xt* ip, char *p)
 {
     p4char* x = (p4char*) ip;
     sprintf (p, "$%02x C, ", *x); ++x;
-    return (p4xcode*) (x);
+    return (p4xt*) (x);
 }
 
-static p4xcode *
-p4_decompile_code (p4xcode* ip, char *p, p4_Decomp *d)
+static p4xt * p4_decompile_code (p4xt* ip, char *p, p4_Decomp *d)
 {
     memcpy (d, (& default_style), sizeof (*d));
     return p4_decompile_comma (ip, p);
 }
 
-static p4xcode *
-p4_decompile_word (p4xcode* ip, char *p, p4_Decomp *d)
+static p4xt * p4_decompile_word (p4xt* ip, char *p, p4_Decomp *d)
 {
     /* assert SKIPS_NOTHING == 0 */
-    register p4xcode xt = *ip++;
+    register p4xt xt = *ip++;
     register p4_Semant *s;
 
     s = (p4_Semant*) p4_to_semant (xt);
@@ -358,8 +351,7 @@ p4_decompile_word (p4xcode* ip, char *p, p4_Decomp *d)
     }
 }
 
-_export void
-p4_decompile_rest (p4xcode *ip, int nl, int indent, p4_bool_t iscode)
+void p4_decompile_rest (p4xt *ip, int nl, int indent, p4_bool_t iscode)
 {
     char buf[256];
     /* p4_Seman2 *seman; // unused ? */
@@ -373,7 +365,7 @@ p4_decompile_rest (p4xcode *ip, int nl, int indent, p4_bool_t iscode)
         /* seman = (p4_Seman2 *) p4_to_semant (*ip); // unused ? */
         if (iscode) 
         {
-            p4xcode* old_ip = ip;
+            p4xt* old_ip = ip;
             ip = p4_decompile_code (ip, buf, &decomp);
             if (! strcmp (buf, "] ;") ) 
             {
@@ -432,7 +424,7 @@ static P4_CODE_RUN(pf_colon_RT_SEE)
     strcat (p, ": ");
     strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
     strcat (p, "\n");
-    return (p4xcode*) cfa_to_body (xt);
+    return (p4xt*) cfa_to_body (xt);
 }
 
 static P4_CODE_RUN(pf_does_RT_SEE)
@@ -456,11 +448,10 @@ static void print_comment (const char* prefix, const char* wordset)
     pf_outs (" Word ) ");
 }
 
-_export void
-p4_decompile (p4_namebuf_t* nfa, p4xt xt)
+void p4_decompile (p4_namebuf_t* nfa, p4xt xt)
 {
     char buf[256];
-    register p4xcode* rest = 0;
+    register p4xt* rest = 0;
     p4_bool_t iscode = P4_FALSE;
     *buf = '\0';
 
@@ -559,8 +550,7 @@ static void prompt_col (void)
     pf_emits (24 - get_outs(), ' ');
 }
 
-static void
-display (p4xcode *ip)
+static void display (p4xt *ip)
 {
     p4_Decomp style;
     char buf[80];
@@ -579,8 +569,7 @@ display (p4xcode *ip)
     pf_outf ("%*s%c %s", indent, "", pf_category (**ip), buf);
 }
 
-static void
-interaction (p4xcode *ip)
+static void interaction (p4xt *ip)
 {
     int c;
 
@@ -662,7 +651,7 @@ interaction (p4xcode *ip)
     }
 }
 
-static void do_adjust_level (const p4xcode xt)
+static void do_adjust_level (const p4xt xt)
 {
     if (*xt == P4CODE(pf_colon_RT) ||
 	*xt == P4CODE(p4_debug_colon_RT) ||

@@ -58,32 +58,14 @@ typedef p4char p4_charbuf_t;       /* start of counted string with i/o chars */
 typedef p4cell  (*p4cell_p4code) (void); /* very useful sometimes */
 typedef p4ucell (*p4ucell_p4code) (void); /* very useful sometimes */
 
-typedef struct p4_Wordl  p4_Wordl;  /* body of a word list */
-
-struct p4_Wordl			/* a word list */
-{				/* a word list identifier is a (Wordl *) */
-      char *link;
-////    p4char* thread[THREADS];	/* field of ptrs to first NFA of chain */
-//    p4_Wordl *prev;		/* word lists are chained */
-//    p4_Wordl *also;		/* search also this dictionary, kinda FIG*/
-//    p4_namebuf_t* nfa;          /* corresponding vocabulary NFA */
-//    p4cell  flag;		/* do to_upper, a copy of sys.world_flag */
-//#define WORDL_NOCASE     (1<<0) /* FIND will match any case with any case */
-//#define WORDL_NOHASH     (1<<1) /* WORDLIST not hashed into multiple buckets */
-//#define WORDL_CURRENT    (1<<2) /* on new WORDLIST, make it chain to CURRENT */
-//#define WORDL_UPPER_CASE (1<<3) /* FIND will match uppercased entries too */
-//#define WORDL_UPPER_DEFS (1<<4) /* new definitions are placed uppercase */
-//    p4ucell id;                 /* used to speed up order search (p4_find) */
-};
-
 /* ---------------------- Decomp support -------------------- */
 
 typedef struct p4_Decomp p4_Decomp; /* informations for the decompiler */
 typedef struct p4_Semant p4_Semant; /* pointer set for state smart words */
 typedef struct p4_Seman2 p4_Seman2; /* dito for even smarter words like TO */
 
-#define P4_CODE_SEE(func) p4xcode* func (p4xcode* ip, char* p, p4_Semant* s)
-#define P4_CODE_RUN(func) p4xcode* func (char* p, p4xt xt, p4char* nfa)
+#define P4_CODE_SEE(func) p4xt* func (p4xt* ip, char* p, p4_Semant* s)
+#define P4_CODE_RUN(func) p4xt* func (char* p, p4xt xt, p4char* nfa)
 
 /* encodings for what information follows the compiled word inline */
 #define  P4_SKIPS_NOTHING            ((P4_CODE_SEE((*)))(0))

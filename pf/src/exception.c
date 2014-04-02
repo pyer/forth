@@ -39,6 +39,20 @@
 #define ___ {
 #define ____ }
 
+/************************************************************************/
+jmp_buf jump_loop;       /* QUIT and ABORT do a THROW which longjmp() */
+		    /* here thus C-stack gets cleaned up too */
+
+/************************************************************************/
+/**
+ * just call longjmp on PFE.loop
+ */
+void pf_longjmp_loop(int arg)
+{
+    longjmp (jump_loop, arg);
+}
+
+/************************************************************************/
 typedef struct p4_Exception p4_Exception;
 struct p4_Exception
 {
@@ -55,38 +69,17 @@ void * p4_restore_input (void *p);
 /*
  * show the error, along with info like the block, filename, line numer.
  */
-static void
-show_error (const char* str)
+static void show_error (const char* str)
 {
     if (! str) str = "";
     int len = strlen(str);
-    pf_outf ("\nError: %.*s", len, str);
-    FX (p4_cr_show_input);
-    p4_longjmp_abort ();
-}
+    pf_outf ("\nError: %.*s ", len, str);
 
-FCode (p4_cr_show_input)
-{
-    const char* str = "";
-    int len = 1;
     if (PFE.word.ptr && PFE.word.len)
     {
-        str = (char*) PFE.word.ptr;
-        len = PFE.word.len;
+        pf_type (PFE.word.ptr, PFE.word.len);
     }
-
-    pf_outf ("\nInput: \"%.*s\"\n", len, str); /* to Error:-line */
-    pf_type (str,len);
-    if (PFE.word.len > TO_IN)
-	pf_outf ("\n%*s", TO_IN, "^"); /* just mark ">IN" */
-    else
-    {
-	pf_outs ("\n");
-	if (TO_IN != PFE.word.len)
-	    pf_emits (TO_IN - PFE.word.len-1, ' ');
-	pf_emits (PFE.word.len+1, '^'); /* mark the word */
-    }
-    pf_outs (" ");
+    pf_longjmp_abort ();
 }
 
 static void
@@ -283,9 +276,9 @@ p4_throws (int id, const p4_char_t* description, int len)
 	 show_error (addr);
      }
      case P4_ON_ABORT:
-         p4_longjmp_abort ();
+         pf_longjmp_abort ();
      case P4_ON_QUIT:
-         p4_longjmp_quit ();
+         pf_longjmp_quit ();
      default:
          throw_msg (id, msg);
          if (addr)
@@ -390,10 +383,8 @@ FCode_RT (pf_exception_string_RT)
 p4_Runtime2 pf_exception_stringRuntime;
 FCode (pf_exception_string)
 {
-//    FX_RUNTIME_HEADER;
-    p4_header_in(CURRENT);
+    p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-//    FX_RUNTIME1(p4_exception_string);
     FX_RCOMMA (pf_exception_stringRuntime.exec[0]);
     ___ p4cell id = *SP++;
     p4_Exception* expt = (void*) DP; DP += sizeof(*expt);
