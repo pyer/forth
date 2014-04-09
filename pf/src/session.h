@@ -9,22 +9,6 @@
 */
 
 typedef struct p4_Thread	p4_Thread;
-typedef struct _p4_term_struct  p4_term_struct;
-typedef struct p4_Except p4_Except; /* an exception frame */
-
-#define PATH_LENGTH 256
-
-struct p4_Except
-{
-    p4cell magic;
-    p4xt** rpp;              /* P4_REGRP_T */
-    p4xt *ipp;               /* P4_REGIP_T */
-    p4cell *spp;                /* P4_REGSP_T */
-    p4cell *lpp;                /* P4_REGLP_T */
-    double *fpp;                /* P4_REGFP_T */
-    jmp_buf jmp;
-    p4_Except *prev;
-};
 
 struct p4_Thread
 {
@@ -52,10 +36,9 @@ struct p4_Thread
 /*Dict*/
     p4_namebuf_t *latest;	/* NFA of most recently CREATEd header */
 
-    p4_Except *catchframe;	/* links to chain of CATCHed words */
+//    p4_Except *catchframe;	/* links to chain of CATCHed words */
 
     p4cell state;		/* interpreting (0) or compiling (-1) */
-    p4cell *csp;		/* compiler security, saves sp here */
     p4ucell base;		/* of number i/o conversion */
     p4cell precision;		/* floating point output precision */
 
@@ -65,11 +48,6 @@ struct p4_Thread
     p4code semicolon_code;      /* the code to run at next semicolon */
 
 /* term*.c */
-    void* priv;         	/* private term area, better be also in p[] */
-    p4_term_struct* term;
-    char const ** rawkey_string;  /* pointer to terminal escape sequences */
-    char const ** control_string; /* pointer to terminal control sequences */
-                        	/* as used by termunix.c */
     int (*wait_for_stdin)(void);
 
     void (*on_stop) (void);     /* = p4_system_terminal; */
@@ -88,25 +66,11 @@ struct p4_Thread
 
 };
 
-
-# define p4_S0 PFE.s0
-# define p4_F0 PFE.f0
-# define p4_R0 PFE.r0
-
 # define DP     (PFE.dp)
 #define LATEST	(PFE.latest)
-
-# define p4_DP_CHAR     DP
-# define p4_DP_CELL     ((p4cell*)(DP))
-
-# define P4_UPPER_CASE_FLAGS (WORDL_NOCASE|WORDL_UPPER_CASE|WORDL_UPPER_DEFS)
-
 # define SCR		(PFE.scr)
 # define STATE		(PFE.state)
-# define CSP		(PFE.csp)
 # define BASE		(PFE.base)
 # define PRECISION	(PFE.precision)
-
-typedef p4_Except	Except;
 
 #endif

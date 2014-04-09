@@ -51,11 +51,11 @@ void pf_dot_name (const p4_namebuf_t *nfa);
 
 char* pf_word ( char );
 
+FCode (pf_char);
 FCode (pf_tick);
 FCode (pf_reveal);
 
-void p4_interpret(void);
-void pf_interpret( char *buf, int len );
+void pf_interpret( char *buf, int len, int n );
 void pf_include(const char *name, int len);
 
 #endif

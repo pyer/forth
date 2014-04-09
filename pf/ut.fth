@@ -54,6 +54,8 @@ false tmp !
 ." check FILL       " tmp 2 0 fill tmp @ 0= check
 
 ." check INVERT     " -1 invert 0= check
+
+." check DO LOOP    " 
 ." check MAX        " 7 6 max 7 = check
 ." check MIN        " 7 6 min 6 = check
 ." check MOD        " 44 6 MOD 2 = check

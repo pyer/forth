@@ -1,6 +1,9 @@
 #ifndef __PF_COMPILER_H
 #define __PF_COMPILER_H
 
+p4cell *csp;		/* compiler security, saves sp here */
+#define CSP		(csp)
+
 /* compile execution semantics from within C-code: */
 #define FX_DEF_COMPILE1(X) p4_Seman2  P4SEMANTICS(X)
 #define FX_DEF_COMPILE2(X) p4_Seman2  P4SEMANTICS(X)
@@ -97,51 +100,6 @@ char * p4_str_dot (p4cell n, char *p, int base);
 p4cell pf_aligned (p4cell n);
 FCode (pf_align);
 
-/** !CSP ( -- )
- * put => SP into => CSP
- * <br> used in control-words
- */
-FCode (pf_store_csp);
-
-/** ?CSP ( -- )
- * check that => SP == => CSP otherwise => THROW
- * <br> used in control-words
- */
-FCode (pf_Q_csp);
-
-/** ?COMP ( -- )
- * check that the current => STATE is compiling
- * otherwise => THROW
- * <br> often used in control-words
- */
-FCode (pf_Q_comp);
-
-/** ?EXEC ( -- )
- * check that the current => STATE is executing
- * otherwise => THROW
- * <br> often used in control-words
- */
-FCode (pf_Q_exec);
-
-/** ?FILE ( file-id -- )
- * check the file-id otherwise (fixme)
- */
-FCode (pf_Q_file);
-
-/** ?LOADING ( -- )
- * check that the currently interpreted text is 
- * from a file/block, otherwise => THROW
- */
-FCode (pf_Q_loading);
-
-/** ?PAIRS ( a b -- )
- * if compiling, check that the two magics on
- * the => CS-STACK are identical, otherwise throw
- * <br> used in control-words
- */
-void pf_Q_pairs (p4cell n);
-FCode (pf_Q_pairs);
-
 /** ?STACK ( -- )
  * check all stacks for underflow and overflow conditions,
  * and if such an error condition is detected => THROW
@@ -154,9 +112,6 @@ FCode (pf_backward_resolve);
 FCode (pf_forward_mark);
 FCode (pf_forward_resolve);
 FCode (pf_bracket_compile);
-
-void pf_Q_pairs (p4cell n);
-FCode (pf_Q_stack);
 
 FCode_RT (pf_builds_RT);
 FCode  (pf_builds);

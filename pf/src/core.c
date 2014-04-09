@@ -263,30 +263,6 @@ FCode (p4_greater_than)
     SP++;
 }
 
-/** >R ( value -- R: value ) [ANS]
- * save the value onto the return stack. The return
- * stack must be returned back to clean state before
- * an exit and you should note that the return-stack
- * is also touched by the => DO ... => WHILE loop.
- * Use => R> to clean the stack and => R@ to get the
- * last value put by => >R
- */
-FCode (p4_to_r)
-{
-    FX (pf_Q_comp);
-    FX_COMPILE (p4_to_r);
-}
-
-FCode_XE (p4_to_r_execution)
-{
-//#define P4_PUSH(X,P)    (*P4_DEC (P, p4cell) = (X))
-//#define P4_DEC(P,T)	(--(*(T **)&(P)))
-//    P4_PUSH(*SP++, RP);
-//    *P4_DEC (RP, p4cell) = *SP++;
-    *(--(*(p4cell **)&(RP))) = *SP++;
-}
-P4COMPILES (p4_to_r, p4_to_r_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
-
 
 /** ?DUP ( 0 -- 0 | value! -- value! value! | value -- 0 | value! value! ) [ANS]
  * one of the rare words whose stack-change is
@@ -351,6 +327,60 @@ FCode (p4_c_fetch)
     *SP = *(p4char *) *SP;
 }
 
+/** CELL+ ( value -- value' ) [ANS]
+ * adjust the value by adding a single Cell's width
+ * - the value is often an address or offset, see => CELLS
+ */
+FCode (p4_cell_plus)
+{
+    *SP += sizeof (p4cell);
+}
+
+/** CELLS ( value# -- value#' ) [ANS]
+ * scale the value by the sizeof a Cell
+ * the value is then often applied to an address or
+ * fed into => ALLOT
+ */
+FCode (p4_cells)
+{
+    *SP *= sizeof (p4cell);
+}
+
+/** CHAR+ ( value -- value' ) [ANS]
+ * increment the value by the sizeof one char
+ * - the value is often a pointer or an offset,
+ * see => CHARS
+ */
+FCode (p4_char_plus)
+{
+    *SP += sizeof (char);
+}
+
+/** CHARS ( value# -- value#' ) [ANS]
+ * scale the value by the sizeof a char
+ * - the value is then often applied to an address or
+ * fed into => ALLOT (did you expect that sizeof(p4char)
+ * may actually yield 2 bytes?)
+ */
+FCode (p4_chars)
+{
+    *SP *= sizeof (char);
+}
+
+/** CMOVE ( from-ptr to-ptr len# -- )
+ *  memcpy an area from->to for len bytes, starting at
+ *  the lower addresses, see => CMOVE>
+ */
+FCode (p4_cmove)
+{
+    char *p = (char *)SP[2];
+    char *q = (char *)SP[1];
+    p4ucell n = SP[0];
+    SP+=3;
+    while (n--)
+        *q++ = *p++;
+}
+
 /** COUNT ( string-bstr* -- string-ptr' string-len | some* -- some*' some-len [?] ) [ANS]
  * usually before calling => TYPE
  *
@@ -389,7 +419,7 @@ FCode (p4_depth)
 {
     register size_t n;
 
-    n = p4_S0 - SP;
+    n = PFE.s0 - SP;
     *--SP = n;
 }
 
@@ -422,6 +452,17 @@ FCode (p4_execute)
 {
     PFE.execute ((p4xt) *SP++);
 }
+
+/** EXIT ( -- ) [ANS] [EXIT]
+ * will unnest the current colon-word so it will actually
+ * return the word calling it. This can be found in the
+ * middle of a colon-sequence between => : and => ;
+ */
+FCode (p4_exit)
+{
+    FX_COMPILE (p4_exit);
+}
+P4COMPILES (p4_exit, pf_semicolon_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 /** FILL ( mem-ptr mem-len char# -- ) [ANS]
  * fill a memory area with the given char, does now
@@ -520,46 +561,6 @@ FCode (p4_pick)
     *SP = SP[*SP + 1];
 }
 
-/** R> ( R: a -- a R: ) [ANS]
- * get back a value from the return-stack that had been saved
- * there using => >R . This is the traditional form of a local
- * var space that could be accessed with => R@ later. If you
- * need more local variables you should have a look at => LOCALS|
- * which does grab some space from the return-stack too, but names
- * them the way you like.
- */
-FCode (p4_r_from)
-{
-    FX (pf_Q_comp);
-    FX_COMPILE (p4_r_from);
-}
-
-FCode_XE (p4_r_from_execution)
-{
-    *--SP = (p4cell) *RP++;
-}
-P4COMPILES (p4_r_from, p4_r_from_execution,
-	    P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
-
-/** R@ ( R: a -- a R: a ) [ANS]
- * fetch the (upper-most) value from the return-stack that had
- * been saved there using =>">R" - This is the traditional form of a local
- * var space. If you need more local variables you should have a
- * look at => LOCALS| , see also =>">R" and =>"R>" . Without LOCALS-EXT
- * there are useful words like =>"2R@" =>"R'@" =>'R"@' =>'R!'
- */
-FCode (p4_r_fetch)
-{
-    FX (pf_Q_comp);
-    FX_COMPILE (p4_r_fetch);
-}
-FCode_XE (p4_r_fetch_execution)
-{
-    *--SP = *((p4cell*)RP);
-}
-P4COMPILES (p4_r_fetch, p4_r_fetch_execution,
-	    P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
-
 /** ROLL ( value ...[n-1] n -- ...[n-1] value ) [ANS]
  * the extended form of => ROT
     2 ROLL -> ROT
@@ -624,14 +625,23 @@ FCode (p4_xor)
 /* Core Extension Words                                                 */
 /************************************************************************/
 
+/** BLANK ( str-ptr str-len -- )
+ * => FILL a given buffer with => BL blanks
+ */
+FCode (p4_blank)
+{
+    memset ((char *)SP[1], ' ', SP[0]);
+    SP+=2;
+}
+
 /** ERASE ( buffer-ptr buffer-len -- ) [ANS]
  * fill an area will zeros.
  2000 CREATE DUP ALLOT ERASE
  */
 FCode (p4_erase)
 {
-    memset ((void *) SP[1], 0, SP[0]);
-    SP += 2;
+    memset ((char *) SP[1], 0, SP[0]);
+    SP+=2;
 }
 
 /** FALSE ( -- 0 ) [ANS]
@@ -747,18 +757,23 @@ P4_LISTWORDS (core) =
     P4_FXco ("=",            p4_equals),
     P4_FXco ("<>",           p4_not_equals),
     P4_FXco (">",            p4_greater_than),
-    P4_SXco (">R",           p4_to_r),
     P4_FXco ("?DUP",         p4_Q_dup),
     P4_FXco ("@",            p4_fetch),
     P4_FXco ("ABS",          p4_abs),
     P4_FXco ("AND",          p4_and),
     P4_FXco ("C!",           p4_c_store),
     P4_FXco ("C@",           p4_c_fetch),
+    P4_FXco ("CELL+",        p4_cell_plus),
+    P4_FXco ("CELLS",        p4_cells),
+    P4_FXco ("CHAR+",        p4_char_plus),
+    P4_FXco ("CHARS",        p4_chars),
+    P4_FXco ("CMOVE",        p4_cmove),
     P4_FXco ("COUNT",        p4_count),
     P4_FXco ("DEPTH",        p4_depth),
     P4_FXco ("DROP",         p4_drop),
     P4_FXco ("DUP",          p4_dup),
     P4_FXco ("EXECUTE",      p4_execute),
+    P4_SXco ("EXIT",         p4_exit),
     P4_FXco ("FILL",         p4_fill),
     P4_FXco ("INVERT",       p4_invert),
     P4_FXco ("MAX",          p4_max),
@@ -769,14 +784,13 @@ P4_LISTWORDS (core) =
     P4_FXco ("OR",           p4_or),
     P4_FXco ("OVER",         p4_over),
     P4_FXco ("PICK",         p4_pick),
-    P4_SXco ("R>",           p4_r_from),
-    P4_SXco ("R@",           p4_r_fetch),
     P4_FXco ("ROLL",         p4_roll),
     P4_FXco ("ROT",          p4_rot),
     P4_FXco ("SWAP",         p4_swap),
     P4_FXco ("XOR",          p4_xor),
 
     /* core extension words */
+    P4_FXco ("BLANK",        p4_blank),
     P4_FXco ("ERASE",        p4_erase),
     P4_OCoN ("FALSE",        P4_FALSE),
     P4_OCoN ("TRUE",         P4_TRUE),

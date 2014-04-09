@@ -35,6 +35,7 @@
 #include "listwords.h"
 #include "session.h"
 
+#include "compiler.h"
 #include "exception.h"
 #include "interpret.h"
 #include "terminal.h"
@@ -72,10 +73,9 @@ p4_dict_allocate (int items, int size, int align,
  */
 void quit_system (void)
 {
-    CSP = (p4cell*) PFE.rp;     /* come_back marker */
-    PFE.rp = PFE.r0;		/* return stack to its bottom */
+    CSP = (p4cell*) RP;     /* come_back marker */
+    RP = PFE.r0;		/* return stack to its bottom */
     STATE = P4_FALSE;		/* interpreting now */
-    PFE.catchframe = NULL;	/* and no exceptions to be caught */
     PFE.execute = pf_normal_execute;
 }
 
@@ -84,7 +84,7 @@ void quit_system (void)
  */
 void abort_system (void)
 {
-    PFE.sp = PFE.s0;		/* stacks */
+    SP = PFE.s0;		/* stacks */
     BASE = 10;
 }
 
@@ -99,30 +99,32 @@ FCode (p4_bye)
 
 /************************************************************************/
 extern const p4Words
-    P4WORDS(core),
-    P4WORDS(exception),
     P4WORDS(compiler),
-    P4WORDS(interpret),
+    P4WORDS(core),
+    P4WORDS(debug),
+    P4WORDS(exception),
+    P4WORDS(facility),
     P4WORDS(file),
-    P4WORDS(terminal),
+    P4WORDS(interpret),
     P4WORDS(shell),
     P4WORDS(signals),
+    P4WORDS(terminal),
     P4WORDS(tools),
-    P4WORDS(debug),
     P4WORDS(version);
 
 P4_LISTWORDS(forth) =
 {
     P4_FXco ("BYE", p4_bye),
     P4_LOAD ("", core),
-    P4_LOAD ("", exception),
     P4_LOAD ("", compiler),
     P4_LOAD ("", interpret),
     P4_LOAD ("", file),
     P4_LOAD ("", terminal),
     P4_LOAD ("", shell),
+    P4_LOAD ("", exception),
     P4_LOAD ("", signals),
     P4_LOAD ("", tools),
+    P4_LOAD ("", facility),
     P4_LOAD ("", debug),
     P4_LOAD ("", version),
 };
@@ -161,7 +163,6 @@ int pf_init_system (p4_Thread* th) /* main_init */
 
     if (PFE_set.isnotatty == P4_TTY_ISPIPE && ! PFE.term)
     {
-        extern p4_term_struct p4_term_stdio;
         PFE.term = &p4_term_stdio;
     }
 */
@@ -249,20 +250,21 @@ int main (int argc, char** argv)
     {           /* classify unhandled throw codes */
     case 'A': /* do abort */
          abort_system();
-         break;
     case 'Q': /* do quit */
          quit_system();
          break;
+    case 0:
+        break;
     default:
+        pf_cleanup_terminal();
     	return exitcode;
-    case 0:     break;
     }
     for (;;) {
              if (isatty (STDIN_FILENO))
                  pf_outs (" ok\n");
              len = pf_accept (buffer, 255);
-             pf_interpret(buffer, len);
+             pf_interpret(buffer, len, 0);
              FCode (pf_Q_stack);
     }
-    return exitcode;
+//    return exitcode;
 }

@@ -12,10 +12,7 @@
  *  @version $Revision: 1.6 $
  *     (modified $Date: 2008-05-04 02:57:30 $)
  */
-/*
-#define p4_setjmp(_buf) setjmp((_buf), 1)
-#define p4_longjmp(_buf,_val) longjmp((_buf), (_val))
-*/
+
 jmp_buf jump_loop;
 void pf_longjmp_loop(int arg);
 
@@ -24,19 +21,29 @@ void pf_longjmp_loop(int arg);
 #define pf_longjmp_quit()	(pf_longjmp_loop('Q'))
 #define pf_longjmp_yield()	(pf_longjmp_loop('S'))
 
+typedef struct p4_Except p4_Except; /* an exception frame */
+
+struct p4_Except
+{
+    p4cell magic;
+    p4xt** rpp;              /* P4_REGRP_T */
+    p4xt *ipp;               /* P4_REGIP_T */
+    p4cell *spp;                /* P4_REGSP_T */
+    p4cell *lpp;                /* P4_REGLP_T */
+    double *fpp;                /* P4_REGFP_T */
+    jmp_buf jmp;
+    p4_Except *prev;
+};
 
 /**
  * the CATCH impl
  */
 int p4_catch (p4xt xt) ; /*{*/
 
-void p4_throw (int id) ; /*{*/
-
-void p4_throwstr (int id, const char* description) ; /*{*/
-
 /**
  * the THROW impl
  */
-void p4_throws (int id, const p4_char_t* description, int len) ; /*{*/
+void p4_throwstr (int id, const char* description);
+void p4_throw (int id);
 
 #endif

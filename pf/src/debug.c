@@ -555,7 +555,7 @@ static void display (p4xt *ip)
     p4_Decomp style;
     char buf[80];
     int indent = maxlevel * 2;
-    int depth = p4_S0 - SP, i;
+    int depth = PFE.s0 - SP, i;
 
     prompt_col ();
     for (i = 0; i < depth; i++)

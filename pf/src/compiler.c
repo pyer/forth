@@ -44,21 +44,13 @@ FCode (p4_rot);
 
 #define PFE_MINIMAL_UNUSED 256
 /* -------------------------------------------------------------- */
+p4cell *csp;		/* compiler security, saves sp here */
+/* -------------------------------------------------------------- */
 FCode(pf_noop)
 {
     /* well, nothing... */
 }
 /* -------------------------------------------------------------- */
-
-
-/** !CSP ( -- )
- * put => SP into => CSP
- * <br> used in control-words
- */
-FCode (pf_store_csp)
-{
-    CSP = SP;
-}
 
 /** ?CSP ( -- )
  * check that => SP == => CSP otherwise => THROW
@@ -90,26 +82,6 @@ FCode (pf_Q_exec)
 {
     if (STATE)
         p4_throw (P4_ON_COMPILER_NESTING);
-}
-
-/** ?FILE ( file-id -- )
- * check the file-id otherwise (fixme)
- */
-FCode (pf_Q_file)
-{
-    int ior = *SP++;
-
-    if (ior)
-        p4_throw (FX_IOR);
-}
-
-/** ?LOADING ( -- )
- * check that the currently interpreted text is 
- * from a file/block, otherwise => THROW
- */
-FCode (pf_Q_loading)
-{
-        p4_throw (P4_ON_INVALID_BLOCK);
 }
 
 /** ?PAIRS ( a b -- )
@@ -146,6 +118,69 @@ FCode (pf_Q_stack)
     if (PFE.dictlimit - PFE_MINIMAL_UNUSED < PFE.dp) 
         p4_throw (P4_ON_DICT_OVER);  
 }
+
+/* -------------------------------------------------------------- */
+/** >R ( value -- R: value ) [ANS]
+ * save the value onto the return stack. The return
+ * stack must be returned back to clean state before
+ * an exit and you should note that the return-stack
+ * is also touched by the => DO ... => WHILE loop.
+ * Use => R> to clean the stack and => R@ to get the
+ * last value put by => >R
+ */
+FCode (pf_to_r)
+{
+    FX (pf_Q_comp);
+    FX_COMPILE (pf_to_r);
+}
+
+FCode_XE (pf_to_r_execution)
+{
+//#define P4_PUSH(X,P)    (*P4_DEC (P, p4cell) = (X))
+//#define P4_DEC(P,T)	(--(*(T **)&(P)))
+//    P4_PUSH(*SP++, RP);
+//    *P4_DEC (RP, p4cell) = *SP++;
+    *(--(*(p4cell **)&(RP))) = *SP++;
+}
+P4COMPILES (pf_to_r, pf_to_r_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+
+/** R> ( R: a -- a R: ) [ANS]
+ * get back a value from the return-stack that had been saved
+ * there using => >R . This is the traditional form of a local
+ * var space that could be accessed with => R@ later. If you
+ * need more local variables you should have a look at => LOCALS|
+ * which does grab some space from the return-stack too, but names
+ * them the way you like.
+ */
+FCode (pf_r_from)
+{
+    FX (pf_Q_comp);
+    FX_COMPILE (pf_r_from);
+}
+
+FCode_XE (pf_r_from_execution)
+{
+    *--SP = (p4cell) *RP++;
+}
+P4COMPILES (pf_r_from, pf_r_from_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+
+/** R@ ( R: a -- a R: a ) [ANS]
+ * fetch the (upper-most) value from the return-stack that had
+ * been saved there using =>">R" - This is the traditional form of a local
+ * var space. If you need more local variables you should have a
+ * look at => LOCALS| , see also =>">R" and =>"R>" . Without LOCALS-EXT
+ * there are useful words like =>"2R@" =>"R'@" =>'R"@' =>'R!'
+ */
+FCode (pf_r_fetch)
+{
+    FX (pf_Q_comp);
+    FX_COMPILE (pf_r_fetch);
+}
+FCode_XE (pf_r_fetch_execution)
+{
+    *--SP = *((p4cell*)RP);
+}
+P4COMPILES (pf_r_fetch, pf_r_fetch_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 /* -------------------------------------------------------------- */
 /** <MARK ( -- DP-mark ) compile-only
@@ -315,7 +350,7 @@ FCode (pf_does)
         *P4_TO_DOES_CODE(xt) = (p4xt*) DP; /* into CFA[1] */
 
         /* now, see pf_colon */
-        FX (pf_store_csp);
+        CSP = SP;
         STATE = P4_TRUE;
         PFE.semicolon_code = P4CODE(pf_colon_EXIT);
     }
@@ -366,7 +401,7 @@ FCode (pf_colon)
     P4_NAMEFLAGS(LATEST) |= P4xSMUDGED;
     //FX_RUNTIME1 (pf_colon);
     FX_RCOMMA (pf_colonRuntime.exec[0]);
-    FX (pf_store_csp);
+    CSP = SP;
     STATE = P4_TRUE;
     PFE.semicolon_code = P4CODE(pf_colon_EXIT);
 }
@@ -671,6 +706,32 @@ FCode (pf_bracket_tick)
 }
 P4COMPILES (pf_bracket_tick, pf_literal_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
+/** [CHAR] ( [word] -- char# ) [ANS]
+ * in compile-mode, get the (ascii-)value of the first charachter
+ * in the following word and compile it as a literal so that it
+ * will pop up on execution again. See => CHAR and forth-83 => ASCII
+ */
+FCode (pf_bracket_char)
+{
+    FX (pf_char);
+    if (STATE)
+    {
+        FX_COMPILE (pf_bracket_char);
+        FX (pf_comma);
+    }
+}
+P4COMPILES (pf_bracket_char, pf_literal_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+
+/** ] ( -- ) [ANS]
+ * enter compiling mode - often used inside of a colon-definition
+ * to end a previous => [ - you may find a  => , or => LITERAL
+ * nearby in example texts.
+ */
+FCode (p4_right_bracket)
+{
+    STATE = P4_TRUE;
+}
+
 /** "COMPILE," ( some-xt* -- ) [ANS]
  * place the execution-token on stack into the dictionary - in
  * traditional forth this is not even the least different than
@@ -874,6 +935,24 @@ FCode (pf_do)
 }
 P4COMPILES (pf_do, pf_do_execution, P4_SKIPS_OFFSET, P4_DO_STYLE);
 
+/** LEAVE ( R: some,loop -- R: some,loop ) [ANS]
+ * quit the innermost => DO .. => LOOP  - it does even
+ * clean the return-stack and branches to the place directly
+ * after the next => LOOP
+ */
+FCode_XE (pf_leave_execution)
+{
+    IP = RP[2] - 1; /* the place after the next LOOP */
+    RP += 3;        /* UNLOOP */
+    FX_BRANCH;
+}
+
+FCode (pf_leave)
+{
+    FX_COMPILE (pf_leave);
+//    RP += 3;        /* terminate loop */
+}
+P4COMPILES (pf_leave, pf_leave_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 /** "((LOOP))" ( -- ) [HIDDEN]
  * execution compiled by => LOOP
  */
@@ -931,6 +1010,22 @@ FCode (pf_plus_loop)
 }
 P4COMPILES (pf_plus_loop, pf_plus_loop_execution, P4_SKIPS_NOTHING, P4_LOOP_STYLE);
 
+/** UNLOOP ( R: some,loop -- ) [ANS]
+ * drop the => DO .. => LOOP runtime variables from the return-stack,
+ * usually used just in before an => EXIT call. Using this multiple
+ * times can unnest multiple nested loops.
+ */
+FCode_XE (pf_unloop_execution)
+{
+    RP += 3;        /* terminate loop */
+}
+
+FCode (pf_unloop)
+{
+    FX_COMPILE (pf_unloop);
+}
+P4COMPILES (pf_unloop, pf_unloop_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+
 /** I ( R: some,loop -- S: i# ) [ANS]
  * returns the index-value of the innermost => DO .. => LOOP
  */
@@ -961,6 +1056,17 @@ FCode (pf_j_execution)
     *--SP = (p4cell)RP[3];
 }
 P4COMPILES (pf_j, pf_j_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+
+FCode (pf_k)
+{
+    FX_COMPILE (pf_k);
+}
+
+FCode (pf_k_execution)
+{
+    *--SP = (p4cell)RP[6];
+}
+P4COMPILES (pf_k, pf_k_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 /*
    : X ( n -- )
@@ -1071,18 +1177,15 @@ ABORT"
 
 P4_LISTWORDS (compiler) =
 {
-//    P4_INTO ("FORTH", 0),
-    /** see => !CSP and ?CSP */
-    P4_DVaR ("CSP",		csp),
-    P4_FXco ("!CSP",		pf_store_csp),
-    P4_FXco ("?CSP",		pf_Q_csp),
     /* state checks */
-    P4_FXco ("?COMP",		pf_Q_comp),
-    P4_FXco ("?EXEC",		pf_Q_exec),
-    P4_FXco ("?FILE",		pf_Q_file),
-    P4_FXco ("?LOADING",	pf_Q_loading),
-    P4_FXco ("?PAIRS",		pf_Q_pairs),
-    P4_FXco ("?STACK",		pf_Q_stack),
+    P4_FXco ("?COMP",        pf_Q_comp),
+    P4_FXco ("?EXEC",        pf_Q_exec),
+    P4_FXco ("?PAIRS",       pf_Q_pairs),
+    P4_FXco ("?STACK",       pf_Q_stack),
+    /* return stack */
+    P4_SXco (">R",           pf_to_r),
+    P4_SXco ("R>",           pf_r_from),
+    P4_SXco ("R@",           pf_r_fetch),
     /* definition checks */
     P4_DVaR ("STATE",        state),
     P4_FXco ("REVEAL",       pf_reveal),
@@ -1106,6 +1209,7 @@ P4_LISTWORDS (compiler) =
     P4_IXco ("[",            pf_left_bracket),
     P4_FXco ("]",            pf_right_bracket),
     P4_SXco ("[']",          pf_bracket_tick),
+    P4_SXco ("[CHAR]",       pf_bracket_char),
     P4_FXco ("COMPILE,",     pf_compile_comma),
     P4_IXco ("[COMPILE]",    pf_bracket_compile),
 /*
@@ -1122,10 +1226,13 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("AGAIN",        pf_again),
 
     P4_SXco ("DO",           pf_do),
+    P4_SXco ("LEAVE",        pf_leave),
     P4_SXco ("LOOP",         pf_loop),
     P4_SXco ("+LOOP",        pf_plus_loop),
+    P4_SXco ("UNLOOP",       pf_unloop),
     P4_SXco ("I",            pf_i),
     P4_SXco ("J",            pf_j),
+    P4_SXco ("K",            pf_k),
 
     P4_SXco ("CASE",         pf_case),
     P4_SXco ("OF",           pf_of),

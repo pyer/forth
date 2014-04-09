@@ -20,6 +20,7 @@
 
 #define PFE_WITH_FFA    1       /* use seperate FlagField */
 
+#define PATH_LENGTH 256
 
 #define TOTAL_SIZE (1024*1024) /* the shorthand for default-computations */
 struct p4_Thread* p4TH;

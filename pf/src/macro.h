@@ -30,8 +30,6 @@
 /* useful shortcuts */
 #define P4_INC(P,T)	((*(T **)&(P))++)
 
-# define WP_CFA		(PFE.wp)		 
-# define WP_NFA		(pf_to_name(PFE.wp))
 # define WP_PFA		((p4cell *)&PFE.wp [1]) 
 
 #define FX_SKIP_STRING  (*(char **)&(IP) += (pf_aligned (*(p4char*)IP + 1)))

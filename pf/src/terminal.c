@@ -17,12 +17,17 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
 #include <ctype.h>
 #include <setjmp.h>
+#include <sys/select.h>
+#include <termios.h>
+#include <errno.h>
 
 #include "config.h"
 #include "types.h"
+#include "const.h"
 #include "macro.h"
 #include "listwords.h"
 #include "session.h"
@@ -59,8 +64,11 @@ int get_outs(void)
 }
 
 /************************************************************************/
+static struct termios tty_system;
+
 void pf_init_terminal(void)
 {
+struct termios new_termios;
 cols = 144;
 rows = 39;
 #ifdef TIOCGSIZE
@@ -81,6 +89,140 @@ rows = 39;
         rows = atoi(getenv("LINES"));
 */
 #endif /* TIOCGSIZE */
+
+    /* set the keyboard in raw mode */
+    if (isatty (STDIN_FILENO)) {
+        /* take two copies - one for now, one for later */
+        tcgetattr(STDIN_FILENO, &tty_system);
+        memcpy(&new_termios, &tty_system, sizeof(new_termios));
+        /* set the new terminal modei: nearly cfmakeraw but  */
+//        cfmakeraw(&new_termios);
+           new_termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
+                           | INLCR | IGNCR | ICRNL | IXON);
+           //new_termios.c_oflag &= ~OPOST;
+           new_termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+           new_termios.c_cflag &= ~(CSIZE | PARENB);
+           new_termios.c_cflag |= CS8;
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+    }
+}
+
+void pf_cleanup_terminal (void)
+{
+    if (isatty (STDIN_FILENO)) {
+        tcsetattr(STDIN_FILENO, TCSANOW, &tty_system);
+    }
+}
+
+/************************************************************************/
+/* Input from keyboard.                                                 */
+/************************************************************************/
+
+int kbhit(void)
+{
+    struct timeval tv = { 0L, 0L };
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(0, &fds);
+    return select(1, &fds, NULL, NULL, &tv);
+}
+
+/* ********************************************************************** */
+/** KEY? ( -- flag )
+ * must be in facility.c
+ */
+FCode (pf_key_question)
+{
+    if ( kbhit() )
+        *--SP = P4_TRUE;
+    else
+        *--SP = P4_FALSE;
+}
+
+/* ********************************************************************** */
+/** KEY ( -- char# ) [ANS]
+ * return a single character from the keyboard - the
+ * key is not echoed.
+ */
+int pf_getkey (void)
+{
+    unsigned char c;
+//    return fgetc(stdin);
+    while (!kbhit()) {
+        /* do some work */
+    }
+
+    if ( read(0, &c, sizeof(c)) < 0 )
+        return -1;
+    return c;
+}
+
+FCode (pf_key)
+{
+    *--SP = pf_getkey();
+}
+
+/* ********************************************************************** */
+int pf_accept (char *tib, int tiblen)
+{
+    int i;
+    char c;
+    for (i = 0; i < tiblen;)
+    {
+        switch (c = pf_getkey ())
+	{
+         case 27:
+             for (; i > 0; i--)
+                 FX (pf_backspace);
+	     continue;
+         case '\t':
+             while (i < tiblen)
+             {
+                 tib[i++] = ' ';
+                 FX (pf_space);
+                 if (out % 4 == 0)
+                     break;
+             }
+             continue;
+         case '\r':
+         case '\n':
+             goto fin;
+         case 127:
+         case '\b':
+             i--;
+             FX (pf_backspace);
+             continue;
+         default:
+             tib[i++] = c;
+             pf_outc (c);
+             continue;
+	}
+    }
+ fin:
+    tib[i] = 0;
+    return i;
+}
+
+
+/*
+int pf_accept_old (char *tib, int tiblen)
+{
+    if ( fgets (tib, tiblen, stdin) == NULL )
+       return 0;
+    return strlen(tib);
+}
+*/
+
+/** ACCEPT ( buffer-ptr buffer-max -- buffer-len ) [ANS]
+ * get a string from terminal into the named input
+ * buffer, returns the number of bytes being stored
+ * in the buffer. May provide line-editing functions.
+ */
+FCode (pf_accept)
+{
+    SP[1] = pf_accept ((char *)SP[1], SP[0]);
+    SP += 1;
 }
 
 /************************************************************************/
@@ -117,42 +259,7 @@ int pf_outf (const char *s,...)
     return r;
 }
 
-/** KEY ( -- char# ) [ANS]
- * return a single character from the keyboard - the
- * key is not echoed.
- */
-//extern P4_CODE(pf_key);
-int  pf_getkey (void)
-{
-    return fgetc(stdin);
-}
-
-FCode (pf_key)
-{
-    *--SP = pf_getkey();
-}
-
 /* ********************************************************************** */
-int pf_accept (char *tib, int tiblen)
-{
-    if ( fgets (tib, tiblen, stdin) == NULL )
-       return 0;
-    return strlen(tib);
-}
-
-/** ACCEPT ( buffer-ptr buffer-max -- buffer-len ) [ANS]
- * get a string from terminal into the named input
- * buffer, returns the number of bytes being stored
- * in the buffer. May provide line-editing functions.
- */
-FCode (pf_accept)
-{
-    SP[1] = pf_accept ((char *)SP[1], SP[0]);
-    SP += 1;
-}
-
-/* ********************************************************************** */
-
 /** EMIT ( char# -- ) [ANS]
  * print the char-value on stack to stdout
  */
@@ -265,6 +372,24 @@ FCode (pf_tab)
 }
 
 /* -------------------------------------------------------------- */
+/** GOTOXY ( x y -- )
+ * move the cursor to the specified position on the screen -
+ * this is usually done by sending a corresponding esc-sequence
+ * to the terminal. 
+ */
+FCode (pf_gotoxy)
+{
+    printf ("\033[%d;%dH", (int)SP[1] + 1, (int)SP[0] + 1);
+    SP += 2;
+}
+
+FCode (pf_clear_screen)
+{
+    printf ("\033[2J");
+}
+
+
+/* -------------------------------------------------------------- */
 /** MORE ( -- )
  * initialized for more-like effect
  * - see => MORE?
@@ -360,6 +485,7 @@ P4_LISTWORDS (terminal) =
     P4_FXco ("ROWS",         pf_rows),
 
     P4_FXco ("KEY",          pf_key),
+    P4_FXco ("KEY?",         pf_key_question),
     P4_FXco ("ACCEPT",       pf_accept),
 
     P4_FXco ("CR",           pf_cr),
@@ -370,6 +496,8 @@ P4_LISTWORDS (terminal) =
     P4_FXco ("SPACE",        pf_space),
     P4_FXco ("SPACES",       pf_spaces),
     P4_FXco ("TAB",          pf_tab),
+    P4_FXco ("GOTOXY",       pf_gotoxy),
+    P4_FXco ("CLEAR-SCREEN", pf_clear_screen),
 
     P4_FXco ("MORE",         pf_more),
     P4_FXco ("MORE?",        pf_more_Q),

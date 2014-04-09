@@ -1,7 +1,7 @@
 #!help
 To be continued
 
-STANADRD
+STANDARD
 Nearly conform to
 Forth 200x Standardisation Committee
 Forth 2012 RC2
@@ -11,9 +11,6 @@ Forth 2012 RC2
 ! ( x a-addr -- )
 Store x at a-addr.
 See also: @
-
-!CSP
-TBD
 
 # ( ud1 -- ud2 )
 Divide ud1 by the number in BASE giving the quotient ud2 and the remainder n. (n is the
@@ -77,11 +74,14 @@ Subtract n2 from n1 giving the difference n3.
 
 . ( n -- )
 Display n in free field format.
-See also: ."
+Free-field number display uses the characters described in digit conversion, without leading zeros, in a field
+the exact size of the converted string plus a trailing space. If a number is zero, the least significant digit is
+not considered a leading zero. If the number is negative, a leading minus sign is displayed.
+See also: ." .R
 
 ." ( "ccc quote " -- )
 Parse and display ccc delimited by '"' (double-quote).
-See also: .
+See also: . .R
 
 .COPYRIGHT ( -- )
 Display copyright information.
@@ -90,7 +90,13 @@ Display copyright information.
 Display license information.
 The basic PF system is licensed under the terms of the LGPL (Lesser GNU Public License)
 
-.S
+.R ( n1 n2 -- )
+Display n1 right aligned in a field n2 characters wide. If the number of characters required
+to display n1 is greater than n2, all digits are displayed with no leading spaces in a field
+as wide as necessary.
+See also: . ."
+
+.S ( -- )
 Display the stack contents.
 
 .STATUS
@@ -180,8 +186,8 @@ flag is true if and only if n1 is less than n2.
 Initialize the pictured numeric output conversion process.
 See also: #> # #S
 
-<>
-TBD
+<> ( x1 x2 -- flag )
+flag is true if and only if x1 is not bit-for-bit the same as x2.
 
 <BUILDS
 TBD
@@ -193,42 +199,44 @@ flag is true if and only if n1 is bit-for-bit the same as n2.
 flag is true if and only if n1 is greater than n2.
 
 >BODY ( xt -- a-addr )
-a-addr is the data-field address corresponding to xt. An ambiguous condition exists if xt
-is not for a word defined via CREATE.
+a-addr is the data-field address corresponding to xt.
+An ambiguous condition exists if xt is not for a word defined via CREATE.
 
->IN
-
->NAME
-
->NUMBER
+>NUMBER ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 )
+ud2 is the unsigned result of converting the characters within the string specified by
+c-addr1 u1 into digits, using the number in BASE, and adding each into ud1 after multi-
+plying ud1 by the number in BASE. Conversion continues left-to-right until a character
+that is not convertible, including any “+” or “-”, is encountered or the string is entirely
+converted. c-addr2 is the location of the first unconverted character or the first character
+past the end of the string if the string was entirely converted. u2 is the number of uncon-
+verted characters in the string. An ambiguous condition exists if ud2 overflows during
+the conversion.
 
 >R ( x -- ) ( R: -- x )
 Move x to the return stack.
 See also: R@ R>
 
-?COMP
-TBD
-
-?CSP
-TBD
+?COMP ( -- )
+Check that the current => STATE is compiling
+otherwise => THROW
+often used in control-words
 
 ?DUP ( x -- 0 | x x )
 Duplicate x if it is non-zero.
 
-?EXEC
-TBD
+?EXEC ( -- )
+Check that the current => STATE is executing
+otherwise => THROW
+often used in control-words
 
-?FILE
-TBD
+?PAIRS ( a b -- )
+If compiling, check that the two magics on
+the => CS-STACK are identical, otherwise throw
+used in control-words
 
-?LOADING
-TBD
-
-?PAIRS
-TBD
-
-?STACK
-TBD
+?STACK ( -- )
+Check all stacks for underflow and overflow conditions,
+and if such an error condition is detected => THROW
 
 @ ( a-addr -- x )
 x is the value stored at a-addr.
@@ -256,7 +264,13 @@ implementation-defined way.
 +n2 is the length of the string stored at c-addr.
 
 AGAIN
-
+Compilation: ( C: dest -- )
+Append the run-time semantics given below to the current definition, resolving the back-
+ward reference dest.
+Run-time: ( -- )
+Continue execution at the location specified by dest. If no other control flow words are
+used, any program code after AGAIN will not be executed.
+See also: BEGIN WHILE
 
 ALIGN ( -- )
 If the data-space pointer is not aligned, reserve enough space to align it.
@@ -283,6 +297,12 @@ word lists in the search order.
 AND ( x1 x2 -- x3 )
 x3 is the bit-by-bit logical "and" of x1 with x2.
 
+AT-XY ( u1 u2 -- )
+Perform implementation-dependent steps so that the next character displayed will appear
+in column u1, row u2 of the user output device, the upper left corner of which is column
+zero, row zero. An ambiguous condition exists if the operation cannot be performed on
+the user output device with the specified parameters.
+
 BACKSPACE
 TBD
 
@@ -290,9 +310,13 @@ BASE ( -- a-addr )
 a-addr is the address of a cell containing the current number-conversion radix {{2...36}}.
 See also: HEX DECIMAL
 
-BEGIN ( -- )
+BEGIN
+Compilation: ( C: -- dest )
+Put the next location for a transfer of control, dest, onto the control flow stack. Append
+the run-time semantics given below to the current definition.
+Run-time: ( -- )
 Continue execution.
-See also: REPEAT UNTIL WHILE
+See also: REPEAT UNTIL WHILE AGAIN
 
 BIN
 TBD
@@ -300,9 +324,22 @@ TBD
 BL ( -- char )
 char is the character value for a space.
 
+BLANK ( c-addr u -- )
+If u is greater than zero, store the character value for space in u consecutive character
+positions beginning at c-addr.
+
 C! ( char c-addr -- )
 Store char at c-addr. When character size is smaller than cell size, only the number of
 low-order bits corresponding to character size are transferred.
+
+C" ( -- c-addr )
+Compilation: ( “ccc quote ” -- )
+Parse ccc delimited by " (double-quote) and append the run-time semantics given below
+to the current definition.
+Run-time: ( -- c-addr )
+Return c-addr, a counted string consisting of the characters ccc. A program shall not
+alter the returned string.
+See also: S"
 
 C, ( char -- )
 Reserve space for one character in the data space and store char in the space. If the data-
@@ -315,12 +352,44 @@ Fetch the character stored at c-addr. When the cell size is greater than charact
 unused high-order bits are all zeroes.
 
 CASE
+Compilation: ( C: -- case-sys )
+Mark the start of the CASE. . . OF. . . ENDOF. . . ENDCASE structure. Append the run-time
+semantics given below to the current definition.
+Run-time: ( -- )
+Continue execution.
+See also: OF ENDOF ENDCASE
 
 CATCH
 
+CHAR ( “ spaces name” -- char )
+Skip leading space delimiters. Parse name delimited by a space. Put the value of its first
+character onto the stack.
+See also: [CHAR]
+
 CD
 
+CELL+ ( a-addr1 -- a-addr2 )
+Add the size in address units of a cell to a-addr1, giving a-addr2.
+See also: CELLS CHAR+ CHARS
+
+CELLS ( n1 -- n2 )
+n2 is the size in address units of n1 cells.
+See also: CELL+ CHAR+ CHARS
+
+CHAR+ ( c-addr1 -- c-addr2 )
+Add the size in address units of a character to c-addr1, giving c-addr2.
+See also: CELL+ CELLS CHARS
+
+CHARS ( n1 -- n2 )
+n2 is the size in address units of n1 characters.
+See also: CELL+ CELLS CHAR+
+
 CLOSE-FILE
+
+CMOVE ( c-addr1 c-addr2 u -- )
+If u is greater than zero, copy u consecutive characters from the data space starting at
+c-addr1 to that starting at c-addr2, proceeding character-by-character from lower addresses
+to higher addresses.
 
 COLS
 
@@ -355,11 +424,12 @@ See also: DOES>
 
 CREATE-FILE
 
-CSP
-
 CURRENT
 
 DEBUG
+
+DECIMAL ( -- )
+Set BASE to ten.
 
 DEFINITIONS ( -- )
 Make the compilation word list the same as the first word list in the search order. Speci-
@@ -374,7 +444,7 @@ DO ( n1 n2 -- ) ( R: -- loop-sys )
 Set up loop control parameters with index n2 and limit n1 . An ambiguous
 condition exists if n1 and n2 are not both the same type. Anything already on the
 return stack becomes unavailable until the loop-control parameters are discarded.
-See also: +LOOP LOOP DO
+See also: +LOOP LOOP DO LEAVE
 
 DOES>
 Compilation: ( C: colon-sys1 -- colon-sys2 )
@@ -400,8 +470,9 @@ See also: CREATE
 DROP ( x -- )
 Remove x from the stack.
 
-DUMP
-TBD
+DUMP ( addr u -- )
+Display the contents of u consecutive addresses starting at addr. The format of the
+display is implementation dependent.
 
 DUP ( x -- x x )
 Duplicate x.
@@ -422,14 +493,36 @@ effect of EMIT for all other values of x is implementation-defined.
 See also: TYPE
 
 ENDCASE
+Compilation: ( C: case-sys -- )
+Mark the end of the CASE. . . OF. . . ENDOF. . . ENDCASE structure. Use case-sys to re-
+solve the entire structure. Append the run-time semantics given below to the current
+definition.
+Run-time: ( x -- )
+Discard the case selector x and continue execution.
+See also: CASE OF ENDOF
 
 ENDOF
+Compilation: ( C: case-sys1 of-sys -- case-sys2 )
+Mark the end of the OF. . . ENDOF part of the CASE structure. The next location for a
+transfer of control resolves the reference given by of-sys. Append the run-time semantics
+given below to the current definition. Replace case-sys1 with case-sys2 on the control-
+flow stack, to be resolved by ENDCASE.
+See also: CASE OF ENDCASE
 
-ERASE
+
+ERASE ( addr u -- )
+If u is greater than zero, clear all bits in each of u consecutive address units of memory
+beginning at addr.
 
 EXECUTE
 
-FALSE
+EXIT ( -- ) ( R: nest-sys -- )
+Return control to the calling definition specified by nest-sys. Before executing EXIT
+within a do-loop, a program shall discard the loop-control parameters by executing UNLOOP.
+See also: UNLOOP
+
+FALSE ( -- false )
+Return a false flag.
 
 FILE-POSITION
 
@@ -455,10 +548,13 @@ the implementation. This word list is initially the compilation word list and is
 initial search order.
 
 
-HELP
+HELP ( -- )
+
 
 HERE
 
+HEX ( -- )
+Set BASE to sixteen.
 
 
 HOLD ( char -- )
@@ -479,9 +575,27 @@ INCLUDED
 
 INVERT
 
-KEY
+KEY ( -- char )
+Receive one character char, a member of the implementation-defined character set.
+Keyboard events that do not correspond to such characters are discarded until a valid
+character is received, and those events are subsequently unavailable.
+All standard characters can be received. Characters received by KEY are not displayed.
+
+KEY? ( -- flag )
+If a character is available, return true. Otherwise, return false. If non-character keyboard
+events are available before the first valid character, they are discarded and are subse-
+quently unavailable. The character shall be returned by the next execution of KEY.
+After KEY? returns with a value of true, subsequent executions of KEY? prior to the
+execution of KEY or EKEY also return true, without discarding keyboard events.
+See also: KEY
 
 LATEST
+
+LEAVE ( -- ) ( R: loop-sys -- )
+Discard the current loop control parameters. An ambiguous condition exists if they are unavailable.
+Continue execution immediately following the innermost syntactically
+enclosing DO. . . LOOP or DO. . . +LOOP.
+See also: DO LOOP +LOOP
 
 LITERAL
 
@@ -507,13 +621,24 @@ MORE?
 
 NEGATE
 
-NIP
+NIP ( x1 x2 -- x2 )
+Drop the first item below the top of stack.
+See also: TUCK
 
 NO-DEBUG
 
 NOT
 
 OF
+Compilation: ( C: -- of-sys )
+Put of-sys onto the control flow stack. Append the run-time semantics given below to the
+current definition. The semantics are incomplete until resolved by a consumer of of-sys
+such as ENDOF.
+Run-time: ( x1 x2 -- x1 )
+If the two values on the stack are not equal, discard the top value and continue execution
+at the location specified by the consumer of of-sys, e.g., following the next ENDOF.
+Otherwise, discard both values and continue execution in line.
+See also: CASE OF ENDCASE
 
 ONLY ( -- )
 Set the search order to the implementation-defined minimum search order.
@@ -532,9 +657,13 @@ use may corrupt the transient region identified by #>.
 
 OVER
 
-PAD
+PAD ( -- c-addr )
+c-addr is the address of a transient region that can be used to hold data for intermediate
+processing.
 
-PICK
+PICK ( xu. . . x1 x0 u -- xu. . . x1 x0 xu )
+Remove u. Copy the xu to the top of the stack. An ambiguous condition exists if there
+are less than u+2 items on the stack before PICK is executed.
 
 PWD
 
@@ -564,13 +693,29 @@ REVEAL
 
 RM
 
-ROLL
+ROLL ( xu xu-1 . . . x0 u -- xu-1 . . . x0 xu )
+Remove u. Rotate u+1 items on the top of the stack. An ambiguous condition exists if
+there are less than u+2 items on the stack before ROLL is executed.
 
 ROT
 
 ROWS
 
-SEE
+S" ( -- c-addr u )
+Compilation: ( “ccc quote ” -- )
+Parse ccc delimited by " (double-quote). Append the run-time semantics given below to
+the current definition.
+Run-time: ( -- c-addr u )
+Return c-addr and u describing a string consisting of the characters ccc. A program shall
+not alter the returned string.
+See also: C"
+
+SEE ( “ spaces name” -- )
+Display a human-readable representation of the named word’s definition. The source
+of the representation (object-code decompilation, source block, etc.) and the particular
+form of the display is implementation defined.
+SEE may be implemented using pictured numeric output words. Consequently, its use
+may corrupt the transient region identified by #>.
 
 SIGN
 
@@ -592,45 +737,129 @@ THEN
 
 THROW
 
+TIME&DATE ( -- +n1 +n2 +n3 +n4 +n5 +n6 )
+Return the current time and date.
++n1 is the second {0. . . 59}, +n2 is the minute {0. . . 59}, +n3 is the hour {0. . . 23},
++n4 is the day {1. . . 31}, +n5 is the month {1. . . 12} and +n6 is the year (e.g., 1991).
+
+TO
+Interpretation: ( i×x “ spaces name” -- )
+Skip leading spaces and parse name delimited by a space. Perform the “TO name run-
+time” semantics given in the definition for the defining word of name. An ambiguous
+condition exists if name was not defined by a word with “TO name run-time” semantics.
+Compilation: ( “ spaces name” -- )
+Skip leading spaces and parse name delimited by a space. Append the “TO name run-
+time” semantics given in the definition for the defining word of name to the current
+definition. An ambiguous condition exists if name was not defined by a word with “TO
+name run-time” semantics.
+Run-time: ( -- )
+See also: VALUE
+
 TOUCH
 
-TRUE              
+TRUE ( -- true )
+Return a true flag, a single-cell value with all bits set.
 
 TUCK
-
+( x1 x2 -- x2 x1 x2 )
+Copy the first (top) stack item below the second stack item.
+See also: NIP
 TYPE
 
 UMASK
 
+UNLOOP ( -- ) ( R: loop-sys -- )
+Discard the loop-control parameters for the current nesting level.
+An UNLOOP is required for each nesting level before the definition may be EXITed.
+An ambiguous condition exists if the loop-control parameters are unavailable.
+See also: DO LOOP
+
 UNTIL
 
-VALUE
+VALUE ( x “ spaces name” -- )
+Skip leading space delimiters. Parse name delimited by a space. Create a definition for
+name with the execution semantics defined below, with an initial value equal to x.
+name is referred to as a “value”.
+name Execution: ( -- x )
+Place x on the stack. The value of x is that given when name was created, until the phrase
+x TO name is executed, causing a new value of x to be assigned to name.
+See also: TO
 
-VARIABLE
+VARIABLE ( “ spaces name” -- )
+Skip leading space delimiters. Parse name delimited by a space. Create a definition for
+name with the execution semantics defined below. Reserve one cell of data space at an
+aligned address.
+name is referred to as a “variable”.
+name Execution: ( -- a-addr )
+a-addr is the address of the reserved cell. A program is responsible for initializing the
+contents of the reserved cell.
 
 VOCABULARY
 
 W/O
 
 WHILE
+Compilation: ( C: dest -- orig dest )
+Put the location of a new unresolved forward reference orig onto the control flow stack,
+under the existing dest. Append the run-time semantics given below to the current defi-
+nition. The semantics are incomplete until orig and dest are resolved (e.g., by REPEAT).
+Run-time: ( x -- )
+If all bits of x are zero, continue execution at the location specified by the resolution of orig.
+See also: BEGIN AGAIN REPEAT
 
-WITHIN
 
-WORDS
+WITHIN ( n1 n2 n3 -- flag )
+Perform a comparison of a test value n1 with a lower limit n2 and an upper limit n3,
+returning true if either (n2 < n3 and (n2 <= n1 and n1 < n3))
+or (n2 > n3 and (n2 <= n1 or n1 < n3)) is true, returning false otherwise.
+
+WORDS ( -- )
+List the definition names in the first word list of the search order. The format of the
+display is implementation-dependent.
+WORDS may be implemented using pictured numeric output words. Consequently, its
+use may corrupt the transient region identified by #>.
 
 WRITE-FILE        
 
 WRITE-LINE
 
-XOR
+XOR ( x1 x2 -- x3 )
+x3 is the bit-by-bit exclusive-or of x1 with x2.
 
-[
+[ ( -- )
+Enter interpretation state. [ is an immediate word.
+
 
 [']
+Compilation: ( “ spaces name” -- )
+Skip leading space delimiters. Parse name delimited by a space. Find name. Append the
+run-time semantics given below to the current definition.
+An ambiguous condition exists if name is not found.
+Run-time: ( -- xt )
+Place name’s execution token xt on the stack. The execution token returned by the com-
+piled phrase “[’] X” is the same value returned by “’ X” outside of compilation state.
+See also: FIND ’
+
+[CHAR]
+Compilation: ( “ spaces name” -- )
+Skip leading space delimiters. Parse name delimited by a space. Append the run-time
+semantics given below to the current definition.
+Run-time: ( -- char )
+Place char, the value of the first character of name, on the stack.
+See also: CHAR [ ]
 
 [COMPILE]
+Compilation: ( “ spaces name” -- )
+Skip leading space delimiters. Parse name delimited by a space. Find name. If name has
+other than default compilation semantics, append them to the current definition; other-
+wise append the execution semantics of name. An ambiguous condition exists if name is
+not found.
 
-\
+\ ( “ccc eol ” -- )
+Comment
+Parse and discard the remainder of the parse area. \ is an immediate word.
+See also: (
 
-]
+] ( -- )
+Enter compilation state.
 

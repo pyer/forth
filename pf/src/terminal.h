@@ -11,6 +11,7 @@ int get_cols(void);
 int get_rows(void);
 int get_outs(void);
 void pf_init_terminal(void);
+void pf_cleanup_terminal (void);
 
 /************************************************************************/
 /*
@@ -43,6 +44,9 @@ FCode (pf_type);
 FCode (pf_backspace);
 FCode (pf_space);
 FCode (pf_spaces);
+
+FCode (pf_gotoxy);
+FCode (pf_clear_screen);
 
 /** _accept_ ( str* str# -- span# )
  * better input facility using lined if possible, otherwise

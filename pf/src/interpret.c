@@ -419,7 +419,7 @@ FCode (pf_sh_s)
 {
     do {
         FX (pf_sh);
-    } while (SP[0]);
+    } while (*SP);
 }
 
 /* -------------------------------------------------------------- */
@@ -493,7 +493,6 @@ FCode (pf_tick)
 }
 
 /* -------------------------------------------------------------- */
-
 const p4_char_t * pf_to_number (const p4_char_t *p, p4ucell *n, p4cell *d, p4ucell base)
 {
     p4cell value = 0;
@@ -550,6 +549,22 @@ FCode (pf_to_number)
                       (p4ucell *) &SP[0],
                       (p4cell *) &SP[2],
                       BASE);
+}
+
+/* -------------------------------------------------------------- */
+/** CHAR ( 'word' -- char# ) [ANS]
+ * return the (ascii-)value of the following word's
+ * first character.
+ */
+FCode (pf_char)
+{
+    const char *fn = pf_word (' ');
+    char len = *fn++;
+//    p4char *p = pf_tick_nfa ();
+//    *DP=0; /* PARSE-WORD-NOHERE */
+    if ( len==0 )
+        p4_throw (P4_ON_INVALID_NAME);
+    *--SP = (p4cell) *fn;
 }
 
 /* -------------------------------------------------------------- */
@@ -659,9 +674,7 @@ FCode (pf_dot)
         *SP = -(*SP);
     }
 
-    do {
-        FX (pf_sh);
-    } while (*SP);
+    FX (pf_sh_s);
 
     if (sign == '-' )
         pf_hold ('-');
@@ -670,6 +683,35 @@ FCode (pf_dot)
     FX (pf_type);
 }
 
+/** .R ( value# precision# -- | value precision# -- [??] ) [ANS]
+ * print with precision - that is to fill
+ * a field of the give prec-with with
+ * right-aligned number from the converted value
+ */
+FCode (pf_dot_r)
+{
+    char sign=' ';
+    p4cell w = *SP++;
+
+    FX (pf_less_sh);
+//    pf_hold (' ');
+
+    if (*SP < 0) {
+        sign = '-';
+        *SP = -(*SP);
+    }
+
+    FX (pf_sh_s);
+
+    if (sign == '-' )
+        pf_hold ('-');
+
+    FX (pf_sh_greater);
+    pf_emits (w - *SP, ' ');
+    FX (pf_type);
+}
+
+/* -------------------------------------------------------------- */
 /** "PARSE,\""  ( "chars<">" -- ) [HIDDEN]
  *  Store a quote-delimited string in data space as a counted
  *  string.
@@ -709,12 +751,91 @@ FCode (pf_dot_quote)
         FX_COMPILE (pf_dot_quote);
 	FX (pf_parse_comma_quote);
     }else{
-        pf_skip_spaces();
+//        pf_skip_spaces();
+//        to_in++;	// skip only one space
         pf_parse_word('"');
         pf_type ((const char *)PFE.word.ptr, PFE.word.len);
     }
 }
 P4COMPILES (pf_dot_quote, pf_dot_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE);
+
+/** '((C"))' ( -- string-bstr* ) [HIDDEN]
+ * execution compiled by => C" string"
+ */
+FCode_XE (pf_c_quote_execution)
+{
+    register char *p = (char *) PFE.ip;
+    *--SP = (p4cell) p;
+    FX_SKIP_STRING;
+}
+
+/** 'C"' ( [string<">] -- string-bstr* ) [ANS]
+ * in compiling mode place the following string in the current
+ * word and return the address of the counted string on execution.
+ * (in exec-mode use a => POCKET and leave the bstring-address of it),
+ * see => S" string" and the non-portable => " string"
+ */
+FCode (pf_c_quote)
+{
+    if (STATE)
+    {
+        FX_COMPILE (pf_c_quote);
+	FX (pf_parse_comma_quote);
+    }else{
+        register char *p;
+        register p4ucell n;
+//        pf_skip_spaces();
+//        to_in++;	// skip only one space
+        pf_parse_word('"');
+        p = PAD;
+	n = PFE.word.len;
+        *p++ = n;
+        memcpy (p, PFE.word.ptr, n);
+        *--SP = (p4cell)PAD;
+    }
+}
+P4COMPILES (pf_c_quote, pf_c_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE);
+
+/** '((S"))' ( -- string-ptr string-len ) [HIDDEN]
+ * execution compiled by => S"
+ */
+FCode_XE (pf_s_quote_execution)
+{
+    register char *p = (char *) PFE.ip;
+    SP -= 2;
+    SP[0] = *p;
+    SP[1] = (p4cell) (p + 1);
+    FX_SKIP_STRING;
+}
+
+/** 'S"' ( [string<">] -- string-ptr string-len) [ANS]
+ * if compiling then place the string into the currently
+ * compiled word and on execution the string pops up
+ * again as a double-cell value yielding the string's address
+ * and length. To be most portable this is the word to be
+ * best being used. Compare with =>'C"' and non-portable => "
+ */
+FCode (pf_s_quote)
+{
+    if (STATE)
+    {
+        FX_COMPILE (pf_s_quote);
+	FX (pf_parse_comma_quote);
+    }else{
+        register char *p;
+        register p4ucell n;
+//        pf_skip_spaces();
+//        to_in++;	// skip only one space
+        pf_parse_word('"');
+        p = PAD;
+	n = PFE.word.len;
+        *p++ = n;
+        memcpy (p, PFE.word.ptr, n);
+        *--SP = (p4cell)p;
+        *--SP = n;
+    }
+}
+P4COMPILES (pf_s_quote, pf_s_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE);
 
 /** "("  ( 'comment<closeparen>' -- ) [ANS]
  * eat everything up to the next closing paren - treat it
@@ -838,6 +959,19 @@ p4cell * cfa_to_body (p4xt xt)
     else /* it's not particularly right to let primitives return a body... */
         /* but otherwise we would have to if-check all known var-RTs ... */
         return P4_TO_BODY(xt);
+}
+
+/** >BODY ( some-xt* -- some-body* ) [ANS]
+ * adjust the execution-token (ie. the CFA) to point
+ * to the parameter field (ie. the PFA) of a word.
+ * this is not a constant operation - most words have their
+ * parameters at "1 CELLS +" but CREATE/DOES-words have the
+ * parameters at "2 CELLS +" and ROM/USER words go indirect
+ * with a rom'ed offset i.e. "CELL + @ UP +"
+ */
+FCode (pf_to_body)
+{
+    *SP = (p4cell) cfa_to_body ((p4xt) *SP);
 }
 
 /* -------------------------------------------------------------- */
@@ -1072,7 +1206,7 @@ void pf_convert_string(void)
 /**
  * the => INTERPRET as called by the outer interpreter
  */
-void pf_interpret(char *buf, int len)
+void pf_interpret(char *buf, int len, int n)
 {
     redefined_msg = 1;
     source = buf;
@@ -1098,6 +1232,8 @@ void pf_interpret(char *buf, int len)
 		   continue;
 	    if (pf_convert_number())
                    continue;
+            if (n>0)
+                printf( "\nLine %d: %s", n, buf );
             p4_throw (P4_ON_UNDEFINED);
 	}
     }
@@ -1107,12 +1243,13 @@ void pf_interpret(char *buf, int len)
 void pf_include(const char *name, int len)
 {
     char buffer[256];
+    int line=1;
 //printf("include %s\n",name);
     FILE *fh = fopen( name, "r" );
     if( fh != NULL ) {
         //while( fgets( (char *)PFE.tib, TIB_SIZE, fh ) != NULL ) {
         while( fgets( buffer, 255, fh ) != NULL ) {
-             pf_interpret(buffer, strlen(buffer));
+             pf_interpret(buffer, strlen(buffer),line++);
         }
         fclose( fh );
     } else {
@@ -1198,7 +1335,9 @@ P4_LISTWORDS (interpret) =
     P4_FXco ("#>",           pf_sh_greater),
     P4_FXco ("#S",           pf_sh_s),
     P4_FXco ("'",            pf_tick),
+    P4_FXco (">BODY",        pf_to_body),
     P4_FXco (">NUMBER",      pf_to_number),
+    P4_FXco ("CHAR",         pf_char),
     P4_FXco ("FIND",         pf_find),
     P4_FXco ("HERE",         pf_here),
     P4_FXco ("HOLD",         pf_hold),
@@ -1206,6 +1345,9 @@ P4_LISTWORDS (interpret) =
 
     P4_FXco (".",            pf_dot),
     P4_SXco (".\"",          pf_dot_quote),
+    P4_FXco (".R",           pf_dot_r),
+    P4_SXco ("C\"",          pf_c_quote),
+    P4_SXco ("S\"",          pf_s_quote),
     P4_IXco ("(",            pf_paren),
     P4_IXco ("\\",           pf_backslash),
     P4_FXco ("INCLUDE",	     pf_include),

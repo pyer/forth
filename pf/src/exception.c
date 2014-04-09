@@ -40,9 +40,11 @@
 #define ____ }
 
 /************************************************************************/
-jmp_buf jump_loop;       /* QUIT and ABORT do a THROW which longjmp() */
-		    /* here thus C-stack gets cleaned up too */
+jmp_buf jump_loop;		/* QUIT and ABORT do a THROW which longjmp() */
+				/* here thus C-stack gets cleaned up too */
 
+p4_Except *catchframe = NULL;	/* links to chain of CATCHed words */
+				/* and no exceptions to be caught */
 /************************************************************************/
 /**
  * just call longjmp on PFE.loop
@@ -64,8 +66,6 @@ struct p4_Exception
 p4cell next_exception = 0;
 p4_Exception* exception_link;
 
-void * p4_save_input (void *p);
-void * p4_restore_input (void *p);
 /*
  * show the error, along with info like the block, filename, line numer.
  */
@@ -82,8 +82,7 @@ static void show_error (const char* str)
     pf_longjmp_abort ();
 }
 
-static void
-throw_msg (int id, char *msg)
+static void throw_msg (int id, char *msg)
 {
     static const char *throw_explanation[] =
     {
@@ -210,8 +209,7 @@ throw_msg (int id, char *msg)
 /**
  * the CATCH impl
  */
-_export int
-p4_catch (p4xt xt)
+int p4_catch (p4xt xt)
 {
     register int returnvalue;
     auto p4_Except frame;
@@ -223,38 +221,42 @@ p4_catch (p4xt xt)
     frame.fpp = PFE.fp;
 #  endif
     frame.rpp = PFE.rp;
-    frame.prev = PFE.catchframe;  PFE.catchframe = &frame;
+    frame.prev = catchframe;  catchframe = &frame;
     returnvalue = setjmp (frame.jmp);
     if (! returnvalue) {
         pf_call (xt);
     }
-    PFE.catchframe = frame.prev;
+    catchframe = frame.prev;
     PFE.rp = frame.rpp;
     return returnvalue;
 }
 
-_export void
-p4_throw (int id)
+/** CATCH ( catch-xt* -- 0 | throw#! ) [ANS]
+ * execute the given execution-token and catch
+ * any exception that can be caught therein.
+ * software can arbitrarily raise an exception
+ * using => THROW - the value 0 means there
+ * was no exception, other denote implementation
+ * dependent exception-codes.
+ */
+FCode (p4_catch)
 {
-    p4_throws (id, 0, 0);
+    p4cell catch_code = p4_catch ((p4xt) *SP++);
+    *--SP = catch_code;
 }
 
-_export void
-p4_throwstr (int id, const char* description)
-{
-    p4_throws (id, (const p4_char_t*) description,
-	       (description ? strlen(description) : 0));
-}
 
 /**
  * the THROW impl
  */
-_export void
-p4_throws (int id, const p4_char_t* description, int len)
+void p4_throwstr (int id, const char* description)
 {
-    p4_Except *frame = PFE.catchframe;
+    p4_Except *frame = catchframe;
     char msg[256];
     char* addr = (char*) description;
+    int len = 0;
+    if (description)
+        len = strlen(description);
 
     if (frame && frame->magic == P4_EXCEPTION_MAGIC)
     {
@@ -268,7 +270,7 @@ p4_throws (int id, const p4_char_t* description, int len)
     }
 
     *--PFE.rp = PFE.ip;
-    PFE.csp = (p4cell*) PFE.rp;         /* come_back marker */
+    CSP = (p4cell*) RP;         /* come_back marker */
     switch (id)
     {
      case P4_ON_ABORT_QUOTE:
@@ -296,18 +298,9 @@ p4_throws (int id, const p4_char_t* description, int len)
     }
 }
 
-/** CATCH ( catch-xt* -- 0 | throw#! ) [ANS]
- * execute the given execution-token and catch
- * any exception that can be caught therein.
- * software can arbitrarily raise an exception
- * using => THROW - the value 0 means there
- * was no exception, other denote implementation
- * dependent exception-codes.
- */
-FCode (p4_catch)
+void p4_throw (int id)
 {
-    p4cell catch_code = p4_catch ((p4xt) *SP++);
-    *--SP = catch_code;
+    p4_throwstr (id, NULL);
 }
 
 /** THROW ( throw#! -- [THROW] | throw# -- ) [ANS]
@@ -322,16 +315,8 @@ FCode (p4_catch)
 FCode (p4_throw)
 {
     p4cell n = *SP++;
-
-    switch (n)
-    {
-     case 0:
-         return;
-     case -2:
-         p4_throws (n, (p4_char_t *) SP[1], SP[0]);
-     default:
+    if (n)
 	 p4_throw (n);
-    }
 }
 
 /** ABORT ( -- [THROW] ) [ANS]
@@ -346,14 +331,15 @@ FCode (pf_abort)
 /** ((ABORT")) ( -- ) [HIDDEN]
  * compiled by => ABORT" what"
  */ 
-#define P4_CHARBUF_LEN(X)     (*((p4char*)(X)))
-#define P4_CHARBUF_PTR(X)     (((p4char*)(X))+1)
 FCode_XE (pf_abort_quote_execution)
 {
-    p4_charbuf_t *p = (p4_char_t *) IP;
+    char msg[256];
+    char *p = (char *)IP;
+    int l = *p++;
+    strncpy ( msg, p, l ); 
     FX_SKIP_STRING;
     if (*SP++ != 0)
-        p4_throws (P4_ON_ABORT_QUOTE, P4_CHARBUF_PTR(p), P4_CHARBUF_LEN(p));
+        p4_throwstr (P4_ON_ABORT_QUOTE, p);
 }
 /** 'ABORT"' ( [string<">] -- [THROW] ) [ANS]
  * throw like => ABORT but print an additional error-message
