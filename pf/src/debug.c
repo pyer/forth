@@ -454,8 +454,8 @@ void p4_decompile (p4_namebuf_t* nfa, p4xt xt)
     register p4xt* rest = 0;
     p4_bool_t iscode = P4_FALSE;
     *buf = '\0';
+    FX (pf_cr);
 
-    FCode (pf_cr);
     if (     *xt == P4CODE(pf_colon_RT) || 
 	     *xt == P4CODE(p4_debug_colon_RT))
     { rest = pf_colon_RT_SEE(buf,xt,nfa); goto decompile; }
@@ -564,7 +564,7 @@ static void display (p4xt *ip)
         if (get_outs() + 11 >= get_cols())
             break;
     }
-    FCode (pf_cr);
+    FX (pf_cr);
     p4_decompile_word (ip, buf, &style);
     pf_outf ("%*s%c %s", indent, "", pf_category (**ip), buf);
 }
@@ -617,7 +617,6 @@ static void interaction (p4xt *ip)
                   p4_decompile (cfa_to_name (*ip), *ip);
                   break;
               case ':':
-                 // FCode (pf_cr);
                   FX (pf_cr);
                   p4_decompile_rest ((p4xt *) cfa_to_body (*ip), 1, 4, P4_FALSE);
                   break;

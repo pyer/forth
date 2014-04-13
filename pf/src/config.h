@@ -1,13 +1,9 @@
 #ifndef ___CONFIG_H
 #define ___CONFIG_H
-/*
- *  Copyright (C) 2005 - 2008 Guido U. Draheim <guidod@gmx.de>
- *
- *  @see     GNU LGPL
- *  @author  Guido U. Draheim            (modified by $Author: guidod $)
- *  @version $Revision: 1.7 $
- *     (modified $Date: 2008-05-11 12:29:19 $)
- */
+
+#define PF_VERSION  "2.0a"
+
+
 #if defined ARM
 #include "config_arm.h"
 #define PF_BOOT_FILE "/etc/pf.fth"

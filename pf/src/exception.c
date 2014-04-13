@@ -98,7 +98,7 @@ static void throw_msg (int id, char *msg)
         /* -10 */ "division by zero",
         /* -11 */ "result out of range",
         /* -12 */ "argument type mismatch",
-        /* -13 */ "undefined word",
+        /* -13 */ "undefined word ",
         /* -14 */ "interpreting a compile-only word",
         /* -15 */ "invalid FORGET (not between FENCE and HERE)",
         /* -16 */ "attempt to use a zero-length string as a name",

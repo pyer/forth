@@ -40,9 +40,7 @@
 #include "interpret.h"
 #include "terminal.h"
 
-
-#define ___ {
-#define ____ }
+const char* pf_version_string(void);
 
 /************************************************************************/
 int exitcode = 0;
@@ -134,7 +132,7 @@ P4_COUNTWORDS(forth, "Forth Base system");
 /**
  * note the argument
  */
-int pf_init_system (p4_Thread* th) /* main_init */
+void pf_init_system (p4_Thread* th) /* main_init */
 {
     long int total_size = TOTAL_SIZE;
     long int stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
@@ -202,8 +200,7 @@ int pf_init_system (p4_Thread* th) /* main_init */
     if (PFE.dictlimit < PFE.dict + MIN_PAD + MIN_HOLD + 0x4000)
     {
 	puts ("ERROR: impossible memory map");
-	exitcode = 3;
-    	return exitcode;
+	exit (3);
     }
 
     /*  -- cold boot stage -- */
@@ -223,13 +220,14 @@ int pf_init_system (p4_Thread* th) /* main_init */
     P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
     /* and load other words */
     pf_load_words (&P4WORDS (forth));
-    /* -------- warm boot stage ------- */
-    abort_system ();
-    quit_system ();
-    pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-    return exitcode;
 }
 
+void help_opt(void)
+{
+    puts("   -f file  : load file");
+    puts("   -v       : print version number");
+}
+ 
 /************************************************************************/
 static char memory[TOTAL_SIZE]; /* BSS */
 
@@ -239,11 +237,36 @@ static char memory[TOTAL_SIZE]; /* BSS */
 int main (int argc, char** argv)
 {
     char buffer[256];
-    int len;
+    int len = 0;
+    int opt;
     p4_Thread* thread = (p4_Thread*) memory;
   
+    while ((opt = getopt(argc, argv, "vf:")) != -1) {
+        switch (opt) {
+        case 'v':
+            puts(PF_VERSION);
+            return 0;
+        case 'f':
+            strcpy( buffer, optarg );
+            len = strlen(buffer);
+            break;
+        default: /* '?' */
+            printf("Usage: %s [-v] [-f file]\n", argv[0]);
+            help_opt();
+            return 1;
+        }
+    }
+
     memset (thread, 0, sizeof(p4_Thread));
+    /* -------- cold boot stage ------- */
     pf_init_system(thread);
+    /* -------- warm boot stage ------- */
+    abort_system ();
+    quit_system ();
+    pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
+    if ( len > 0 )
+        pf_include(buffer,len);
+
     exitcode = 0;
     //switch (setjmp (thread->loop))
     switch (setjmp (jump_loop))

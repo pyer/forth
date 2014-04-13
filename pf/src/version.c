@@ -21,7 +21,6 @@
 #include "listwords.h"
 #include "terminal.h"
 
-#define PF_VERSION  "2.0a"
 #define MAKETIME __TIME__
 #define MAKEDATE __DATE__
 

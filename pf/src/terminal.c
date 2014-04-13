@@ -32,6 +32,7 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 #include "listwords.h"
 #include "session.h"
 #include "terminal.h"
+#include "history.h"
 
 /************************************************************************/
 int cols  = 144;
@@ -106,123 +107,17 @@ rows = 39;
 
         tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
     }
+    /* init history */
+    using_history();
+    read_history();
 }
 
 void pf_cleanup_terminal (void)
 {
+    write_history();
     if (isatty (STDIN_FILENO)) {
         tcsetattr(STDIN_FILENO, TCSANOW, &tty_system);
     }
-}
-
-/************************************************************************/
-/* Input from keyboard.                                                 */
-/************************************************************************/
-
-int kbhit(void)
-{
-    struct timeval tv = { 0L, 0L };
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(0, &fds);
-    return select(1, &fds, NULL, NULL, &tv);
-}
-
-/* ********************************************************************** */
-/** KEY? ( -- flag )
- * must be in facility.c
- */
-FCode (pf_key_question)
-{
-    if ( kbhit() )
-        *--SP = P4_TRUE;
-    else
-        *--SP = P4_FALSE;
-}
-
-/* ********************************************************************** */
-/** KEY ( -- char# ) [ANS]
- * return a single character from the keyboard - the
- * key is not echoed.
- */
-int pf_getkey (void)
-{
-    unsigned char c;
-//    return fgetc(stdin);
-    while (!kbhit()) {
-        /* do some work */
-    }
-
-    if ( read(0, &c, sizeof(c)) < 0 )
-        return -1;
-    return c;
-}
-
-FCode (pf_key)
-{
-    *--SP = pf_getkey();
-}
-
-/* ********************************************************************** */
-int pf_accept (char *tib, int tiblen)
-{
-    int i;
-    char c;
-    for (i = 0; i < tiblen;)
-    {
-        switch (c = pf_getkey ())
-	{
-         case 27:
-             for (; i > 0; i--)
-                 FX (pf_backspace);
-	     continue;
-         case '\t':
-             while (i < tiblen)
-             {
-                 tib[i++] = ' ';
-                 FX (pf_space);
-                 if (out % 4 == 0)
-                     break;
-             }
-             continue;
-         case '\r':
-         case '\n':
-             goto fin;
-         case 127:
-         case '\b':
-             i--;
-             FX (pf_backspace);
-             continue;
-         default:
-             tib[i++] = c;
-             pf_outc (c);
-             continue;
-	}
-    }
- fin:
-    tib[i] = 0;
-    return i;
-}
-
-
-/*
-int pf_accept_old (char *tib, int tiblen)
-{
-    if ( fgets (tib, tiblen, stdin) == NULL )
-       return 0;
-    return strlen(tib);
-}
-*/
-
-/** ACCEPT ( buffer-ptr buffer-max -- buffer-len ) [ANS]
- * get a string from terminal into the named input
- * buffer, returns the number of bytes being stored
- * in the buffer. May provide line-editing functions.
- */
-FCode (pf_accept)
-{
-    SP[1] = pf_accept ((char *)SP[1], SP[0]);
-    SP += 1;
 }
 
 /************************************************************************/
@@ -372,14 +267,14 @@ FCode (pf_tab)
 }
 
 /* -------------------------------------------------------------- */
-/** GOTOXY ( x y -- )
+/** GOTOXY ( col line -- )
  * move the cursor to the specified position on the screen -
  * this is usually done by sending a corresponding esc-sequence
  * to the terminal. 
  */
 FCode (pf_gotoxy)
 {
-    printf ("\033[%d;%dH", (int)SP[1] + 1, (int)SP[0] + 1);
+    printf ("\033[%d;%dH", (int)SP[0] + 1, (int)SP[1] + 1);
     SP += 2;
 }
 
@@ -389,7 +284,254 @@ FCode (pf_clear_screen)
 }
 
 
-/* -------------------------------------------------------------- */
+/************************************************************************/
+/* Input from keyboard.                                                 */
+/************************************************************************/
+
+int kbhit(void)
+{
+    struct timeval tv = { 0L, 0L };
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(0, &fds);
+    return select(1, &fds, NULL, NULL, &tv);
+}
+
+/* ********************************************************************** */
+/** KEY? ( -- flag )
+ * must be in facility.c
+ */
+FCode (pf_key_question)
+{
+    if ( kbhit() )
+        *--SP = P4_TRUE;
+    else
+        *--SP = P4_FALSE;
+}
+
+/* ********************************************************************** */
+#define K_ESC     0x1B
+#define K_F1      0x1B5B40
+#define K_F12     0x1B5B40
+
+#define K_END     0x1B4F46
+#define K_HOME    0x1B4F48
+
+#define K_INSERT  0x1B5B32
+#define K_DELETE  0x1B5B33
+
+#define K_PRIOR   0x1B5B35
+#define K_NEXT    0x1B5B36
+
+#define K_UP      0x1B5B41
+#define K_DOWN    0x1B5B42
+#define K_RIGHT   0x1B5B43
+#define K_LEFT    0x1B5B44
+
+int pf_escape_sequence(void)
+{
+    unsigned char c;
+    int key = 0x1B;	// Esc
+//    sleep(1);
+    if ( !kbhit() )
+        return key;
+    if ( read(0, &c, sizeof(c)) < 0 )
+        return -1;
+    key = (key<<8) + c;
+    if ( !kbhit() )
+        return key;
+    if ( read(0, &c, sizeof(c)) < 0 )
+        return -1;
+    key = (key<<8) + c;
+    if ( !kbhit() )
+        return key;
+    if ( c < 0x40 ) {
+        if ( read(0, &c, sizeof(c)) < 0 )
+            return -1;
+    }
+    return key;
+}
+
+/** KEY ( -- char# ) [ANS]
+ * return a single character from the keyboard - the
+ * key is not echoed.
+ */
+int pf_getkey (void)
+{
+    unsigned char c;
+    while (!kbhit()) {
+        /* do some work */
+    }
+
+    if ( read(0, &c, sizeof(c)) < 0 )
+        return -1;
+    if ( c == 0x1B ) {
+        return pf_escape_sequence();
+    }
+    return c;
+}
+
+FCode (pf_key)
+{
+    *--SP = pf_getkey();
+}
+
+/* ********************************************************************** */
+void refresh_line(char *tib, int i, int j)
+{
+    pf_putc('\r');
+    if( i>0 )
+        pf_type(tib,i);
+    if( j<i ) {
+        pf_putc('\r');
+        pf_type(tib,j);
+    }
+    pf_flush();
+}
+
+void clear_line(char *tib, int i, int j)
+{
+    pf_putc('\r');
+    while (i-- > 0)
+        pf_putc(' ');
+}
+
+int pf_accept (char *tib, int tiblen)
+{
+    HIST_ENTRY * history;
+    int j=0;
+    int i;
+    int x;
+    int c;
+    for (i = 0; i < tiblen;)
+    {
+        refresh_line(tib,i,j);
+        switch (c = pf_getkey ())
+	{
+         case K_ESC:
+             clear_line(tib,i,j);
+             j=i=0;
+	     continue;
+         case K_LEFT:
+             if (j>0) {
+                 j--;
+             }
+	     continue;
+         case K_RIGHT:
+             if (j<i) {
+                 j++;
+             }
+	     continue;
+         case K_UP:
+             history = previous_history();
+             if( history ) {
+               clear_line(tib,i,j);
+               strcpy(tib,history->line);
+               i=strlen(tib);
+               j=i;
+             }
+	     continue;
+         case K_DOWN:
+             history = next_history();
+             clear_line(tib,i,j);
+             if( history ) {
+               strcpy(tib,history->line);
+               i=strlen(tib);
+               j=i;
+             } else {
+               j=i=0;
+             }
+	     continue;
+         case '\t':
+             while (i < tiblen)
+             {
+                 tib[i++] = ' ';
+                 FX (pf_space);
+                 if (out % 4 == 0)
+                     break;
+             }
+             continue;
+         case K_DELETE:
+             if (j<i) {
+               clear_line(tib,i,j);
+               i--;
+               for( x=j; x<i; x++ )
+                  tib[x]=tib[x+1];
+             }
+             continue;
+         case 127:
+         case '\b':
+             if (j>0) {
+               clear_line(tib,i,j);
+               j--;
+               i--;
+               for( x=j; x<i; x++ )
+                  tib[x]=tib[x+1];
+             }
+             continue;
+         case '\r':
+         case '\n':
+             goto fin;
+         default:
+             if( j<i ) {
+               for( x=i; x>j; x-- )
+                  tib[x]=tib[x-1];
+               tib[j++] = c;
+               i++;
+             } else {
+               tib[j++] = c;
+               i++;
+             }
+             continue;
+	}
+    }
+ fin:
+    tib[i] = 0;
+    if( i>0 )
+        add_history (tib);
+    return i;
+}
+
+
+/*
+int pf_accept_old (char *tib, int tiblen)
+{
+    if ( fgets (tib, tiblen, stdin) == NULL )
+       return 0;
+    return strlen(tib);
+}
+*/
+
+/** ACCEPT ( buffer-ptr buffer-max -- buffer-len ) [ANS]
+ * get a string from terminal into the named input
+ * buffer, returns the number of bytes being stored
+ * in the buffer. May provide line-editing functions.
+ */
+FCode (pf_accept)
+{
+    SP[1] = pf_accept ((char *)SP[1], SP[0]);
+    SP += 1;
+}
+
+/* ----------------------------------------------------------------------- */
+/** HISTORY ( -- )
+ */
+FCode (pf_history)
+{
+    register HIST_ENTRY **the_list = history_list();
+    register int i = 0;
+
+    FX (pf_more);
+    while (the_list[i])
+    {
+        FX (pf_more_Q);
+        printf("%d: ",i);
+        pf_outs( the_list[i]->line);
+        i++;
+    }
+}
+
+/* ----------------------------------------------------------------------- */
 /** MORE ( -- )
  * initialized for more-like effect
  * - see => MORE?
@@ -484,9 +626,34 @@ P4_LISTWORDS (terminal) =
     P4_FXco ("COLS",         pf_cols),
     P4_FXco ("ROWS",         pf_rows),
 
+    P4_OCoN ("K-LEFT",		K_LEFT),
+    P4_OCoN ("K-RIGHT",		K_RIGHT),
+    P4_OCoN ("K-UP",		K_UP),
+    P4_OCoN ("K-DOWN",		K_DOWN),
+    P4_OCoN ("K-HOME",		K_HOME),
+    P4_OCoN ("K-END",		K_END),
+    P4_OCoN ("K-PRIOR",		K_PRIOR),
+    P4_OCoN ("K-NEXT",		K_NEXT),
+    P4_OCoN ("K-INSERT",	K_INSERT),
+    P4_OCoN ("K-DELETE",        K_DELETE),
+/*
+    P4_OCoN ("K-F1",			K_k1),
+    P4_OCoN ("K-F2",			K_k2),
+    P4_OCoN ("K-F3",			K_k3),
+    P4_OCoN ("K-F4",			K_k4),
+    P4_OCoN ("K-F5",			K_k5),
+    P4_OCoN ("K-F6",			K_k6),
+    P4_OCoN ("K-F7",			K_k7),
+    P4_OCoN ("K-F8",			K_k8),
+    P4_OCoN ("K-F9",			K_k9),
+    P4_OCoN ("K-F10",			K_k0),
+    P4_OCoN ("K-F11",		K_F1),
+    P4_OCoN ("K-F12",		K_F2),
+*/
     P4_FXco ("KEY",          pf_key),
     P4_FXco ("KEY?",         pf_key_question),
     P4_FXco ("ACCEPT",       pf_accept),
+    P4_FXco ("HISTORY",      pf_history),
 
     P4_FXco ("CR",           pf_cr),
     P4_FXco ("EMIT",         pf_emit),
