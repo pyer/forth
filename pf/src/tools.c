@@ -156,15 +156,14 @@ FCode (pf_dot_status)
 void pf_help(const char *name, int len)
 {
     char buffer[256];
-    auto p4_char_t upper[UPPERMAX];
-        UPPERCOPY (upper, name, len);
-        /* this thread does contain some upper-case defs 
-           AND lower-case input shall match those definitions */
+//    auto p4_char_t upper[UPPERMAX];
+//        UPPERCOPY (upper, name, len);
     int found = 0;
     FILE *fh = fopen( PF_HELP_FILE, "r" );
     if( fh != NULL ) {
         while( fgets( buffer, 255, fh ) != NULL ) {
-            if( found == 0 && strncmp(buffer,(char *)upper,len) == 0 ) {
+            // if( found == 0 && strncmp(buffer,(char *)upper,len) == 0 ) {
+            if( found == 0 && strncmp(buffer,(char *)name,len) == 0 ) {
                 found = 1;
             }
             if( found ) {
@@ -181,8 +180,9 @@ void pf_help(const char *name, int len)
 }
 FCode (pf_help)
 {
-    const char *fn = pf_word (' ');
+    const char *fn = cap_word (' ');
     char len = *fn++;
+    FX (pf_cr);
     pf_help( fn, len );
 }
 
@@ -239,7 +239,7 @@ FCode (pf_words)
 	char c = pf_category (*name_to_cfa(nfa));
         pf_outc(c); pf_outc(' ');
         pf_dot_name(nfa);
-        pf_tab (WILD_TAB);
+        pf_emits (WILD_TAB - get_cols() % WILD_TAB, ' ');
         if (get_outs()+WILD_TAB > get_cols()) {
             FX (pf_cr);
         }

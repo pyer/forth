@@ -238,23 +238,6 @@ FCode (pf_forward_resolve)
 }
 
 /* -------------------------------------------------------------- */
-/** RECURSIVE ( -- ) 
- * => REVEAL the current definition making it => RECURSIVE by its
- * own name instead of using the ans-forth word to =>"RECURSE".
- ' REVEAL ALIAS RECURSIVE IMMEDIATE
- */
-
-/** REVEAL ( -- ) 
- * the FIG definition toggles the => SMUDGE bit, and not all systems have
- * a smudge bit - instead one should use => REVEAL or => HIDE
- : REVEAL LAST @ FLAGS@ SMUDGE-MASK INVERT AND LAST @ FLAGS! ;
- */
-FCode (pf_reveal)
-{
-    P4_NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
-}
-
-/* -------------------------------------------------------------- */
 FCode_XE (pf_semicolon_execution);
 FCode (pf_semicolon);
 
@@ -383,7 +366,7 @@ FCode (pf_colon_EXIT)
 {
     FX (pf_Q_csp);
     STATE = P4_FALSE;
-    FX (pf_reveal);
+    P4_NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
 }
 
 /** ":" ( 'name' -- ) [ANS] [NEW]
@@ -1188,8 +1171,6 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("R@",           pf_r_fetch),
     /* definition checks */
     P4_DVaR ("STATE",        state),
-    P4_FXco ("REVEAL",       pf_reveal),
-    P4_IXco ("RECURSIVE",    pf_reveal),
     P4_RTco ("<BUILDS",      pf_builds),
     P4_RTco ("CREATE",       pf_builds), // CREATE and <BUILDS are synonyms
     P4_SXco ("DOES>",        pf_does),

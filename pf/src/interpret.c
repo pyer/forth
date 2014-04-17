@@ -1089,6 +1089,18 @@ void pf_load_words (const p4Words* ws)
  * each variant has restrictions on header field alignments.
  * 
  */
+void name_to_caps(char *dest, const char *src, int len)
+{
+    int i;
+    char c;
+    for ( i=0; i<len; i++ ) {
+        c = *src++;
+        if ( c>='a' && c<='z')
+            c -= 32;
+        *dest++ = c;
+    }
+}
+
 p4char* p4_header_comma (const p4char *name, int len)
 {
 //printf("\nlatest %x  link %x",LATEST,wid->link);
@@ -1114,7 +1126,7 @@ p4char* p4_header_comma (const p4char *name, int len)
      * the string to move UP usually - so we have to compute the overall 
      * size of the namefield first and its gaps, then move it */ 
     DP += 2; DP += len; FX (pf_align); 
-    memmove (DP-len, name, len); /* i.e. #define NFA2LFA(p) (p+1+*p) */
+    name_to_caps(DP-len, name, len);
     LATEST = DP-len -1;      /* point to count-byte before the name */
     *LATEST = len;           /* set the count-byte */
     LATEST[-1] = '\x80';     /* set the flag-byte before the count-byte */
@@ -1128,7 +1140,8 @@ p4char* p4_header_comma (const p4char *name, int len)
      * to avoid this by copying into a scratch pad first. Easy I'd say.
      */
     LATEST = DP++;
-    if (name != DP) memcpy(DP, name, len);
+    if (name != DP)
+       name_to_caps(DP, name, len);
     *LATEST = len;
     *LATEST |= '\x80'; 
     DP += len; FX (pf_align); 
@@ -1170,6 +1183,28 @@ char* pf_word ( char del )
     *here++ = (char)PFE.word.len;
     for ( n = PFE.word.len; n>0; n-- )
         *here++ = *p++;
+    *here = 0; // zero-terminated string
+    return (char *)DP;
+}
+
+/* same as pf_word but convert th word to capital letters if any
+*/
+char* cap_word ( char del )
+{
+    char *here = (char *)DP;
+    char *p;
+    int   n;
+    char  c;
+    pf_skip_spaces();
+    pf_parse_word(del);
+    p = (char *)PFE.word.ptr;
+    *here++ = (char)PFE.word.len;
+    for ( n = PFE.word.len; n>0; n-- ) {
+        c = *p++;
+        if ( c>='a' && c<='z')
+            c -= 32;
+        *here++ = c;
+    }
     *here = 0; // zero-terminated string
     return (char *)DP;
 }
@@ -1262,7 +1297,7 @@ void pf_include(const char *name, int len)
  */
 FCode (pf_include)
 {
-    const char *fn = pf_word (' ');
+    const char *fn = cap_word (' ');
     char len = *fn++;
     pf_include( fn, len );
 }
@@ -1287,9 +1322,9 @@ BASE CONVERT >NUMBER
 FIND
 HERE  HOLD PAD  SIGN  
 . .(
+>BODY
 
 not implemented
->BODY
 -TRAILING
 DECIMAL HEX
 DEFINITIONS  

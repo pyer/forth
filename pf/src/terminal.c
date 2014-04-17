@@ -123,7 +123,6 @@ void pf_cleanup_terminal (void)
 /************************************************************************/
 static void pf_putc(char c) { fputc(c, stdout); out++; }
 static void pf_flush(void) { fflush (stdout); }
-static void pf_puts(const char* s) { fputs (s, stdout); }
 
 /************************************************************************/
 
@@ -220,16 +219,6 @@ FCode (pf_type)
     pf_type(s,n);
 }
 
-
-/** BACKSPACE ( -- ) [FTH]
- * reverse of => SPACE
- */
-FCode (pf_backspace)
-{
-    pf_puts ("\b \b");
-    pf_flush();
-}
-
 /** SPACE ( -- ) [ANS]
  * print a single space to stdout, see => SPACES
  simulate:    : SPACE  BL EMIT ;
@@ -251,19 +240,6 @@ FCode(pf_spaces)
     while (--n >= 0)
         pf_putc(' ');
     pf_flush();
-}
-
-/** TAB ( tab-n# -- ) [FTH]
- * jump to next column divisible by n
- */
-void pf_tab (int n)
-{
-    pf_emits (n - out % n, ' ');
-}
-
-FCode (pf_tab)
-{
-    pf_tab (*SP++);
 }
 
 /* -------------------------------------------------------------- */
@@ -412,6 +388,9 @@ int pf_accept (char *tib, int tiblen)
              clear_line(tib,i,j);
              j=i=0;
 	     continue;
+         case K_HOME:
+             j=0;
+	     continue;
          case K_LEFT:
              if (j>0) {
                  j--;
@@ -421,6 +400,9 @@ int pf_accept (char *tib, int tiblen)
              if (j<i) {
                  j++;
              }
+	     continue;
+         case K_END:
+             j=i;
 	     continue;
          case K_UP:
              history = previous_history();
@@ -471,6 +453,9 @@ int pf_accept (char *tib, int tiblen)
              continue;
          case '\r':
          case '\n':
+             j=i;
+             refresh_line(tib,i,j);
+             pf_putc(' ');
              goto fin;
          default:
              if( j<i ) {
@@ -659,10 +644,8 @@ P4_LISTWORDS (terminal) =
     P4_FXco ("EMIT",         pf_emit),
     P4_FXco ("EMITS",        pf_emits),
     P4_FXco ("TYPE",         pf_type),
-    P4_FXco ("BACKSPACE",    pf_backspace),
     P4_FXco ("SPACE",        pf_space),
     P4_FXco ("SPACES",       pf_spaces),
-    P4_FXco ("TAB",          pf_tab),
     P4_FXco ("GOTOXY",       pf_gotoxy),
     P4_FXco ("CLEAR-SCREEN", pf_clear_screen),
 

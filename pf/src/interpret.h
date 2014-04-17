@@ -50,6 +50,7 @@ FCode (pf_parse_comma_quote);
 void pf_dot_name (const p4_namebuf_t *nfa);
 
 char* pf_word ( char );
+char* cap_word ( char );
 
 FCode (pf_char);
 FCode (pf_tick);

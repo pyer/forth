@@ -580,8 +580,7 @@ static void interaction (p4xt *ip)
         prompt_col ();
         pf_outs ("> ");
         c = pf_getkey ();
-        FCode (pf_backspace);
-        FCode (pf_backspace);
+        pf_outs ("\r");
         if (isalpha (c))
             c = tolower (c);
 

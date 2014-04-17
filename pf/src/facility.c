@@ -30,7 +30,7 @@
 
 //#include <stdio.h>
 #include <stdlib.h>
-//#include <unistd.h>
+#include <unistd.h>
 #include <time.h>
 
 #include "config.h"
@@ -47,7 +47,8 @@
  */
 FCode (pf_ms)
 {
-//    p4_delay (*SP++);
+    unsigned int ms = *SP++;
+    usleep (ms * 1000);
 }
 
 /** RANDOM ( -- x )
