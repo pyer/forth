@@ -217,9 +217,9 @@ int p4_catch (p4xt xt)
     frame.magic = P4_EXCEPTION_MAGIC;
     frame.ipp = IP;
     frame.spp = SP;
-#  ifndef P4_NO_FP
+#if defined PF_WITH_FLOATING
     frame.fpp = FP;
-#  endif
+#endif
     frame.rpp = RP;
     frame.prev = catchframe;  catchframe = &frame;
     returnvalue = setjmp (frame.jmp);
@@ -262,9 +262,9 @@ void p4_throwstr (int id, const char* description)
     {
         IP = frame->ipp;
         SP = frame->spp;
-#    ifndef P4_NO_FP
+#if defined PF_WITH_FLOATING
         FP = frame->fpp;
-#     endif /*P4_NO_FP*/
+#endif
 	RP = frame->rpp;
         longjmp (frame->jmp, id);
     }

@@ -16,20 +16,23 @@ struct p4_Thread
 
     p4cell state;		/* interpreting (0) or compiling (-1) */
     p4ucell base;		/* of number i/o conversion */
-    p4cell precision;		/* floating point output precision */
 
     p4cell* stack;		/*  data stack */
     p4cell* s0;
-    double* fstack;		/*  floating point stack */
-    double* f0;
+    p4cell* sp;			/* the stack pointer */
+
     p4xt**  rstack;		/*  return stack */
     p4xt**  r0;
+    p4xt**  rp;			/* the return stack pointer */
 
+#if defined PF_WITH_FLOATING
+    double* fstack;		/*  floating point stack */
+    double* f0;
+    double* fp;			/* the floating point stack pointer */
+    p4cell precision;		/* floating point output precision */
+#endif
     p4xt*   ip;			/* the intruction pointer */
     p4xt    wp;			/* speed up the inner interpreter */
-    p4cell* sp;			/* the stack pointer */
-    p4xt**  rp;			/* the return stack pointer */
-    double* fp;			/* the floating point stack pointer */
 
     void (*execute)(p4xt);	/* := normal_execute */
 
@@ -54,18 +57,20 @@ char* dictlimit;
 #define DP (PFE.dp)
 
 #define S0 PFE.s0
-#define R0 PFE.r0
-#define F0 PFE.f0
-
 #define SP (PFE.sp)
+#define R0 PFE.r0
 #define RP (PFE.rp)
-#define FP (PFE.fp)
+
+#if defined PF_WITH_FLOATING
+  #define F0 PFE.f0
+  #define FP (PFE.fp)
+  #define PRECISION (PFE.precision)
+#endif
 
 #define IP (PFE.ip)
 #define WP (PFE.wp)
 
 #define STATE (PFE.state)
 #define BASE  (PFE.base)
-#define PRECISION (PFE.precision)
 
 #endif

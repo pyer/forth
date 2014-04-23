@@ -84,13 +84,10 @@ FCode (pf_dot_s)
     int i;
     
     int dd = S0 - SP;
-//printf("dd=%d\n",dd);
-#  ifndef P4_NO_FP
+#if defined PF_WITH_FLOATING
     int fd = F0 - FP;
-//printf("fd=%d\n",fd);
-    
     if (fd == 0)
-#  endif
+#endif
     {
         if (dd == 0)
         {   /* !fd !dd */
@@ -106,7 +103,7 @@ FCode (pf_dot_s)
             }
         }
     }
-# ifndef P4_NO_FP
+#if defined PF_WITH_FLOATING
     else if (dd == 0) /* fd !dd */
     {
         /* only floating point stack not empty */
@@ -132,7 +129,7 @@ FCode (pf_dot_s)
             pf_outf ("\n%*.7G ",
               (int)(DECWIDTH + HEXWIDTH + 4) + 15, FP[i]);
     }
-# endif
+#endif
 }
 
 /** .STATUS ( -- ) [FTH]
@@ -143,8 +140,10 @@ FCode (pf_dot_status)
     pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4celll) (dictlimit - dict),(p4celll) (DP - dict));
     pf_outf ("\nStack space:         %7ld cells",  (p4celll) (S0 - PFE.stack));  /* sizeof (p4cell) */
     pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4celll) (R0 - PFE.rstack));  /* sizeof (p4xt**) */
+#if defined PF_WITH_FLOATING
     pf_outf ("\nFloating stack space:%7ld floats", (p4celll) (F0 - PFE.fstack)); /* sizeof (double) */
     pf_outf ("\nPRECISION:           %3d", (int) PRECISION);
+#endif
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
     FX (pf_cr);
 }

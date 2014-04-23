@@ -109,10 +109,10 @@ FCode (pf_Q_stack)
     if (RP < PFE.rstack)        p4_throw (P4_ON_RSTACK_OVER);
     if (SP > S0)            p4_throw (P4_ON_STACK_UNDER);
     if (SP < PFE.stack)         p4_throw (P4_ON_STACK_OVER);
-#  ifndef P4_NO_FP
+#if defined PF_WITH_FLOATING
     if (FP > F0)            p4_throw (P4_ON_FSTACK_UNDER);
     if (FP < PFE.fstack)        p4_throw (P4_ON_FSTACK_OVER);
-#  endif
+#endif
     if (dictlimit - MIN_UNUSED < DP) 
         p4_throw (P4_ON_DICT_OVER);  
 }

@@ -14,7 +14,7 @@
 #endif
 
 #define PF_WITH_FFA      1       /* use seperate FlagField */
-#define PF_WITH_FLOATING 1       /* enable floating point numbers */
+//#define PF_WITH_FLOATING 1       /* enable floating point numbers */
 
 #define PATH_LENGTH 256
 

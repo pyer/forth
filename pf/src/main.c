@@ -23,7 +23,7 @@
 #include <ctype.h>
 #include <setjmp.h>
 
-#ifndef P4_NO_FP
+#if defined PF_WITH_FLOATING
 #include <float.h>
 #endif
 #include <errno.h>
@@ -185,13 +185,13 @@ void pf_init_system (p4_Thread* th) /* main_init */
 
     /*  -- cold boot stage -- */
     SP = S0;
-#  ifndef P4_NO_FP
-    FP = F0;
-#  endif
     RP = R0;
+#if defined PF_WITH_FLOATING
+    FP = F0;
+    PRECISION = 6;
+#endif
     PFE.word.len = -1;
     BASE = 10;
-    PRECISION = 6;
     /* Wipe the dictionary: */
     memset (dict, 0, (dictlimit - dict));
     DP = dict;
