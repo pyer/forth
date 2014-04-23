@@ -16,9 +16,6 @@
  *         symbols tables, including wordsets.
  */
 
-#define P4WLIST(SET)  SET ## _LTX_p4_WLIST
-#define P4WORDS(SET)  SET ## _LTX_p4_WORDS
-
 typedef struct                  /* describe a word for registration */
 {                               /* in the dictionary */
     const char *name;           /* name of word */
@@ -114,8 +111,8 @@ struct p4_Seman2		/* for words with different compilation */
     p4code exec[2];		/* two different execution semantics */
 };				/* for cases like TO (value/local variable) */
 
-
-
+#define P4WLIST(SET)  SET ## _LTX_p4_WLIST
+#define P4WORDS(SET)  SET ## _LTX_p4_WORDS
 
 #define P4_LISTWORDS( SET )  \
     static const p4Word P4WLIST(SET)[]
@@ -150,35 +147,12 @@ struct p4_Seman2		/* for words with different compilation */
 #define p4_OVAL 'l'     /* OL */ /* ordinary value */
 #define p4_IVAL 'L'     /* IL */
 
-/* -def p4_DVAH 'h'     // DW */ /* dict chainvar (threaded) [REMOVED] */
-#define p4_DVAR 'm'     /* DV */ /* dict variable (threaded) */
-#define p4_DCON 'n'     /* DC */ /* dict constget (threaded) */
-/* -def p4_DSET 't'     // DS */ /* dict valueset (threaded) [REMOVED] */
-#define p4_OFFS 'o'     /* offset word */
-
-#define p4_SNYM 'Y'     /* immediate synonym */
-#define p4_FNYM 'y'     /*  ordinary synonym */
-#define p4_iOLD 'Z'     /* immediate synonym of obsolete word */
-#define p4_xOLD 'z'     /*  ordinary synonym of obsolete word */
-
-#define p4_OVOC 'w'     /* explicitly create a vocabulary (normal) */
-#define p4_IVOC 'W'     /* explicitly create a vocabulary (immediate) */
-
-#define p4_NEED 'q'     /* issue a NEEDS check - which may load a module */
 #define p4_INTO 'i'     /* make sure the vocabulary exists, and put all */
                         /* of the following words into it, and with nonzero */
                         /* arg, make sure the voc is in the default search */ 
                         /* order (so they are visible after load) */
 #define p4_LOAD 'I'     /* load the referenced wordset, now, recursively */
 #define p4_EXPT 'e'     /* set an exception-id and descriptive string */
-
-#define p4_SHOW 'd'     /* show one-time message notes to the user */
-#define p4_STKi 'M'     /* stackhelp info for static tracing/checking */
-#define p4_STKx 'N'     /* stackhelp info for static tracing/checking */
-
-#define p4_ITEM '@'     /* Runtime item (e.g. compiled by RTCO word) */
-#define p4_DTOR '~'     /* Destroyer item (e.g. compiled by forget_word) */
-#define p4_NEST '_'     /* NestedCall item (e.g. compiled by : ... ; ) */
 
 /* return the byte offset of a given component to beginning of structure: */
 #define OFFSET_OF(T,C)	((char *)&(((T *)0)->C) - (char *)0)
@@ -189,63 +163,17 @@ struct p4_Seman2		/* for words with different compilation */
  * it is okay to the upper bound of the length as a dummy count byte,
  * which is 0xFF (0377) for immediate words and 0x9F (0237) for the others.
  */
-
-#define P4_FXCO( NM, PCODE)     { "p\237"NM, &P4CODE (PCODE) }
-#define P4_IXCO( NM, PCODE)     { "P\377"NM, &P4CODE (PCODE) }
-#define P4_SXCO( NM, SEM)       { "X\377"NM, (p4code)&P4SEMANTICS(SEM) }
-#define P4_RTCO( NM, RUN)       { "r\237"NM, (p4code)&P4RUNTIME_(RUN) }
-
 #define P4_FXco( NM, PCODE)     { "p\237"NM, &P4CODE (PCODE) }
 #define P4_IXco( NM, PCODE)     { "P\377"NM, &P4CODE (PCODE) }
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&P4SEMANTICS(SEM) }
 #define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&P4RUNTIME_(RUN) }
 
-#define P4_OVAR( NM)            { "v\237"NM, ((p4code)0) }
+#define P4_OVAR( NM, VAL)       { "v\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 #define P4_OCON( NM, VAL)       { "c\237"NM, (p4code)(VAL) }
 #define P4_OVAL( NM, VAL)       { "l\237"NM, (p4code)(VAL) }
-#define P4_OFFS( NM, VAL)       { "o\237"NM, (p4code)(VAL) }
-
-#define P4_IVAR( NM)            { "V\377"NM, ((p4code)0) }
-#define P4_ICON( NM, VAL)       { "C\377"NM, (p4code)(VAL) }
-#define P4_IVAL( NM, VAL)       { "L\377"NM, (p4code)(VAL) }
-
-#define P4_OVaR( NM)            { "v\237"NM, ((p4code)0) }
-#define P4_OCoN( NM, VAL)       { "c\237"NM, (p4code)(VAL) }
-#define P4_OVaL( NM, VAL)       { "l\237"NM, (p4code)(VAL) }
-#define P4_OFFs( NM, VAL)       { "o\237"NM, (p4code)(VAL) }
-
-#define P4_IVaR( NM)            { "V\377"NM, ((p4code)0) }
-#define P4_ICoN( NM, VAL)       { "C\377"NM, (p4code)(VAL) }
-#define P4_IVaL( NM, VAL)       { "L\377"NM, (p4code)(VAL) }
-
-/* -def      VO( NM, LIST)      { "\112"NM, (p4code)(&P4WORDS(LIST,WList)) } */
-
-#define P4_DVAR( NM, MEMBER)    { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) }
-#define P4_DCON( NM, MEMBER)    { "n\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) }
-/* -def P4_DSET( NM, MEMBER)    { "t\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) } */
-
-/* -def P4_DVaH( NM, MEMBER)    { "h\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) } */
-#define P4_DVaR( NM, MEMBER)    { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) }
-#define P4_DVaL( NM, MEMBER)    { "n\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) }
-/* -def P4_DSeT( NM, MEMBER)    { "t\237"NM, (p4code)OFFSET_OF(p4_Thread, MEMBER) } */
-
-#define P4_SNYM( NM, OLDNAME)   { "Y\377"NM, (p4code)OLDNAME }
-#define P4_FNYM( NM, OLDNAME)   { "y\237"NM, (p4code)OLDNAME }
-#define P4_iOLD( NM, OLDNAME)   { "Z\377"NM, (p4code)OLDNAME }
-#define P4_xOLD( NM, OLDNAME)   { "z\237"NM, (p4code)OLDNAME }
-
-#define P4_OVOC( NM, CHAIN)     { "w\237"NM, (p4code)(CHAIN) } 
-#define P4_IVOC( NM, CHAIN)     { "W\237"NM, (p4code)(CHAIN) } 
-#define P4_NEED( NM)            { "q\237"NM }
 
 #define P4_INTO( NM, DESCR)     { "i\377"NM, (p4code)(DESCR) } /*search-also*/
-
 #define P4_LOAD( NM, WORDS)     { "I\377"NM, (p4code)(&P4WORDS(WORDS)) }
-
 #define P4_EXPT( NM, ID)        { "e\237"NM, (p4code)(ID) } /*exception*/
-#define P4_SHOW( NM, ID)        { "d\337"NM, (p4code)(ID) } /*message*/
-
-#define P4_STKi( NM, INFO)      { "M\377"NM, (p4code)(INFO) } /*stackhelp*/
-#define P4_STKx( NM, PCODE)     { "N\377"NM, &P4CODE(PCODE) } /*stackhelp*/
 
 #endif 

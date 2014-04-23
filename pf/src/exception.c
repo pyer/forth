@@ -36,9 +36,6 @@
 #include "interpret.h"
 #include "terminal.h"
 
-#define ___ {
-#define ____ }
-
 /************************************************************************/
 jmp_buf jump_loop;		/* QUIT and ABORT do a THROW which longjmp() */
 				/* here thus C-stack gets cleaned up too */
@@ -372,12 +369,17 @@ FCode (pf_exception_string)
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RCOMMA (pf_exception_stringRuntime.exec[0]);
-    ___ p4cell id = *SP++;
-    p4_Exception* expt = (void*) DP; DP += sizeof(*expt);
-    if (id < next_exception)
+    {
+      p4cell id = *SP++;
+      p4_Exception* expt = (void*) DP;
+      DP += sizeof(*expt);
+      if (id < next_exception)
          next_exception = id - 1;
-    expt->next = exception_link; exception_link = expt;
-    expt->name = (char*) DP; expt->id = id; ____;
+      expt->next = exception_link;
+      exception_link = expt;
+      expt->name = (char*) DP;
+      expt->id = id;
+    }
     pf_parse_word(')'); /* PARSE-NOHERE-NOTHROW */
     memcpy (DP, PFE.word.ptr, PFE.word.len);
     DP += PFE.word.len;
@@ -386,21 +388,10 @@ P4RUNTIME1(pf_exception_string, pf_exception_string_RT);
 
 P4_LISTWORDS (exception) =
 {
-//    P4_INTO ("[ANS]", 0),
     P4_FXco ("CATCH",			p4_catch),
     P4_FXco ("THROW",			p4_throw),
     P4_FXco ("ABORT",			pf_abort),
     P4_SXco ("ABORT\"",			pf_abort_quote),
-/*
-    P4_DVAR ("NEXT-EXCEPTION", next_exception),
-    P4_EXPT ("no or not matching binary image",      P4_ON_NO_BINARY),
-    P4_EXPT ("binary image too big",                 P4_ON_BIN_TOO_BIG),
-    P4_EXPT ("out of memory",                        P4_ON_OUT_OF_MEMORY),
-    P4_EXPT ("index out of range",                   P4_ON_INDEX_RANGE),
-    P4_EXPT ("compile failed (call from bad point)", P4_ON_COMPILE_FAIL),
-*/
 };
 P4_COUNTWORDS (exception, "Exception");
-
-/*@}*/
 

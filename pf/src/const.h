@@ -73,15 +73,12 @@
 				 (p4cell)B <<  8 | (p4cell)A)
 #endif
 
-#define	P4_SAVE_MAGIC		P4_MAGIC_('P','F','E','S')
 #define	P4_EXCEPTION_MAGIC	P4_MAGIC_('X','C','P','T')
-#define	P4_INPUT_MAGIC		P4_MAGIC_('S','V','I','N')
 #define	P4_DEST_MAGIC		P4_MAGIC_('D','E','S','T')
 #define	P4_ORIG_MAGIC		P4_MAGIC_('O','R','I','G')
 #define	P4_LOOP_MAGIC		P4_MAGIC_('L','O','O','P')
 #define	P4_CASE_MAGIC		P4_MAGIC_('C','A','S','E')
 #define	P4_OF_MAGIC		P4_MAGIC_('O','F','O','F')
-#define P4_MAKE_MAGIC		P4_MAGIC_('M','A','K','E')
 #define P4_SEMANT_MAGIC		P4_MAGIC_('S','E','M','A')
 #define P4_RUNTIME_MAGIC        P4_MAGIC_('S','C','F','A')
 

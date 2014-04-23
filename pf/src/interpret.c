@@ -1019,6 +1019,7 @@ void pf_load_words (const p4Words* ws)
 	    FX_COMMA ( *SP ); 
             ((*(p4cell **)&(SP))++);
 	    break;
+/*
 	case p4_DVAR:
             p4_header_in();
             P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
@@ -1031,6 +1032,7 @@ void pf_load_words (const p4Words* ws)
 	    FX_RUNTIME1_RT (pf_dictget);
 	    FX_COMMA (*SP++);
 	    break;
+*/
 	case p4_OVAL:
 	case p4_IVAL:
 	    FX (pf_value);
@@ -1274,7 +1276,7 @@ void pf_include(const char *name, int len)
  */
 FCode (pf_include)
 {
-    const char *fn = cap_word (' ');
+    const char *fn = pf_word (' ');
     char len = *fn++;
     pf_include( fn, len );
 }
@@ -1338,7 +1340,8 @@ The function of QUERY may be performed with ACCEPT and EVALUATE.
 P4_LISTWORDS (interpret) =
 {
 //    P4_INTO ("FORTH", 0),
-    P4_DVaR ("BASE",         base),
+//    P4_DVaR ("BASE",         base),
+    P4_OVAR ("BASE",         base),
     P4_FXco ("SOURCE",       pf_source),
     P4_FXco ("LATEST",       pf_latest),
     P4_FXco ("SIGN",         pf_sign),
