@@ -65,7 +65,7 @@ const char* pf_warranty_string (void)
 /************************************************************************/
 
 /** .VERSION ( -- )
- * show the version of the current PFE system
+ * show the version of the current PF system
  : .VERSION [ ENVIRONMENT ] FORTH-NAME TYPE FORTH-VERSION TYPE ;
  */
 FCode (pf_version)
@@ -81,7 +81,7 @@ FCode (pf_copyright)
 }
 
 /** LICENSE ( -- )
- * show a lisence info - the basic PFE system is licensed under the terms
+ * show a lisence info - the basic PF system is licensed under the terms
  * of the LGPL (Lesser GNU Public License) - binary modules loaded into
  * the system and hooking into the system may carry another => LICENSE
  : LICENSE [ ENVIRONMENT ] FORTH-LICENSE TYPE ;
@@ -92,7 +92,7 @@ FCode (pf_license)
 }
 
 /** WARRANTY ( -- )
- * show a warranty info - the basic PFE system is licensed under the terms
+ * show a warranty info - the basic PF system is licensed under the terms
  * of the LGPL (Lesser GNU Public License) - which exludes almost any 
  * liabilities whatsoever - however loadable binary modules may hook into
  * the system and their functionality may have different WARRANTY infos.

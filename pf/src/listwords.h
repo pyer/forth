@@ -77,13 +77,13 @@ typedef struct p4_Seman2 p4_Seman2; /* dito for even smarter words like TO */
 #define  P4_SKIPS_TO_TOKEN           ((P4_CODE_SEE((*)))(7))
 
 /* .... P4_SKIPS_DCELL */
-_extern P4_CODE_SEE(p4_lit_dcell_SEE);
+P4_CODE_SEE(p4_lit_dcell_SEE);
 /* .... P4_SKIPS_STRING */
-_extern P4_CODE_SEE(p4_lit_string_SEE);
+P4_CODE_SEE(p4_lit_string_SEE);
 /* .... P4_SKIPS_2STRINGS */
-_extern P4_CODE_SEE(p4_lit_2strings_SEE);
+P4_CODE_SEE(p4_lit_2strings_SEE);
 /* .... P4_SKIPS_TO_TOKEN */
-_extern P4_CODE_SEE(p4_lit_to_token_SEE);
+P4_CODE_SEE(p4_lit_to_token_SEE);
 
 struct p4_Decomp		/* informations for the decompiler */
 {                               /* (skips is now basically enum'd, see above)*/

@@ -95,7 +95,7 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -319,7 +319,7 @@ static p4xt * p4_decompile_word (p4xt* ip, char *p, p4_Decomp *d)
     if (d->skips == P4_SKIPS_CELL 
       || d->skips == P4_SKIPS_OFFSET)
     {
-        P4_INC (ip, p4cell); 
+        ((*(p4cell **)&(ip))++);
         sprintf (p, "%.*s ", NAMELEN(s->name), NAMEPTR(s->name));
         return ip;
     }
@@ -555,7 +555,7 @@ static void display (p4xt *ip)
     p4_Decomp style;
     char buf[80];
     int indent = maxlevel * 2;
-    int depth = PFE.s0 - SP, i;
+    int depth = S0 - SP, i;
 
     prompt_col ();
     for (i = 0; i < depth; i++)
@@ -696,8 +696,8 @@ do_single_step (void)		/* single stepping */
 	}
         do_adjust_level (*IP);
         opcounter++;
-        PFE.wp = *IP++;	/* ip and W are same: register or not */
-        (*PFE.wp) ();
+        WP = *IP++;	/* ip and W are same: register or not */
+        (*WP) ();
     }
 }
 

@@ -23,6 +23,7 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 #include <setjmp.h>
 #include <sys/select.h>
 #include <termios.h>
+#include <sys/ioctl.h>
 #include <errno.h>
 
 #include "config.h"
@@ -30,16 +31,17 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
+
 #include "terminal.h"
 #include "history.h"
 
 /************************************************************************/
-int cols  = 144;
-int rows  = 39;
+int cols  = 80;
+int rows  = 25;
 int out   = 0;
 int lines = 0;
-int more  = 39;
+int more  = 25;
 /************************************************************************/
 int get_cols(void)
 {
@@ -67,30 +69,16 @@ int get_outs(void)
 /************************************************************************/
 static struct termios tty_system;
 
-void pf_init_terminal(void)
+void system_terminal(void)
+{
+    if (isatty (STDIN_FILENO)) {
+        tcsetattr(STDIN_FILENO, TCSANOW, &tty_system);
+    }
+}
+
+void interactive_terminal(void)
 {
 struct termios new_termios;
-cols = 144;
-rows = 39;
-#ifdef TIOCGSIZE
-    struct ttysize ts;
-    ioctl(STDIN_FILENO, TIOCGSIZE, &ts);
-    cols = ts.ts_cols;
-    rows = ts.ts_lines;
-#elif defined(TIOCGWINSZ)
-    struct winsize ws;
-    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
-    cols = ws.ws_col;
-    rows = ws.ws_row;
-/*
-#else
-    if (getenv("COLUMNS")!=NULL)
-        cols = atoi(getenv("COLUMNS"));
-    if (getenv("LINES")!=NULL)
-        rows = atoi(getenv("LINES"));
-*/
-#endif /* TIOCGSIZE */
-
     /* set the keyboard in raw mode */
     if (isatty (STDIN_FILENO)) {
         /* take two copies - one for now, one for later */
@@ -107,6 +95,37 @@ rows = 39;
 
         tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
     }
+}
+
+/*
+ * Handle window size change, see also signal.c:
+ */
+void query_winsize (void)
+{
+#ifdef TIOCGWINSZ
+    struct winsize ws;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) >=0 ) {
+        cols = ws.ws_col;
+        rows = ws.ws_row;
+	//xmax = ws.ws_xpixel;
+	//ymax = ws.ws_ypixel;
+    }
+#endif
+}
+
+void pf_init_terminal(void)
+{
+#ifdef TIOCGSIZE
+    struct ttysize ts;
+    ioctl(STDIN_FILENO, TIOCGSIZE, &ts);
+    cols = ts.ts_cols;
+    rows = ts.ts_lines;
+#else
+    query_winsize();
+#endif /* TIOCGSIZE */
+
+    /* set the keyboard in raw mode */
+    interactive_terminal();
     /* init history */
     using_history();
     read_history();
@@ -115,9 +134,7 @@ rows = 39;
 void pf_cleanup_terminal (void)
 {
     write_history();
-    if (isatty (STDIN_FILENO)) {
-        tcsetattr(STDIN_FILENO, TCSANOW, &tty_system);
-    }
+    system_terminal();
 }
 
 /************************************************************************/
@@ -535,7 +552,7 @@ int pf_more_Q (void)
 {
     static char help[] = "\r[next line=<return>, next page=<space>, quit=q] ";
 
-    pf_cr_();
+    FX (pf_cr);
     if (lines < more)
         return 0;
     lines = 0;
@@ -543,6 +560,7 @@ int pf_more_Q (void)
     {
         pf_outs ("more? ");
         register int ch = pf_getkey();
+        pf_outc ('\r'); out=0;
         switch (ch)
 	{
          case 'n':		/* no more */
@@ -553,7 +571,7 @@ int pf_more_Q (void)
          case 'y':		/* more    */
          case 'Y':
          case ' ':		/* page    */
-             more = rows - 1;
+             more = rows - 2;
              return 0;
          case '\r':		/* line    */
          case '\n':		/* line    */

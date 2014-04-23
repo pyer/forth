@@ -10,6 +10,11 @@
 int get_cols(void);
 int get_rows(void);
 int get_outs(void);
+
+void query_winsize (void);
+void system_terminal(void);
+void interactive_terminal(void);
+
 void pf_init_terminal(void);
 void pf_cleanup_terminal (void);
 

@@ -37,7 +37,7 @@
 #include "types.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 #include "terminal.h"
 
 /* -------------------------------------------------------------- */

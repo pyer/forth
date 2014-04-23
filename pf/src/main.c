@@ -33,7 +33,7 @@
 #include "types.h"
 #include "const.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -41,29 +41,39 @@
 #include "terminal.h"
 
 const char* pf_version_string(void);
+void pf_init_signal_handlers (void);
+FCode( pf_noop );
+
+/************************************************************************/
+
+static char memory[TOTAL_SIZE]; /* BSS */
 
 /************************************************************************/
 int exitcode = 0;
 
+/* dictionary */
+char* dict;
+char* dictlimit;
+
+/* NFA of most recently CREATEd header */
+p4_namebuf_t *LATEST;
 /************************************************************************/
 /**
  * helper routine to allocate a portion of the dictionary
  * especially for some stack-areas of the forth system
- * ... just decreases PFE.dictlimit, returns 0 if impossible.
+ * ... just decreases dictlimit, returns 0 if impossible.
  */
-_export void*
-p4_dict_allocate (int items, int size, int align, 
-		  void** lower, void** upper)
+void* p4_dict_allocate (int items, int size, int align, void** lower, void** upper)
 {
-    register p4char* memtop = PFE.dictlimit;
+    register p4char* memtop = dictlimit;
     if (! align) align = sizeof(p4cell);
     memtop =(p4char*)( ((p4cell)memtop) &~ ((p4cell)(align) -1) );
     if (upper) *upper = memtop;
     memtop -= items * size;
     if (lower) *lower = memtop;
-    if (upper) PFE.dictlimit = memtop; /* always save if upper-ref given */
-    if (memtop < PFE.dp + 256) return 0; /* error condition */
-    return (PFE.dictlimit = memtop);
+    if (upper) dictlimit = memtop; /* always save if upper-ref given */
+    if (memtop < DP + 256) return 0; /* error condition */
+    return (dictlimit = memtop);
 }
 /************************************************************************/
 /*
@@ -71,8 +81,8 @@ p4_dict_allocate (int items, int size, int align,
  */
 void quit_system (void)
 {
-    CSP = (p4cell*) RP;     /* come_back marker */
-    RP = PFE.r0;		/* return stack to its bottom */
+    CSP = (p4cell*) RP;		/* come_back marker */
+    RP = R0;			/* return stack to its bottom */
     STATE = P4_FALSE;		/* interpreting now */
     PFE.execute = pf_normal_execute;
 }
@@ -82,7 +92,7 @@ void quit_system (void)
  */
 void abort_system (void)
 {
-    SP = PFE.s0;		/* stacks */
+    SP = S0;		/* stacks */
     BASE = 10;
 }
 
@@ -146,78 +156,52 @@ void pf_init_system (p4_Thread* th) /* main_init */
 
     /* ............................................................*/
     p4TH = th;
-
-/*
-    if (PFE_set.stdio)
-        PFE_set.isnotatty = P4_TTY_ISPIPE;
-    else
-    {
-        if (! p4_prepare_terminal ())
-	{
-            PFE_set.isnotatty = P4_TTY_ISPIPE;
-	}
-//	p4_interactive_terminal ();
-    }
-
-    if (PFE_set.isnotatty == P4_TTY_ISPIPE && ! PFE.term)
-    {
-        PFE.term = &p4_term_stdio;
-    }
-*/
     pf_init_terminal();
-
-//    if (! PFE_set.debug)
-//        p4_install_signal_handlers ();
-
+    pf_init_signal_handlers();
 
     /* _______________ dictionary block __________________ */
 
-    PFE.dict = calloc (1, (size_t) total_size);
-    if (PFE.dict) {
-            printf("[%p] newmem at %p len %lu\n",
-		      p4TH, PFE.dict, total_size);
-    }else{
+    dict = calloc (1, (size_t) total_size);
+    if (dict == NULL) {
             printf("[%p] FAILED to alloc any base memory (len %lu): %s\n",
 		      p4TH, total_size, strerror(errno));
             puts ("ERROR: out of memory");
-	    exitcode = 6;
+	    exit(6);
 	    pf_longjmp_exit ();
     }
 
     /* ________________ initialize dictionary _____________ */
 
-    PFE.dictlimit = PFE.dict + total_size;
+    dictlimit = dict + total_size;
 
-    p4_dict_allocate (HISTORY_SIZE, sizeof(char), sizeof(char),
-                      (void**) & PFE.history, (void**) & PFE.history_top);
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
                       PFE_ALIGNOF_CELL,
-                      (void**) & PFE.rstack, (void**) & PFE.r0);
+                      (void**) & PFE.rstack, (void**) & R0);
     p4_dict_allocate (stack_size, sizeof(p4cell),
                       PFE_ALIGNOF_CELL,
-                      (void**) & PFE.stack, (void**) & PFE.s0);
+                      (void**) & PFE.stack, (void**) & S0);
 
-    if (PFE.dictlimit < PFE.dict + MIN_PAD + MIN_HOLD + 0x4000)
+    if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000)
     {
 	puts ("ERROR: impossible memory map");
 	exit (3);
     }
 
     /*  -- cold boot stage -- */
-    PFE.sp = PFE.s0;
+    SP = S0;
 #  ifndef P4_NO_FP
-    PFE.fp = PFE.f0;
+    FP = F0;
 #  endif
-    PFE.rp = PFE.r0;
+    RP = R0;
     PFE.word.len = -1;
     BASE = 10;
     PRECISION = 6;
     /* Wipe the dictionary: */
-    memset (PFE.dict, 0, (PFE.dictlimit - PFE.dict));
-    DP = (p4char *) PFE.dict;
+    memset (dict, 0, (dictlimit - dict));
+    DP = dict;
     /* Create first word */
     p4_header_comma ("FORTH", 5);
-    P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+    FX_XCOMMA ((p4xt)(pf_noop_));
     /* and load other words */
     pf_load_words (&P4WORDS (forth));
 }
@@ -228,9 +212,6 @@ void help_opt(void)
     puts("   -v       : print version number");
 }
  
-/************************************************************************/
-static char memory[TOTAL_SIZE]; /* BSS */
-
 /************************************************************************/
 /* Here's main()                                                        */
 /************************************************************************/
@@ -268,7 +249,6 @@ int main (int argc, char** argv)
         pf_include(buffer,len);
 
     exitcode = 0;
-    //switch (setjmp (thread->loop))
     switch (setjmp (jump_loop))
     {           /* classify unhandled throw codes */
     case 'A': /* do abort */

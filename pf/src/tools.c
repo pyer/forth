@@ -30,7 +30,7 @@
 #include "types.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 #include "interpret.h"
 #include "terminal.h"
 
@@ -83,10 +83,10 @@ FCode (pf_dot_s)
 {
     int i;
     
-    int dd = PFE.s0 - PFE.sp;
+    int dd = S0 - SP;
 //printf("dd=%d\n",dd);
 #  ifndef P4_NO_FP
-    int fd = PFE.f0 - PFE.fp;
+    int fd = F0 - FP;
 //printf("fd=%d\n",fd);
     
     if (fd == 0)
@@ -102,7 +102,7 @@ FCode (pf_dot_s)
             for (i = 0; i < dd; i++)
             {
                 FX (pf_cr);
-                pf_prCell (PFE.sp[i]);
+                pf_prCell (SP[i]);
             }
         }
     }
@@ -111,26 +111,26 @@ FCode (pf_dot_s)
     {
         /* only floating point stack not empty */
         pf_outf ("\n%*s%15.7G ",
-          (int)(DECWIDTH + HEXWIDTH + 4), "<stack empty> ", PFE.fp[0]);
+          (int)(DECWIDTH + HEXWIDTH + 4), "<stack empty> ", FP[0]);
         for (i = 1; i < fd; i++)
             pf_outf ("\n%*.7G ",
-              (int)(DECWIDTH + HEXWIDTH + 4) + 15, PFE.fp[i]);
+              (int)(DECWIDTH + HEXWIDTH + 4) + 15, FP[i]);
     }else{ /* fd dd */
         int bd = dd < fd ? dd : fd;
         for (i = 0; i < bd; i++)
         {
 	    FX (pf_cr);
-	    pf_prCell (PFE.sp[i]);
-	    pf_outf ("%15.7G ", PFE.fp[i]);
+	    pf_prCell (SP[i]);
+	    pf_outf ("%15.7G ", FP[i]);
         }
 	for (; i < dd; i++)
         {
 	    FX (pf_cr);
-	    pf_prCell (PFE.sp[i]);
+	    pf_prCell (SP[i]);
         }
 	for (; i < fd; i++)
             pf_outf ("\n%*.7G ",
-              (int)(DECWIDTH + HEXWIDTH + 4) + 15, PFE.fp[i]);
+              (int)(DECWIDTH + HEXWIDTH + 4) + 15, FP[i]);
     }
 # endif
 }
@@ -140,12 +140,12 @@ FCode (pf_dot_s)
  */
 FCode (pf_dot_status)
 {
-    pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4celll) (PFE.dictlimit - PFE.dict),(p4celll) (PFE.dp - PFE.dict));
-    pf_outf ("\nStack space:         %7ld cells",  (p4celll) (PFE.s0 - PFE.stack));  /* sizeof (p4cell) */
-    pf_outf ("\nFloating stack space:%7ld floats", (p4celll) (PFE.f0 - PFE.fstack)); /* sizeof (double) */
-    pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4celll) (PFE.r0 - PFE.rstack));  /* sizeof (p4xt**) */
+    pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4celll) (dictlimit - dict),(p4celll) (DP - dict));
+    pf_outf ("\nStack space:         %7ld cells",  (p4celll) (S0 - PFE.stack));  /* sizeof (p4cell) */
+    pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4celll) (R0 - PFE.rstack));  /* sizeof (p4xt**) */
+    pf_outf ("\nFloating stack space:%7ld floats", (p4celll) (F0 - PFE.fstack)); /* sizeof (double) */
+    pf_outf ("\nPRECISION:           %3d", (int) PRECISION);
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
-    pf_outf ("\nPRECISION     %3d", (int) PRECISION);
     FX (pf_cr);
 }
 
@@ -156,8 +156,6 @@ FCode (pf_dot_status)
 void pf_help(const char *name, int len)
 {
     char buffer[256];
-//    auto p4_char_t upper[UPPERMAX];
-//        UPPERCOPY (upper, name, len);
     int found = 0;
     FILE *fh = fopen( PF_HELP_FILE, "r" );
     if( fh != NULL ) {
@@ -198,8 +196,8 @@ FCode (pf_help)
 FCode (pf_dump)
 {
     p4ucell i, j;
-    p4ucell n = (p4ucell)*(PFE.sp++);
-    p4char *p = (p4char*)(*(PFE.sp++));
+    p4ucell n = (p4ucell)*(SP++);
+    p4char *p = (p4char*)(*(SP++));
     
     FX (pf_more);
     FX (pf_cr);
@@ -239,9 +237,10 @@ FCode (pf_words)
 	char c = pf_category (*name_to_cfa(nfa));
         pf_outc(c); pf_outc(' ');
         pf_dot_name(nfa);
-        pf_emits (WILD_TAB - get_cols() % WILD_TAB, ' ');
+        pf_emits (WILD_TAB - get_outs() % WILD_TAB, ' ');
         if (get_outs()+WILD_TAB > get_cols()) {
-            FX (pf_cr);
+            if (pf_more_Q())
+                break;
         }
         nfa = *name_to_link (nfa);
     }
@@ -254,6 +253,7 @@ P4_LISTWORDS (tools) =
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco ("HELP",         pf_help),
+    P4_FXco ("MAN",          pf_help),
     P4_FXco ("DUMP",         pf_dump),
     P4_FXco ("WORDS",        pf_words),
 };

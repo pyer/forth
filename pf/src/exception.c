@@ -29,7 +29,7 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -215,19 +215,19 @@ int p4_catch (p4xt xt)
     auto p4_Except frame;
 
     frame.magic = P4_EXCEPTION_MAGIC;
-    frame.ipp = PFE.ip;
-    frame.spp = PFE.sp;
+    frame.ipp = IP;
+    frame.spp = SP;
 #  ifndef P4_NO_FP
-    frame.fpp = PFE.fp;
+    frame.fpp = FP;
 #  endif
-    frame.rpp = PFE.rp;
+    frame.rpp = RP;
     frame.prev = catchframe;  catchframe = &frame;
     returnvalue = setjmp (frame.jmp);
     if (! returnvalue) {
         pf_call (xt);
     }
     catchframe = frame.prev;
-    PFE.rp = frame.rpp;
+    RP = frame.rpp;
     return returnvalue;
 }
 
@@ -260,16 +260,16 @@ void p4_throwstr (int id, const char* description)
 
     if (frame && frame->magic == P4_EXCEPTION_MAGIC)
     {
-        PFE.ip = frame->ipp;
-        PFE.sp = frame->spp;
+        IP = frame->ipp;
+        SP = frame->spp;
 #    ifndef P4_NO_FP
-        PFE.fp = frame->fpp;
+        FP = frame->fpp;
 #     endif /*P4_NO_FP*/
-	PFE.rp = frame->rpp;
+	RP = frame->rpp;
         longjmp (frame->jmp, id);
     }
 
-    *--PFE.rp = PFE.ip;
+    *--RP = IP;
     CSP = (p4cell*) RP;         /* come_back marker */
     switch (id)
     {

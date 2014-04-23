@@ -40,7 +40,7 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"

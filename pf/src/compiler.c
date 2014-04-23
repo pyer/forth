@@ -25,7 +25,7 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -33,7 +33,6 @@
 
 /* -------------------------------------------------------------- */
 p4_Runtime2 P4RUNTIME_(pf_colon);
-FCode (pf_colon_EXIT);
 
 FCode (p4_drop);
 FCode (p4_swap);
@@ -42,7 +41,6 @@ FCode (p4_rot);
 #define ___ {
 #define ____ }
 
-#define PFE_MINIMAL_UNUSED 256
 /* -------------------------------------------------------------- */
 p4cell *csp;		/* compiler security, saves sp here */
 /* -------------------------------------------------------------- */
@@ -107,15 +105,15 @@ FCode (pf_Q_pairs)
  */
 FCode (pf_Q_stack)
 {
-    if (PFE.rp > PFE.r0)            p4_throw (P4_ON_RSTACK_UNDER);
-    if (PFE.rp < PFE.rstack)        p4_throw (P4_ON_RSTACK_OVER);
-    if (PFE.sp > PFE.s0)            p4_throw (P4_ON_STACK_UNDER);
-    if (PFE.sp < PFE.stack)         p4_throw (P4_ON_STACK_OVER);
+    if (RP > R0)            p4_throw (P4_ON_RSTACK_UNDER);
+    if (RP < PFE.rstack)        p4_throw (P4_ON_RSTACK_OVER);
+    if (SP > S0)            p4_throw (P4_ON_STACK_UNDER);
+    if (SP < PFE.stack)         p4_throw (P4_ON_STACK_OVER);
 #  ifndef P4_NO_FP
-    if (PFE.fp > PFE.f0)            p4_throw (P4_ON_FSTACK_UNDER);
-    if (PFE.fp < PFE.fstack)        p4_throw (P4_ON_FSTACK_OVER);
+    if (FP > F0)            p4_throw (P4_ON_FSTACK_UNDER);
+    if (FP < PFE.fstack)        p4_throw (P4_ON_FSTACK_OVER);
 #  endif
-    if (PFE.dictlimit - PFE_MINIMAL_UNUSED < PFE.dp) 
+    if (dictlimit - MIN_UNUSED < DP) 
         p4_throw (P4_ON_DICT_OVER);  
 }
 
@@ -241,15 +239,6 @@ FCode (pf_forward_resolve)
 FCode_XE (pf_semicolon_execution);
 FCode (pf_semicolon);
 
-/*
-#define P4RUNTIMES1_(C,E1,FLAGS,SEE)            \
-p4_Runtime2 P4RUNTIME_(C) =                     \
-{ (const p4char*) "@",                          \
-  P4_RUNTIME_MAGIC, FLAGS, 0,                   \
-  P4CODE(C), { P4CODE(E1), NULL },              \
-  { SEE, NULL, NULL }                           \
-}
-*/
 static P4_CODE_RUN(pf_builds_RT_SEE)
 {
     strcat (p, "CREATE ");
@@ -306,7 +295,7 @@ FCode_XE (pf_does_execution)
     p4xt xt;
     xt = name_to_cfa (LATEST);
     P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
-    *P4_TO_DOES_CODE(xt) = PFE.ip; /* into CFA[1] */
+    *P4_TO_DOES_CODE(xt) = IP; /* into CFA[1] */
     FX (pf_semicolon_execution);   /* double-EXIT */
 }
 
@@ -335,7 +324,6 @@ FCode (pf_does)
         /* now, see pf_colon */
         CSP = SP;
         STATE = P4_TRUE;
-        PFE.semicolon_code = P4CODE(pf_colon_EXIT);
     }
 }
 P4COMPILES (pf_does, pf_does_execution, P4_SKIPS_NOTHING, P4_DOES_STYLE);
@@ -345,8 +333,8 @@ P4COMPILES (pf_does, pf_does_execution, P4_SKIPS_NOTHING, P4_DOES_STYLE);
  */
 FCode_RT (pf_does_RT)
 {
-    *--SP = (p4cell) P4_TO_DOES_BODY(PFE.wp);  /* from CFA[2] */
-    *--RP = IP; IP = *P4_TO_DOES_CODE(PFE.wp); /* from CFA[1] */
+    *--SP = (p4cell) P4_TO_DOES_BODY(WP);  /* from CFA[2] */
+    *--RP = IP; IP = *P4_TO_DOES_CODE(WP); /* from CFA[1] */
 }
 P4RUNTIME1(pf_does, pf_does_RT);
 
@@ -360,13 +348,6 @@ FCode_RT (pf_colon_RT)
 {
     *--RP = IP;
     IP = (p4xt *) WP_PFA;
-}
-
-FCode (pf_colon_EXIT)
-{
-    FX (pf_Q_csp);
-    STATE = P4_FALSE;
-    P4_NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
 }
 
 /** ":" ( 'name' -- ) [ANS] [NEW]
@@ -386,7 +367,6 @@ FCode (pf_colon)
     FX_RCOMMA (pf_colonRuntime.exec[0]);
     CSP = SP;
     STATE = P4_TRUE;
-    PFE.semicolon_code = P4CODE(pf_colon_EXIT);
 }
 P4RUNTIME1(pf_colon, pf_colon_RT);
 
@@ -397,7 +377,7 @@ P4RUNTIME1(pf_colon, pf_colon_RT);
  */
 FCode_XE (pf_semicolon_execution)
 {
-    IP = *PFE.rp++;
+    IP = *RP++;
 }
 
 /** ";" ( -- ) [ANS] [EXIT] [END]
@@ -407,16 +387,24 @@ FCode_XE (pf_semicolon_execution)
  */
 FCode (pf_semicolon)
 {
-    if (PFE.semicolon_code)
-    {
-        PFE.semicolon_code ();
-    }else{
-        PFE.state = P4_FALSE; /* atleast switch off compiling mode */
-    }
-    FX_COMPILE (pf_semicolon); /* in SBR-threading, compiles RET-code */
+    FX (pf_Q_csp);
+    STATE = P4_FALSE;
+    P4_NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
+    FX_COMPILE (pf_semicolon);
 }
 
 P4COMPILES (pf_semicolon, pf_semicolon_execution, P4_SKIPS_NOTHING, P4_SEMICOLON_STYLE);
+
+/** EXIT ( -- ) [ANS] [EXIT]
+ * will unnest the current colon-word so it will actually
+ * return the word calling it. This can be found in the
+ * middle of a colon-sequence between => : and => ;
+ */
+FCode (pf_exit)
+{
+    FX_COMPILE (pf_exit);
+}
+P4COMPILES (pf_exit, pf_semicolon_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 /** IMMEDIATE ( -- ) [ANS]
  * make the => LATEST word immediate, see also => CREATE
@@ -628,7 +616,7 @@ P4RUNTIME1(pf_variable, pf_variable_RT);
  */
 FCode_XE (pf_literal_execution)
 {
-    *--SP = *P4_INC(IP,p4cell);
+    *--SP = *((*(p4cell **)&(IP))++);
 }
 
 /** LITERAL ( C: value -- S: value ) [ANS]
@@ -1176,6 +1164,7 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("DOES>",        pf_does),
     P4_RTco (":",            pf_colon),
     P4_SXco (";",            pf_semicolon),
+    P4_SXco ("EXIT",         pf_exit),
     P4_FXco ("IMMEDIATE",    pf_immediate),
     P4_FXco (",",            pf_comma),
     P4_FXco ("C,",           pf_c_comma),

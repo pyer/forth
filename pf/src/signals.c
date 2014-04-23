@@ -73,16 +73,17 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
 #include "interpret.h"
+#include "terminal.h"
 
 #define ___ {
 #define ____ }
 
-
+/* -------------------------------------------------------------- */
 typedef void (*SigHdl) (int);	/* signal handler function type */
 
 enum				/* Classification of signals: The */
@@ -328,8 +329,21 @@ static Siginfo siginfo[] =
 #endif
 };
 
-static int
-getinfo (int sig)
+/* -------------------------------------------------------------- */
+/**
+ * switch between p4th setting of signals and state before 
+ */
+void swap_signals (void)
+{
+    int i;
+
+    for (i = 0; i < DIM (siginfo); i++)
+        if (siginfo[i].cLass != Default || siginfo[i].hdl)
+            siginfo[i].old = signal (siginfo[i].sig, siginfo[i].old);
+}
+
+/* -------------------------------------------------------------- */
+static int getinfo (int sig)
 {
     int i;
 
@@ -343,16 +357,13 @@ getinfo (int sig)
 
 typedef void (*_sighandler_t)(int);
 
-static void
-sig_handler (int sig)		/* Signal handler for all signals */
+static void sig_handler (int sig)		/* Signal handler for all signals */
 {
     Siginfo *s;
 
-# if !KEEPS_SIGNALS
     if (SIG_ERR == signal (sig, (_sighandler_t) sig_handler)) {
 	puts("ERROR: signal reinstall failed");
     }
-# endif
 # if defined SYS_EMX || defined SYS_WC_OS2V2
     signal (sig, SIG_ACK);	/* OS/2: acknowledge signal */
 # endif
@@ -365,8 +376,8 @@ sig_handler (int sig)		/* Signal handler for all signals */
         if (s->hdl) {
 	    puts("forth-signal callback does not work!"); /* FIXME: */
 	    /* assume that s->hdl is a colon word */
-            (*--PFE.rp) = PFE.ip;
-	    PFE.ip = (p4xt *) P4_TO_BODY (s->hdl);
+            (*--RP) = IP;
+	    IP = (p4xt *) P4_TO_BODY (s->hdl);
         } else {
 	    ___
             const char* msg = s->msg;
@@ -388,60 +399,45 @@ sig_handler (int sig)		/* Signal handler for all signals */
     }
 }
 
+/* -------------------------------------------------------------- */
 /*
  * Actions to take when job control interferes or on window size change:
  */
-void p4_swap_signals (void);
 
 #ifdef SIGTSTP
-static void
-stop_hdl (int sig)
+static void stop_hdl (int sig)
 {
-#  if !KEEPS_SIGNALS
     signal (sig, (_sighandler_t) stop_hdl);
-#  endif
     { 
-        PFE.on_stop ();
-        p4_swap_signals ();
+        system_terminal();
+        swap_signals ();
         raise (SIGTSTP);
-        p4_swap_signals ();
-        PFE.on_continue ();
+        swap_signals ();
+        interactive_terminal();
     }
 }
 #endif
 
 #ifdef SIGWINCH
-static void
-winchg_hdl (int sig)
+static void winchg_hdl (int sig)
 {
-#  if !KEEPS_SIGNALS
     signal (sig, winchg_hdl);
-#  endif
-    {
-        PFE.on_winchg ();
-    }
+    query_winsize();
 }
 #endif
 
 #ifdef SIGALRM
-static void
-handle_sigalrm (int sig)
+static void handle_sigalrm (int sig)
 {
-#  if !KEEPS_SIGNALS
     signal (sig, (_sighandler_t) handle_sigalrm);
-#  endif
-    {
-        if (PFE.on_sigalrm)
-            (*PFE.on_sigalrm)();
-    }
 }
 #endif
 
+/* -------------------------------------------------------------- */
 /**
  * install all signal handlers:
  */
-_export void
-p4_install_signal_handlers (void)
+void pf_init_signal_handlers (void)
 {
     int i, j;
     for (i = 0; i < DIM (siginfo); i++)
@@ -463,10 +459,8 @@ p4_install_signal_handlers (void)
      cont:;
     }
 
-//    if (PFE_set.stdio) 
     if (! isatty (STDIN_FILENO))
         return;
-    /* else */
 #ifdef SIGTSTP
     if (signal (SIGTSTP, SIG_IGN) == SIG_DFL)
     {
@@ -477,9 +471,6 @@ p4_install_signal_handlers (void)
     }
 #endif
 #ifdef SIGWINCH
-#ifdef KEEPS_SIGNALS
-    signal (SIGWINCH, winchg_hdl);
-#endif
     winchg_hdl (SIGWINCH);
 #endif
 
@@ -488,60 +479,10 @@ p4_install_signal_handlers (void)
 #endif
 }
 
-/**
- * switch between p4th setting of signals and state before 
- */
-void p4_swap_signals (void)
-{
-    int i;
-
-    for (i = 0; i < DIM (siginfo); i++)
-        if (siginfo[i].cLass != Default || siginfo[i].hdl)
-            siginfo[i].old = signal (siginfo[i].sig, siginfo[i].old);
-}
-
-/**
- * xt != NULL: install forth word as signal handler for signal
- * xt == NULL: install p4th default signal handler for signal
- */
-p4xt p4_forth_signal (int sig, p4xt xt)
-{
-    int i = getinfo (sig);
-    p4xt old;
-    
-    old = siginfo[i].hdl;
-    siginfo[i].hdl = xt;
-
-    if (siginfo[i].cLass == Default)
-    {
-        if (xt == NULL)
-        {
-            siginfo[i].old = signal (sig, siginfo[i].old);
-        }
-        else
-        {
-            siginfo[i].old = signal (sig, sig_handler);
-        }
-    }
-
-    return old;
-}
-
-/**
+/* -------------------------------------------------------------- */
+/** LOAD-SIGNALS ( -- )
  * Load constants for each signal found into the dictionary.
- */
-void p4_load_signals (void)
-{
-    Siginfo *s;
-
-    for (s = siginfo; s < siginfo + DIM (siginfo); s++)
-    {
-        p4_header_comma ((const p4char*) s->name, strlen (s->name));
-	FX_RUNTIME1(pf_constant);
-        FX_UCOMMA (s->sig);
-    }
-}
-/** 
+ * 
  * the signals-constructor will declare the available
  * system signals as contants - usually sth. like
  * => SIGALRM or => SIGHUP or => SIGABRT
@@ -549,15 +490,20 @@ void p4_load_signals (void)
  * some signals are only valid in specific systems,
  * like => SIGBREAK or => SIGMSG or => SIGVIRT
  */
-FCode (p4_load_signals)
+FCode (pf_load_signals)
 {
-    p4_load_signals ();
+    Siginfo *s;
+    for (s = siginfo; s < siginfo + DIM (siginfo); s++)
+    {
+        p4_header_comma ((const p4char*) s->name, strlen (s->name));
+	FX_RUNTIME1(pf_constant);
+        FX_UCOMMA (s->sig);
+    }
 }
-
 
 /** RAISE-SIGNAL ( signal# -- ior ) [FTH]
  */
-FCode (p4_raise_signal)
+FCode (pf_raise_signal)
 {
     *SP = (raise (*SP)) ? FX_IOR : 0;
 }
@@ -565,19 +511,39 @@ FCode (p4_raise_signal)
 /** FORTH-SIGNAL ( handler-xt* signal# -- old-signal-xt* ) [FTH]
  * install signal handler
  * - return old signal handler
+ *
+ * xt != NULL: install forth word as signal handler for signal
+ * xt == NULL: install p4th default signal handler for signal
  */
-FCode (p4_forth_signal)		
+FCode (pf_forth_signal)		
 {			
-    SP[1] = (p4cell) p4_forth_signal (SP[0], (p4xt) SP[1]);
-    SP++;
+    int sig = *SP++;		// signal#
+    p4xt xt = (p4xt)*SP;	// handler-xt*
+
+    int i = getinfo (sig);
+    p4xt old;
+    
+    old = siginfo[i].hdl;
+    siginfo[i].hdl = xt;
+
+    if (siginfo[i].cLass == Default) {
+        if (xt == NULL) {
+            siginfo[i].old = signal (sig, siginfo[i].old);
+        } else {
+            siginfo[i].old = signal (sig, sig_handler);
+        }
+    }
+
+    *SP = (p4cell)old;		// old-signal-xt*
 }
 
+/* -------------------------------------------------------------- */
 P4_LISTWORDS (signals) =
 {
 //    P4_INTO ("FORTH", 0),
-    P4_FXco ("LOAD-SIGNALS",		p4_load_signals),
-    P4_FXco ("RAISE-SIGNAL",		p4_raise_signal),
-    P4_FXco ("FORTH-SIGNAL",		p4_forth_signal),
+    P4_FXco ("LOAD-SIGNALS",		pf_load_signals),
+    P4_FXco ("RAISE-SIGNAL",		pf_raise_signal),
+    P4_FXco ("FORTH-SIGNAL",		pf_forth_signal),
 };
 P4_COUNTWORDS (signals, "Signals Extension");
 

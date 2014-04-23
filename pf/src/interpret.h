@@ -1,21 +1,10 @@
 #ifndef __INTERPRET_H
 #define __INTERPRET_H
 
-
-void p4_lower (p4_char_t *p, int n);
-void p4_upper (p4_char_t *p, int n);
-
 // display a message when a word is redefined
 int redefined_msg;
 
-#define UPPERMAX 32
-#define UPPERCOPY(_upper_, _nm_, _l_) \
-        if ((_l_) < UPPERMAX) {       \
-          memcpy ((_upper_), (_nm_), (_l_)); \
-          p4_upper ((_upper_), (_l_)); \
-        } else { \
-          *(int*)(_upper_) = 0; \
-        }
+p4_namebuf_t *LATEST;
 
 /* you must differentiate between VAR-style body and DOES-style body */
 #define CFA_TO_LINK(C)   ((p4char**)(C) - 1 )

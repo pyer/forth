@@ -17,7 +17,7 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -29,8 +29,9 @@
 #define ___ {
 #define ____ }
 
-#define PAD	((p4_char_t *)PFE.dp + MIN_HOLD)
+#define PAD	(DP + MIN_HOLD)
 #define HLD	hold
+
 /* -------------------------------------------------------------- */
 FCode (pf_exception_string);
 FCode_RT (pf_defer_RT);
@@ -44,6 +45,7 @@ FCode (p4_debug_does);
 int redefined_msg = 0;
 /* -------------------------------------------------------------- */
 p4_char_t *hold;		/* auxiliary pointer for number output */
+/* -------------------------------------------------------------- */
 /* -------------------------------------------------------------- */
 // input buffer
 char* source;
@@ -143,7 +145,7 @@ p4char * cfa_to_name (p4xt xt)
  */
 FCode_XE (pf_call_stop)
 {
-    p4_Except *buf = (p4_Except *) *PFE.ip;
+    p4_Except *buf = (p4_Except *) *IP;
     longjmp (buf->jmp, 1);
 }
 
@@ -161,8 +163,8 @@ void pf_call_loop (p4xt xt)
     list[1] = &call_stop;
     list[2] = (p4xt) &stop;
 
-    PFE.ip = list;
-    PFE.wp = *PFE.ip;
+    IP = list;
+    WP = *IP;
 
     if (setjmp (stop.jmp))
     {
@@ -172,8 +174,8 @@ void pf_call_loop (p4xt xt)
     /* next_loop */
     for (;;)
     {
-	/* ip and p4WP are same: register or not */
-        PFE.wp = *PFE.ip++, (*PFE.wp) (); // next
+	/* ip and WP are same: register or not */
+        WP = *IP++, (*WP) (); // next
     }
 }
 
@@ -181,9 +183,9 @@ void pf_call_loop (p4xt xt)
  */
 void pf_call (p4xt xt)
 {
-    p4xt *saved_ip = PFE.ip;
+    p4xt *saved_ip = IP;
     pf_call_loop (xt);
-    PFE.ip = saved_ip;
+    IP = saved_ip;
 }
 
 /* -------------------------------------------------------------- */
@@ -239,33 +241,6 @@ int pf_digit2number (p4_char_t c, p4ucell *n, p4ucell base)
 }
 
 /* -------------------------------------------------------------- */
-/** _lower_ ( str* str# -- )
- * _tolower_ applied to a stringbuffer
- : _lower_ 0 do dup c@ _tolower_ over c! 1+ loop drop ;
- */
-void p4_lower (p4_char_t *p, int n)
-{
-    while (--n >= 0)
-    {
-        *p = (p4_char_t) tolower ((char) *p);
-        p++;
-    }
-}
-
-/** _upper_ ( str* str# -- )
- * _toupper_ applied to a stringbuffer
- : _upper_ 0 do dup c@ _toupper_ over c! 1+ loop drop ;
- */
-void p4_upper (p4_char_t *p, int n)
-{
-    while (--n >= 0)
-    {
-        *p = (p4_char_t) toupper ((char) *p);
-        p++;
-    }
-}
-
-/* -------------------------------------------------------------- */
 /* search all word lists in the search order for name, return NFA 
  * (we use the id speedup here - the first WLs have each a unique bitmask
  *  in the wl->id. Especially the FORTH wordlist can be present multiple
@@ -282,8 +257,16 @@ void p4_upper (p4_char_t *p, int n)
  */
 p4char* pf_find (const p4_char_t *nm, int l)
 {
-    auto p4_char_t upper[UPPERMAX];
-        UPPERCOPY (upper, nm, l);
+    char upper[256];
+    int n;
+    char c;
+    for ( n = 0; n < l; n++ ) {
+        c = nm[n];
+        if ( c>='a' && c<='z')
+            c -= 32;
+        upper[n] = c;
+    }
+    upper[n] = 0; // zero-terminated string
         /* this thread does contain some upper-case defs 
            AND lower-case input shall match those definitions */
         p4_namebuf_t *nfa = LATEST;		/* NFA of most recently CREATEd header */
@@ -311,13 +294,12 @@ FCode (pf_find)
     p4char *p = (p4char *) *SP;
 
     p = pf_find (p + 1, *p);
-    if (p)
-    {
+    if (p) {
         *SP = (p4cell) name_to_cfa (p);
-        *--SP = (P4_NAMEFLAGS(p) & P4xIMMEDIATE) ? P4_POSITIVE : P4_NEGATIVE;
-    }
-    else
+        *--SP = (P4_NAMEFLAGS(p) & P4xIMMEDIATE) ? 1 : -1;
+    } else {
         *--SP = 0;
+    }
 }
 
 /* -------------------------------------------------------------- */
@@ -425,7 +407,6 @@ FCode (pf_sh_s)
 /* -------------------------------------------------------------- */
 void pf_skip_spaces(void)
 {
-//    const p4_char_t *q = PFE.tib;
     char *q=source;
     int   n = length;
     int   i = to_in;
@@ -437,7 +418,6 @@ void pf_skip_spaces(void)
 
 void pf_parse_word( char delimiter )
 {
-//    const p4_char_t *q = PFE.tib;
     char *q=source;
     int   n = length;
     int   i = to_in;
@@ -515,8 +495,7 @@ const p4_char_t * pf_to_number (const p4_char_t *p, p4ucell *n, p4cell *d, p4uce
 /** _?number_ ( str* str# dcell* -- ?ok )
  * try to convert into number, see => ?NUMBER
  */
-_export int
-p4_number_question (const p4_char_t *p, p4ucell n, p4dcell *d)
+int p4_number_question (const p4_char_t *p, p4ucell n, p4dcell *d)
 {
     p4ucell base = 0;
     int sign = 0;
@@ -736,7 +715,7 @@ FCode (pf_parse_comma_quote)
  */
 FCode_XE (pf_dot_quote_execution)
 {
-    register p4_char_t *p = (p4_char_t *) PFE.ip;
+    register p4_char_t *p = (p4_char_t *) IP;
     pf_type ((const char *)p + 1, *p);
     FX_SKIP_STRING;
 }
@@ -764,7 +743,7 @@ P4COMPILES (pf_dot_quote, pf_dot_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_ST
  */
 FCode_XE (pf_c_quote_execution)
 {
-    register char *p = (char *) PFE.ip;
+    register char *p = (char *) IP;
     *--SP = (p4cell) p;
     FX_SKIP_STRING;
 }
@@ -801,7 +780,7 @@ P4COMPILES (pf_c_quote, pf_c_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE)
  */
 FCode_XE (pf_s_quote_execution)
 {
-    register char *p = (char *) PFE.ip;
+    register char *p = (char *) IP;
     SP -= 2;
     SP[0] = *p;
     SP[1] = (p4cell) (p + 1);
@@ -1038,7 +1017,7 @@ void pf_load_words (const p4Words* ws)
 	case p4_FXCO:         /* not reference an info-block but just */
 	    p4_header_in();   /* the p4code directly */
 	    FX_COMMA ( *SP ); 
-	    P4_INC(SP,p4cell);
+            ((*(p4cell **)&(SP))++);
 	    break;
 	case p4_DVAR:
             p4_header_in();
@@ -1120,7 +1099,7 @@ p4char* p4_header_comma (const p4char *name, int len)
         pf_outf ("\n\"%.*s\" is redefined ", len, name);
 
     /* and now, do the p4_string_comma ... */
-# if defined PFE_WITH_FFA
+# if defined PF_WITH_FFA
     /* for the FFA style we have to insert a flag byte before the 
      * string that might be HERE via a WORD call. However that makes
      * the string to move UP usually - so we have to compute the overall 
@@ -1220,7 +1199,7 @@ char* pf_string ( void )
     for ( n = PFE.word.len; n>0; n-- )
         *here++ = *p++;
     *here++ = 0; // zero-terminated string
-    PFE.dp = (p4_byte_t *)here;
+    DP = here;
     return str;
 }
 
@@ -1246,7 +1225,6 @@ void pf_interpret(char *buf, int len, int n)
     redefined_msg = 1;
     source = buf;
     length = len;
-//             PFE.tib = buf;
     to_in = 0;
     while( to_in < length ) {
 	/* the parsed string is in PFE.word.ptr / PFE.word.len,
@@ -1282,7 +1260,6 @@ void pf_include(const char *name, int len)
 //printf("include %s\n",name);
     FILE *fh = fopen( name, "r" );
     if( fh != NULL ) {
-        //while( fgets( (char *)PFE.tib, TIB_SIZE, fh ) != NULL ) {
         while( fgets( buffer, 255, fh ) != NULL ) {
              pf_interpret(buffer, strlen(buffer),line++);
         }

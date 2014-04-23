@@ -29,7 +29,7 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -391,8 +391,6 @@ FCode (p4_count)
     /* can not unpack twice - this trick prevents from many common errors */
     if (256 > (p4ucell)(SP[0])) goto possibly_idempotent;
     --SP;
-//#define P4_INCC(P,T)	((*(T **)&(P))++)
-//    SP[0] = *P4_INCC(SP[1], p4char); /* SP[0] = *((p4char*) SP[1] )++; */
     SP[0] = *((*(p4char **)&(SP[1]))++);
     return;
 
@@ -452,17 +450,6 @@ FCode (p4_execute)
 {
     PFE.execute ((p4xt) *SP++);
 }
-
-/** EXIT ( -- ) [ANS] [EXIT]
- * will unnest the current colon-word so it will actually
- * return the word calling it. This can be found in the
- * middle of a colon-sequence between => : and => ;
- */
-FCode (p4_exit)
-{
-    FX_COMPILE (p4_exit);
-}
-P4COMPILES (p4_exit, pf_semicolon_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 /** FILL ( mem-ptr mem-len char# -- ) [ANS]
  * fill a memory area with the given char, does now
@@ -773,7 +760,6 @@ P4_LISTWORDS (core) =
     P4_FXco ("DROP",         p4_drop),
     P4_FXco ("DUP",          p4_dup),
     P4_FXco ("EXECUTE",      p4_execute),
-    P4_SXco ("EXIT",         p4_exit),
     P4_FXco ("FILL",         p4_fill),
     P4_FXco ("INVERT",       p4_invert),
     P4_FXco ("MAX",          p4_max),

@@ -23,12 +23,10 @@
 /* minimum free space in PAD */
 #define MIN_PAD 	0x400
 
+#define MIN_UNUSED 256
 /* ---------------------------------------------------------------------- */
 #define	P4_FALSE	((p4_bool_t)0) /* false is null */
 #define	P4_TRUE	        (~P4_FALSE)    /* true is not-null, forth83 uses -1 */
-#define	P4_NOTHING      ((p4_cell_t)0) /* note that for tri-state booleans */
-#define	P4_NEGATIVE     (~P4_NOTHING)  /* in some places, it _must_ be -1 */
-#define P4_POSITIVE     ((p4cell)1)    /* or its counterpart, +1 */
 /* ---------------------------------------------------------------------- */
 #define	P4xIMMEDIATE	0x40	/* these bits are flags in */
 #define	P4xSMUDGED	0x20	/* the count byte of a definition */
@@ -43,7 +41,6 @@
  */
 
 #define	P4_DEFAULT_STYLE	0, 0,  0,  0,  0
-//#define	P4_LOCALS_STYLE		0, 0,  0,  1,  0
 #define	P4_SEMICOLON_STYLE	0, 0, -4,  3,  0
 #define	P4_DOES_STYLE		0, 1, -4,  0,  4
 
@@ -64,12 +61,6 @@
 #define	P4_OF_STYLE		1, 1,  0,  0,  4
 #define	P4_ENDOF_STYLE		0, 0,  0,  1, -4
 #define	P4_ENDCASE_STYLE	0, 1, -4,  1,  0
-
-/*GD* same as BEGIN, but stands alone on a line */
-#define P4_BEGINS_STYLE         1, 1,  0,  1,  4
-
-/* value style */
-#define P4_NEW1_STYLE           1, 1, -2,  1,  2
 
 /* ---------------------------------------------------------------------- */
 /* Readable macros for magic numbers suggested by spc@pineal.math.fau.edu */
@@ -109,10 +100,10 @@
 #define P4_ON_DIV_ZERO          -10
 #define P4_ON_RESULT_RANGE      -11
 #define	P4_ON_ARG_TYPE		-12
-#define	P4_ON_UNDEFINED	-13
+#define	P4_ON_UNDEFINED		-13
 #define	P4_ON_COMPILE_ONLY	-14
 #define	P4_ON_INVALID_FORGET	-15
-#define	P4_ON_ZERO_NAME	-16
+#define	P4_ON_ZERO_NAME		-16
 #define	P4_ON_PICNUM_OVER	-17
 #define	P4_ON_PARSE_OVER	-18
 #define	P4_ON_NAME_TOO_LONG	-19

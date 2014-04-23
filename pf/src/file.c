@@ -34,7 +34,7 @@
 #include "const.h"
 #include "macro.h"
 #include "listwords.h"
-#include "session.h"
+#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -55,7 +55,7 @@ enum
 # define FMODE_BIN (FMODE_ROB - FMODE_RO)
 /* ================================================================= */
 
-_export _p4_off_t
+long
 p4_file_size (FILE * f)		/* Result: file length, -1 on error */
 {
     struct stat st;		/* version using fstat() */
@@ -65,7 +65,7 @@ p4_file_size (FILE * f)		/* Result: file length, -1 on error */
     return st.st_size;
 }
 
-static _p4_off_t
+static long
 file_size (const char *fn)		/* Result: file length, -1 on error */
 {
     struct stat st;
@@ -75,8 +75,8 @@ file_size (const char *fn)		/* Result: file length, -1 on error */
     return st.st_size;
 }
 
-_export _p4_off_t
-p4_file_copy (const char *src, const char *dst, _p4_off_t limit)
+long
+p4_file_copy (const char *src, const char *dst, long limit)
 /*
  * Copies file, but at most limit characters.
  * Returns destination file length if successful, -1 otherwise.
@@ -85,7 +85,7 @@ p4_file_copy (const char *src, const char *dst, _p4_off_t limit)
     FILE *f, *g;
     char buf[BUFSIZ];
     size_t n;
-    _p4_off_t m;
+    long m;
 
     if ((f = fopen (src, "rb")) == NULL)
         return -1;
@@ -111,7 +111,7 @@ p4_file_copy (const char *src, const char *dst, _p4_off_t limit)
  * Renames or moves file, returns 0 on success, -1 on error.
  */
 /*
-_export int
+int
 p4_file_move (const char *src, const char *dst)
 {
     if (_P4_rename (src, dst) == 0)
@@ -233,8 +233,7 @@ char* pf_store_filename (const char* str, int n)
  * Return best possible access method,
  * 0 if no access but file exists, -1 if file doesn't exist.
  */
-_export int
-p4_file_access (const p4_char_t *fn, int len)
+int p4_file_access (const p4_char_t *fn, int len)
 {
     char* buf = pf_store_filename ((const char *)fn, len);
     if (access (buf, F_OK) != 0)
@@ -300,8 +299,7 @@ FILE * p4_create_file (const p4_char_t *name, int len, int mode)
 /**
  * read file
  */
-_export int
-p4_read_file (void *p, p4ucell *n, FILE *fid)
+int p4_read_file (void *p, p4ucell *n, FILE *fid)
 {
     int m;
     errno = 0;
@@ -318,8 +316,7 @@ p4_read_file (void *p, p4ucell *n, FILE *fid)
 /**
  * write file
  */
-_export int
-p4_write_file (void *p, p4ucell n, FILE *fid)
+int p4_write_file (void *p, p4ucell n, FILE *fid)
 {
     return (p4ucell) fwrite (p, 1, n, fid) != n ? errno : 0;
 }
@@ -327,10 +324,9 @@ p4_write_file (void *p, p4ucell n, FILE *fid)
 /**
  * resize file
  */
-_export int
-p4_resize_file (FILE *fid, _p4_off_t size)
+int p4_resize_file (FILE *fid, long size)
 {
-    _p4_off_t pos;
+    long pos;
 
     if (fid == NULL )
         p4_throw (P4_ON_FILE_NEX);
@@ -353,8 +349,7 @@ p4_resize_file (FILE *fid, _p4_off_t size)
 /**
  * read line
  */
-_export int
-p4_read_line (void* buf, p4ucell *u, FILE *fid, p4cell *ior)
+int p4_read_line (void* buf, p4ucell *u, FILE *fid, p4cell *ior)
 {
     int c, n; char* p = buf;
     
@@ -443,7 +438,7 @@ FCode (p4_delete_file)
 FCode (p4_file_position)
 {
     register FILE *fid = (FILE *) SP[0];	/* file-id */
-    register _p4_off_t pos;
+    register long pos;
 
     SP -= 2;
     pos = ftell (fid);
@@ -469,7 +464,7 @@ FCode (p4_file_position)
 FCode (p4_file_size)
 {
     FILE *fid = (FILE *) SP[0];	/* fileid */
-    _p4_off_t size;
+    long size;
 
     size = p4_file_size (fid);
     SP -= 2;
@@ -548,7 +543,7 @@ FCode (p4_read_line)
 FCode (p4_reposition_file)
 {
     register FILE *  fid = (FILE *) SP[0];
-    register _p4_off_t pos;
+    register long pos;
     if (sizeof (*SP) >= sizeof(pos))  /* compile-time decision !*/
     {
 	pos = SP[2];
@@ -569,7 +564,7 @@ FCode (p4_reposition_file)
 FCode (p4_resize_file)
 {
     register FILE *  fid = (FILE *) SP[0];
-    register _p4_off_t size;
+    register long size;
     if (sizeof (*SP) >= sizeof(size))  /* compile-time decision !*/
     {
 	size = SP[2];
