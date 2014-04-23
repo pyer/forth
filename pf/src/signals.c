@@ -364,12 +364,6 @@ static void sig_handler (int sig)		/* Signal handler for all signals */
     if (SIG_ERR == signal (sig, (_sighandler_t) sig_handler)) {
 	puts("ERROR: signal reinstall failed");
     }
-# if defined SYS_EMX || defined SYS_WC_OS2V2
-    signal (sig, SIG_ACK);	/* OS/2: acknowledge signal */
-# endif
-# if defined SYS_EMX
-    _control87 (EM_DENORMAL | EM_INEXACT, MCW_EM);
-# endif
 
     {
         s = &siginfo[getinfo (sig)];

@@ -150,10 +150,6 @@ void pf_init_system (p4_Thread* th) /* main_init */
 //    long int float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
 
     setlocale (LC_ALL, "C");
-#  if defined SYS_EMX
-    _control87 (EM_DENORMAL | EM_INEXACT, MCW_EM);
-#  endif
-
     /* ............................................................*/
     p4TH = th;
     pf_init_terminal();
@@ -167,7 +163,6 @@ void pf_init_system (p4_Thread* th) /* main_init */
 		      p4TH, total_size, strerror(errno));
             puts ("ERROR: out of memory");
 	    exit(6);
-	    pf_longjmp_exit ();
     }
 
     /* ________________ initialize dictionary _____________ */
@@ -184,7 +179,8 @@ void pf_init_system (p4_Thread* th) /* main_init */
     if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000)
     {
 	puts ("ERROR: impossible memory map");
-	exit (3);
+	exitcode = 3;
+	pf_longjmp_exit ();
     }
 
     /*  -- cold boot stage -- */
@@ -244,11 +240,11 @@ int main (int argc, char** argv)
     /* -------- warm boot stage ------- */
     abort_system ();
     quit_system ();
+    exitcode = 0;
     pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
     if ( len > 0 )
         pf_include(buffer,len);
 
-    exitcode = 0;
     switch (setjmp (jump_loop))
     {           /* classify unhandled throw codes */
     case 'A': /* do abort */
@@ -260,8 +256,10 @@ int main (int argc, char** argv)
         break;
     default:
         pf_cleanup_terminal();
+        free(dict);
     	return exitcode;
     }
+
     for (;;) {
              if (isatty (STDIN_FILENO))
                  pf_outs (" ok\n");
