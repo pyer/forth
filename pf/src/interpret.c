@@ -1019,13 +1019,13 @@ void pf_load_words (const p4Words* ws)
 	    FX_COMMA ( *SP ); 
             ((*(p4cell **)&(SP))++);
 	    break;
-/*
 	case p4_DVAR:
             p4_header_in();
             P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictvar);
 	    FX_COMMA (*SP++);
 	    break;
+/*
 	case p4_DCON:
             p4_header_in();
             P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
@@ -1339,9 +1339,7 @@ The function of QUERY may be performed with ACCEPT and EVALUATE.
 
 P4_LISTWORDS (interpret) =
 {
-//    P4_INTO ("FORTH", 0),
-//    P4_DVaR ("BASE",         base),
-    P4_OVAR ("BASE",         base),
+    P4_DVAR ("BASE",         base),
     P4_FXco ("SOURCE",       pf_source),
     P4_FXco ("LATEST",       pf_latest),
     P4_FXco ("SIGN",         pf_sign),

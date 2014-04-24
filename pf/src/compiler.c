@@ -1159,7 +1159,7 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("R@",           pf_r_fetch),
     /* definition checks */
     //P4_DVaR ("STATE",        state),
-    P4_OVAR ("STATE",        state),
+    P4_DVAR ("STATE",        state),
     P4_RTco ("<BUILDS",      pf_builds),
     P4_RTco ("CREATE",       pf_builds), // CREATE and <BUILDS are synonyms
     P4_SXco ("DOES>",        pf_does),

@@ -147,6 +147,8 @@ struct p4_Seman2		/* for words with different compilation */
 #define p4_OVAL 'l'     /* OL */ /* ordinary value */
 #define p4_IVAL 'L'     /* IL */
 
+#define p4_DVAR 'm'     /* DV */ /* dict variable (threaded) */
+
 #define p4_INTO 'i'     /* make sure the vocabulary exists, and put all */
                         /* of the following words into it, and with nonzero */
                         /* arg, make sure the voc is in the default search */ 
@@ -168,9 +170,11 @@ struct p4_Seman2		/* for words with different compilation */
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&P4SEMANTICS(SEM) }
 #define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&P4RUNTIME_(RUN) }
 
-#define P4_OVAR( NM, VAL)       { "v\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
+#define P4_OVAR( NM)            { "v\237"NM, ((p4code)0) }
 #define P4_OCON( NM, VAL)       { "c\237"NM, (p4code)(VAL) }
 #define P4_OVAL( NM, VAL)       { "l\237"NM, (p4code)(VAL) }
+
+#define P4_DVAR( NM, VAL)       { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 
 #define P4_INTO( NM, DESCR)     { "i\377"NM, (p4code)(DESCR) } /*search-also*/
 #define P4_LOAD( NM, WORDS)     { "I\377"NM, (p4code)(&P4WORDS(WORDS)) }
