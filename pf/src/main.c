@@ -92,8 +92,12 @@ void quit_system (void)
  */
 void abort_system (void)
 {
-    SP = S0;		/* stacks */
     BASE = 10;
+    SP = S0;		/* stacks */
+#if defined PF_WITH_FLOATING
+    FP = F0;
+    PRECISION = 6;
+#endif
 }
 
 /** BYE ( -- ) no-return
@@ -113,6 +117,9 @@ extern const p4Words
     P4WORDS(exception),
     P4WORDS(facility),
     P4WORDS(file),
+#if defined PF_WITH_FLOATING
+    P4WORDS(floating),
+#endif
     P4WORDS(interpret),
     P4WORDS(shell),
     P4WORDS(signals),
@@ -130,6 +137,9 @@ P4_LISTWORDS(forth) =
     P4_LOAD ("", terminal),
     P4_LOAD ("", shell),
     P4_LOAD ("", exception),
+#if defined PF_WITH_FLOATING
+    P4_LOAD ("", floating),
+#endif
     P4_LOAD ("", signals),
     P4_LOAD ("", tools),
     P4_LOAD ("", facility),
@@ -147,7 +157,9 @@ void pf_init_system (p4_Thread* th) /* main_init */
     long int total_size = TOTAL_SIZE;
     long int stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
     long int ret_stack_size = (TOTAL_SIZE / 64 + 256) / sizeof(p4cell);
-//    long int float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
+#if defined PF_WITH_FLOATING
+    long int float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
+#endif
 
     setlocale (LC_ALL, "C");
     /* ............................................................*/
@@ -175,6 +187,11 @@ void pf_init_system (p4_Thread* th) /* main_init */
     p4_dict_allocate (stack_size, sizeof(p4cell),
                       PFE_ALIGNOF_CELL,
                       (void**) & PFE.stack, (void**) & S0);
+#if defined PF_WITH_FLOATING
+    p4_dict_allocate (float_stack_size, sizeof(double),
+                      PFE_ALIGNOF_DFLOAT,
+                      (void**) &PFE.fstack, (void**) &F0);
+#endif
 
     if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000)
     {
@@ -184,8 +201,8 @@ void pf_init_system (p4_Thread* th) /* main_init */
     }
 
     /*  -- cold boot stage -- */
-    SP = S0;
     RP = R0;
+    SP = S0;
 #if defined PF_WITH_FLOATING
     FP = F0;
     PRECISION = 6;
@@ -241,18 +258,18 @@ int main (int argc, char** argv)
     abort_system ();
     quit_system ();
     exitcode = 0;
-    pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-    if ( len > 0 )
-        pf_include(buffer,len);
 
     switch (setjmp (jump_loop))
     {           /* classify unhandled throw codes */
     case 'A': /* do abort */
-         abort_system();
+        abort_system();
     case 'Q': /* do quit */
-         quit_system();
-         break;
+        quit_system();
+        break;
     case 0:
+        pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
+        if ( len > 0 )
+            pf_include(buffer,len);
         break;
     default:
         pf_cleanup_terminal();

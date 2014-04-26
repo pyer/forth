@@ -27,6 +27,8 @@
 /* ---------------------------------------------------------------------- */
 #define	P4_FALSE	((p4_bool_t)0) /* false is null */
 #define	P4_TRUE	        (~P4_FALSE)    /* true is not-null, forth83 uses -1 */
+#define	P4_FLAG(X)	((X) ? P4_TRUE : P4_FALSE)
+
 /* ---------------------------------------------------------------------- */
 #define	P4xIMMEDIATE	0x40	/* these bits are flags in */
 #define	P4xSMUDGED	0x20	/* the count byte of a definition */

@@ -1,12 +1,12 @@
 #ifndef ___CONFIG_H
 #define ___CONFIG_H
 
-#define PF_VERSION  "2.0b"
+#define PF_VERSION  "2.0c"
 
 #if defined ARM
 #include "config_arm.h"
-#define PF_BOOT_FILE "/etc/pf.fth"
-#define PF_HELP_FILE "/share/pf.help"
+#define PF_BOOT_FILE "/usr/etc/pf.fth"
+#define PF_HELP_FILE "/usr/share/pf.help"
 #else
 #include "config_x86.h"
 #define PF_BOOT_FILE "/usr/local/etc/pf.fth"
@@ -14,7 +14,7 @@
 #endif
 
 #define PF_WITH_FFA      1       /* use seperate FlagField */
-//#define PF_WITH_FLOATING 1       /* enable floating point numbers */
+#define PF_WITH_FLOATING 1       /* enable floating point numbers */
 
 #define PATH_LENGTH 256
 

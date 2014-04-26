@@ -203,6 +203,23 @@ flag is true if and only if n1 is greater than n2.
 a-addr is the data-field address corresponding to xt.
 An ambiguous condition exists if xt is not for a word defined via CREATE.
 
+>FLOAT ( c-addr u -- true | false ) ( F: -- r | )
+An attempt is made to convert the string specified by c-addr and u to internal floating-
+point representation. If the string represents a valid floating-point number in the syntax
+below, its value r and true are returned.
+If the string does not represent a valid floating-point number only false is returned.
+A string of blanks should be treated as a special case representing zero.
+The syntax of a convertible string is:
+   Convertible string := significand exponent
+          significand := [ sign ] digits [. digits0 ]
+          exponent    := E[ sign ] digits0
+          sign        := { + | - }
+          digits      := digit digits0
+          digits0     := digit *
+          digit       := { 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 }
+These are examples of valid representations of floating-point numbers in program source:
+1. 1.0 1E 1.E 1.E0 +1.23E-1 -1.23E+1 
+
 >NUMBER ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 )
 ud2 is the unsigned result of converting the characters within the string specified by
 c-addr1 u1 into digits, using the number in BASE, and adding each into ud1 after multi-
@@ -521,8 +538,22 @@ Return control to the calling definition specified by nest-sys. Before executing
 within a do-loop, a program shall discard the loop-control parameters by executing UNLOOP.
 See also: UNLOOP
 
+F. ( -- ) ( F: r -- )
+Display, with a trailing space, the top number on the floating-point stack using fixed-
+point notation:
+    [-] digits . digits0
+The value of BASE is ignored.
+See also: >FLOAT FE. FS. PRECISION
+
 FALSE ( -- false )
 Return a false flag.
+
+FE. ( -- ) ( F: r -- )
+Display, with a trailing space, the top number on the floating-point stack using engineering notation,
+where the significand is greater than or equal to 1.0 and less than 1000.0 and the decimal exponent is
+a multiple of three.
+The value of BASE is ignored.
+See also: >FLOAT F. FS. PRECISION
 
 FILE-POSITION
 
@@ -553,6 +584,14 @@ FORTH-WORDLIST ( -- wid )
 Return wid, the identifier of the word list that includes all standard words provided by
 the implementation. This word list is initially the compilation word list and is part of the
 initial search order.
+
+FS. ( -- ) ( F: r -- )
+Display, with a trailing space, the top number on the floating-point stack in scientific notation,
+significand exponent where:
+    significand := [-] digit . digits0
+    exponent := E[-] digits
+The value of BASE is ignored.
+See also: >FLOAT F. FE. PRECISION
 
 HELP ( " spaces name" -- xt )
 Skip leading space delimiters. Parse name delimited by a space. Display name help.
@@ -710,6 +749,10 @@ processing.
 PICK ( xu. . . x1 x0 u -- xu. . . x1 x0 xu )
 Remove u. Copy the xu to the top of the stack. An ambiguous condition exists if there
 are less than u+2 items on the stack before PICK is executed.
+
+PRECISION ( -- u )
+Return the number of significant digits currently used by F., FE., or FS. as u.
+See also: F.
 
 PWD
 

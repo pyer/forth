@@ -40,6 +40,10 @@ FCode (p4_debug_colon_RT);
 FCode (p4_debug_colon);
 FCode (p4_debug_does_RT);
 FCode (p4_debug_does);
+
+#if defined PF_WITH_FLOATING
+int pf_convert_float(void);
+#endif
 /* -------------------------------------------------------------- */
 // display a message when a word is redefined
 int redefined_msg = 0;
@@ -1025,14 +1029,12 @@ void pf_load_words (const p4Words* ws)
 	    FX_RUNTIME1_RT (pf_dictvar);
 	    FX_COMMA (*SP++);
 	    break;
-/*
 	case p4_DCON:
             p4_header_in();
             P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictget);
 	    FX_COMMA (*SP++);
 	    break;
-*/
 	case p4_OVAL:
 	case p4_IVAL:
 	    FX (pf_value);
@@ -1247,6 +1249,10 @@ void pf_interpret(char *buf, int len, int n)
 		   continue;
 	    if (pf_convert_number())
                    continue;
+#if defined PF_WITH_FLOATING
+	    if (pf_convert_float())
+                   continue;
+#endif
             if (n>0)
                 printf( "\nLine %d: %s", n, buf );
             p4_throw (P4_ON_UNDEFINED);
