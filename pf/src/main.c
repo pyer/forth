@@ -182,14 +182,14 @@ void pf_init_system (p4_Thread* th) /* main_init */
     dictlimit = dict + total_size;
 
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
-                      PFE_ALIGNOF_CELL,
+                      PFE_SIZEOF_CELL,
                       (void**) & PFE.rstack, (void**) & R0);
     p4_dict_allocate (stack_size, sizeof(p4cell),
-                      PFE_ALIGNOF_CELL,
+                      PFE_SIZEOF_CELL,
                       (void**) & PFE.stack, (void**) & S0);
 #if defined PF_WITH_FLOATING
     p4_dict_allocate (float_stack_size, sizeof(double),
-                      PFE_ALIGNOF_DFLOAT,
+                      PFE_SIZEOF_DOUBLE,
                       (void**) &PFE.fstack, (void**) &F0);
 #endif
 
