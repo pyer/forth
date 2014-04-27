@@ -38,9 +38,6 @@ FCode (p4_drop);
 FCode (p4_swap);
 FCode (p4_rot);
 
-#define ___ {
-#define ____ }
-
 /* -------------------------------------------------------------- */
 p4cell *csp;		/* compiler security, saves sp here */
 /* -------------------------------------------------------------- */
@@ -435,7 +432,7 @@ FCode (pf_c_comma)
 }
 
 /* -------------------------------------------------------------- */
-#define P4_ALIGNED(P)	(((size_t)(P) & (PFE_ALIGNOF_CELL - 1)) == 0)
+#define P4_ALIGNED(P)	(((size_t)(P) & (PFE_SIZEOF_CELL - 1)) == 0)
 
 /** ALIGN ( -- ) [ANS]
  * will make the dictionary aligned, usually to a
