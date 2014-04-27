@@ -20,6 +20,16 @@ Full pf with vocabularies
 In this branch, pf has no search-order extensions, only one dictionary of Forth words.
 Words current, context, only, order, etc... are removed.
 
+*deploy on Ubuntu*
+  /usr/local/bin/pf
+  /usr/local/etc/pf.fth
+  /usr/local/share/pf.help
+
+*deploy on Angstrom (Beaglebone Black)*
+  /usr/bin/pf
+  /usr/etc/pf.fth
+  /usr/share/pf.help
+
 
 Pierre BAZONNARD
 pierre.bazonnard@gmail.com
