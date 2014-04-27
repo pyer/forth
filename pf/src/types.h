@@ -35,9 +35,9 @@ typedef char  p4char; /* hopefully an 8-bit type */
 # error halfcell type not detected
 #endif
 
-#define PFE_ALIGNOF_CELL   PFE_SIZEOF_INT
-#define PFE_ALIGNOF_SFLOAT PFE_SIZEOF_FLOAT
-#define PFE_ALIGNOF_DFLOAT PFE_SIZEOF_DOUBLE
+#define PF_SIZEOF_FCELL PFE_SIZEOF_DOUBLE
+#define PF_TYPEOF_FCELL double
+
 
 typedef PFE_TYPEOF_CELL			p4cell;	 /* a stack item */
 typedef unsigned PFE_TYPEOF_CELL	p4ucell; /* dito unsigned */
