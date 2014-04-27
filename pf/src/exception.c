@@ -363,12 +363,11 @@ FCode_RT (pf_exception_string_RT)
  * append a node with the given id and a pointer to an 
  * extern zstring to the => NEXT-EXCEPTION chain-list.
  */
-p4_Runtime2 pf_exception_stringRuntime;
 FCode (pf_exception_string)
 {
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    FX_RCOMMA (pf_exception_stringRuntime.exec[0]);
+    FX_RUNTIME1(pf_exception_string);
     {
       p4cell id = *SP++;
       p4_Exception* expt = (void*) DP;
