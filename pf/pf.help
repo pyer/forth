@@ -416,7 +416,7 @@ COMPILE,
 CONSTANT ( x “ spaces name” -- )
 Skip leading space delimiters. Parse name delimited by a space. Create a definition for
 name with the execution semantics defined below. name is referred to as a “constant”.
-name Execution: ( -- x )
+Execution: ( -- x )
 Place x on the stack.
 
 CONTEXT
@@ -539,14 +539,73 @@ within a do-loop, a program shall discard the loop-control parameters by executi
 See also: UNLOOP
 
 F. ( -- ) ( F: r -- )
-Display, with a trailing space, the top number on the floating-point stack using fixed-
-point notation:
+Display, with a trailing space, the top number on the floating-point stack using fixed-point notation:
     [-] digits . digits0
 The value of BASE is ignored.
 See also: >FLOAT FE. FS. PRECISION
 
+F! ( f-addr -- ) ( F: r -- )
+Store r at f-addr.
+
+F* ( F: r1 r2 -- r3 )
+Multiply r1 by r2 giving r3.
+
+F** ( F: r1 r2 -- r3 )
+Raise r1 to the power r2, giving the product r3.
+
+F+ ( F: r1 r2 -- r3 )
+Add r1 to r2 giving the sum r3.
+
+F- ( F: r1 r2 -- r3 )
+Subtract r2 from r1, giving r3.
+
+F/ ( F: r1 r2 -- r3 )
+Divide r1 by r2, giving the quotient r3. An ambiguous condition exists if r2 is zero, or the
+quotient lies outside of the range of a floating-point number.
+
+F0< ( -- flag ) ( F: r -- )
+flag is true if and only if r is less than zero.
+
+F0= ( -- flag ) ( F: r -- )
+flag is true if and only if r is equal to zero.
+
+F< ( -- flag ) ( F: r1 r2 -- )
+flag is true if and only if r1 is less than r2.
+
+F>S ( -- x ) ( F: r -- )
+x is the signed-integer equivalent of the integer portion of r. The fractional portion of r is discarded.
+An ambiguous condition exists if the integer portion of r cannot be represented as a signed integer.
+Note: Rounding the floating-point value prior to calling F>S is advised, because F>S rounds towards zero.
+
+F@ ( f-addr -- ) ( F: -- r )
+r is the value stored at f-addr.
+
+FALIGN ( -- )
+If the data-space pointer is not float aligned, reserve enough data space to make it so.
+
+FALIGNED ( addr -- f-addr )
+f-addr is the first float-aligned address greater than or equal to addr.
+
 FALSE ( -- false )
 Return a false flag.
+
+FCONSTANT ( “ spaces name” -- ) ( F: r -- )
+Skip leading space delimiters. Parse name delimited by a space. Create a definition for
+name with the execution semantics defined below.
+name is referred to as an “f-constant”.
+Execution: ( -- ) ( F: -- r )
+Place r on the floating-point stack.
+
+FDEPTH ( -- +n )
++n is the number of values contained on the floating-point stack. If the system has an
+environmental restriction of keeping the floating-point numbers on the data stack, +n is
+the current number of possible floating-point values contained on the data stack.
+
+FDROP ( F: r -- )
+Remove r from the floating-point stack.
+
+FDUP ( F: r -- r r )
+Duplicate r.
 
 FE. ( -- ) ( F: r -- )
 Display, with a trailing space, the top number on the floating-point stack using engineering notation,
@@ -572,7 +631,32 @@ a given string, the values returned by FIND while compiling may differ from thos
 turned while not compiling.
 See also: '
 
+FLITERAL
+Compilation: ( F: r -- ) or ( r -- )
+Append the run-time semantics given below to the current definition.
+Run-time: ( F: -- r ) or ( -- r )
+Place r on the floating-point stack.
+
+FLOAT+
+( f-addr1 -- f-addr2 )
+Add the size in address units of a floating-point number to f-addr1, giving f-addr2.
+
+FLOATS ( n1 -- n2 )
+n2 is the size in address units of n1 floating-point numbers.
+
+FLOOR ( F: r1 -- r2 )
+Round r1 to an integral value using the “round toward negative infinity” rule, giving r2.
+
 FLUSH-FILE
+
+FMAX ( F: r1 r2 -- r3 )
+r3 is the greater of r1 and r2.
+
+FMIN ( F: r1 r2 -- r3 )
+r3 is the lesser of r1 and r2.
+
+FNEGATE ( F: r1 -- r2 )
+r2 is the negation of r1.
 
 FORTH ( -- )
 Transform the search order consisting of widn, . . . wid2, wid1 (where wid1 is searched
@@ -585,6 +669,15 @@ Return wid, the identifier of the word list that includes all standard words pro
 the implementation. This word list is initially the compilation word list and is part of the
 initial search order.
 
+FOVER ( F: r1 r2 -- r1 r2 r1 )
+Place a copy of r1 on top of the floating-point stack.
+
+FROT ( F: r1 r2 r3 -- r2 r3 r1 )
+Rotate the top three floating-point stack entries.
+
+FROUND ( F: r1 -- r2 )
+Round r1 to an integral value using the “round to nearest” rule, giving r2.
+
 FS. ( -- ) ( F: r -- )
 Display, with a trailing space, the top number on the floating-point stack in scientific notation,
 significand exponent where:
@@ -592,6 +685,18 @@ significand exponent where:
     exponent := E[-] digits
 The value of BASE is ignored.
 See also: >FLOAT F. FE. PRECISION
+
+FSWAP ( F: r1 r2 -- r2 r1 )
+Exchange the top two floating-point stack items.
+
+FVARIABLE ( “ spaces name” -- )
+Skip leading space delimiters. Parse name delimited by a space. Create a definition for
+name with the execution semantics defined below. Reserve 1 FLOATS address units of
+data space at a float-aligned address.
+name is referred to as an “f-variable”.
+Execution: ( -- f-addr )
+f-addr is the address of the data space reserved by FVARIABLE when it created name.
+A program is responsible for initializing the contents of the reserved space.
 
 HELP ( " spaces name" -- xt )
 Skip leading space delimiters. Parse name delimited by a space. Display name help.
@@ -790,6 +895,20 @@ See also: BEGIN WHILE AGAIN
 
 REPOSITION-FILE
 
+REPRESENT ( c-addr u -- n flag1 flag2 ) ( F: r -- )
+At c-addr, place the character-string external representation of the significand of the
+floating-point number r. Return the decimal-base exponent as n, the sign as flag1 and
+“valid result” as flag2. The character string shall consist of the u most significant digits
+of the significand represented as a decimal fraction with the implied decimal point to the
+left of the first digit, and the first digit zero only if all digits are zero. The significand
+is rounded to u digits following the “round to nearest” rule; n is adjusted, if necessary,
+to correspond to the rounded magnitude of the significand.
+If flag2 is true then r was in the implementation-defined range of floating-point numbers.
+If flag1 is true then r is negative.
+An ambiguous condition exists if the value of BASE is not decimal ten.
+When flag2 is false, n and flag1 are implementation defined, as are the contents of c-addr.
+Under these circumstances, the string at c-addr shall consist of graphic characters.
+
 RESIZE-FILE
 
 RM
@@ -802,6 +921,10 @@ ROT ( x1 x2 x3 -- x2 x3 x1 )
 Rotate the top three stack entries.
 
 ROWS
+
+S>F ( x -- ) ( F: -- r )
+r is the floating-point equivalent of x.
+An ambiguous condition exists if x cannot be precisely represented as a floating-point value.
 
 S" ( -- c-addr u )
 Compilation: ( “ccc quote ” -- )
