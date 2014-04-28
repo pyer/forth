@@ -38,9 +38,9 @@
 #include "listwords.h"
 #include "thread.h"
 
-//#include "compiler.h"
+#include "compiler.h"
 //#include "exception.h"
-//#include "interpret.h"
+#include "interpret.h"
 #include "terminal.h"
 
 #if defined PF_WITH_FLOATING
@@ -59,7 +59,6 @@
  * 8-bit bytes.  We assume that 4, 8, 10, 12, or 16 might
  * correspond to a double, and probably 4 could be omitted.
  * --KM&DNW 2Mar03
- */
 #if PFE_SIZEOF_DOUBLE == PFE_SIZEOF_INT
 #  define EXACTLY_EQUAL(A,B)  ( *((int*) &(A)) == *((int*) &(B)) )
 #elif PFE_SIZEOF_DOUBLE == 2 * PFE_SIZEOF_INT
@@ -90,9 +89,9 @@
 #  error   using p4_memcmp() in p4_f_proximate()
 #  endif
 #endif
+ */
 
-#define PFE_ALIGNOF_DFLOAT PFE_SIZEOF_DOUBLE
-#define P4_DFALIGNED(P)	(((size_t)(P) & (PFE_ALIGNOF_DFLOAT - 1)) == 0)
+#define P4_DFALIGNED(P)	(((size_t)(P) & (PFE_SIZEOF_DOUBLE - 1)) == 0)
 /* ------------------------------------------------------------------ */
 FCode (pf_set_precision)
 {
@@ -134,15 +133,12 @@ int pf_to_float (const char *p, p4cell n, double *r)
 
     errno = 0;    /* To distinguish success/failure after call */
     *r = strtod (p, &endptr);
-    /* Check for possible error */
-//    if ( errno == ERANGE )
     if ( errno != 0 )
         return 0;
-
-    /* If we got here, strtod() successfully parsed a number */
-    //if (*endptr != '\0')      /* Not necessarily an error... */
-				/* and it is not in Forth */
-    return 1;
+    /* strtod() successfully parsed a number if next char is NULL or SPACE */
+    if ( *endptr=='\0' || *endptr==' ' )
+        return 1;
+    return 0;
 }
 
 /*
@@ -235,31 +231,27 @@ FCode (p4_f_fetch)
     *--FP = *(double *) *SP++;
 }
 
-#if defined PF_TMP
-static p4xcode* p4_f_constant_RT_SEE (char* out, p4xt xt, p4char* nfa)
+static P4_CODE_RUN(p4_f_constant_RT_SEE)
 {
     /*  (*P4_TO_CODE(xt) == PFX (p4_f_constant_RT)) */
-    sprintf (out, "%g FCONSTANT %.*s",
-	     *(double *) p4_dfaligned ((p4cell) P4_TO_BODY (xt)),
+    sprintf (p, "%g FCONSTANT %.*s", *(double *) p4_dfaligned ((p4cell) P4_TO_BODY (xt)),
 	     NAMELEN(nfa), NAMEPTR(nfa));
     return 0; /* no colon */
 }
 
 FCode_RT (p4_f_constant_RT)
 {
-    FX_USE_BODY_ADDR;
-    *--FP = *(double *) p4_dfaligned ((p4cell) FX_POP_BODY_ADDR);
+    *--FP = *(double *)WP_PFA;
 }
 
 FCode (p4_f_constant)
 {
-    FX_RUNTIME_HEADER;
+    p4_header_in();
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (p4_f_constant);
-    FX (p4_d_f_align);
     FX_FCOMMA (*FP++);
 }
 P4RUNTIMES1_(p4_f_constant, p4_f_constant_RT, 0,p4_f_constant_RT_SEE);
-#endif
 
 FCode (p4_f_depth)
 {
@@ -277,44 +269,36 @@ FCode (p4_f_dup)
     FP[0] = FP[1];
 }
 
-#if defined PF_TMP
 /* originally P4_SKIPS_FLOAT */
-p4xcode*
-p4_lit_float_SEE (p4xcode* ip, char* p, p4_Semant* s)
+p4xt* p4_lit_float_SEE (p4xt* ip, char* p, p4_Semant* s)
 {
-# if PFE_ALIGNOF_DFLOAT > PFE_ALIGNOF_CELL
+# if PFE_SIZEOF_DOUBLE > PFE_SIZEOF_CELL
     if (!P4_DFALIGNED (ip))
         ip++;
 # endif
     sprintf (p, "%e ", *(double *) ip);
-    P4_INC (ip, double);
-
+    (*(double **)&(ip))++;
     return ip;
 }
 
 FCode_XE (p4_f_literal_execution)
 {
-    FX_USE_CODE_ADDR;
-    *--FP= P4_POP_ (double, IP);
-    FX_USE_CODE_EXIT;
+    *--FP = *((*(double **)&(IP))++);
 }
 
 FCode (p4_f_literal)
 {
-    _FX_STATESMART_Q_COMP;
-    if (STATESMART)
+    if (STATE)
     {
-#if PFE_ALIGNOF_DFLOAT > PFE_ALIGNOF_CELL
+#if PFE_SIZEOF_DOUBLE > PFE_SIZEOF_CELL
         if (P4_DFALIGNED (DP))
             FX_COMPILE2 (p4_f_literal);
 #endif
-        FX_COMPILE1 (p4_f_literal);
+        FX_COMPILE (p4_f_literal);
         FX_FCOMMA (*FP++);
     }
 }
-P4COMPILES2 (p4_f_literal, p4_f_literal_execution, p4_noop,
-	     p4_lit_float_SEE, P4_DEFAULT_STYLE);
-#endif
+P4COMPILES (p4_f_literal, p4_f_literal_execution, p4_lit_float_SEE, P4_DEFAULT_STYLE);
 
 FCode (p4_floor)
 {
@@ -369,22 +353,19 @@ FCode (p4_f_swap)
     FP[0] = h;
 }
 
-#if defined PF_TMP
 FCode_RT (p4_f_variable_RT)
 {
-    FX_USE_BODY_ADDR;
-    FX_PUSH_SP = p4_dfaligned ((p4cell) FX_POP_BODY_ADDR);
+    *--SP = (p4cell) WP_PFA;
 }
 
 FCode (p4_f_variable)
 {
-    FX_RUNTIME_HEADER;
+    p4_header_in();
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (p4_f_variable);
-    FX (p4_d_f_align);
     FX_FCOMMA (0.);
 }
 P4RUNTIME1(p4_f_variable, p4_f_variable_RT);
-#endif
 
 FCode (p4_represent)		/* with help from Lennart Benshop */
 {
@@ -455,12 +436,12 @@ FCode (pf_f_s_dot)
     pf_outf ("%.*E ", (int) PRECISION, *FP++);
 }
 
-FCode (p4_d_float_plus)
+FCode (p4_float_plus)
 {
     *SP += sizeof (double);
 }
 
-FCode (p4_d_floats)
+FCode (p4_floats)
 {
     *SP *= sizeof (double);
 }
@@ -476,23 +457,6 @@ FCode (p4_f_abs)
   *FP = fabs (*FP);
 }
 
-#if defined PF_TMP
-FCode (p4_f_proximate)
-{
-    double a, b, c;
-
-    a = FP[2];
-    b = FP[1];
-    c = FP[0];
-    FP += 3;
-    *--SP = P4_FLAG
-        (c > 0
-          ? fabs (a - b) < c
-          : c < 0
-          ? fabs (a - b) < -c * (fabs (a) + fabs (b))
-          : EXACTLY_EQUAL (a, b));
-}
-
 FCode (p4_s_f_store)
 {
     *(float *) *SP++ = *FP++;
@@ -503,6 +467,7 @@ FCode (p4_s_f_fetch)
     *--FP = *(float *) *SP++;
 }
 
+/*
 FCode (p4_s_float_plus)
 {
     *SP += sizeof (float);
@@ -512,6 +477,7 @@ FCode (p4_s_floats)
 {
     *SP *= sizeof (float);
 }
+*/
 
 /*-- simple mappings to the ANSI-C library  --*/
 
@@ -545,6 +511,7 @@ FCode (p4_f_sqrt)	{ *FP = sqrt (*FP); }
 FCode (p4_f_tan)	{ *FP = tan (*FP); }
 FCode (p4_f_tanh)	{ *FP = tanh (*FP); }
 
+#if defined PF_TMP
 /* environment queries */
 
 static FCode (p__floating_stack)
@@ -571,19 +538,7 @@ int pf_convert_float(void)
     /* WORD-string is at HERE */
     if (! pf_to_float (PFE.word.ptr, PFE.word.len, &f))
         return 0; /* quick path */
-/*
-    if (STATE)
-        {
-#          if PFE_ALIGNOF_DFLOAT > PFE_ALIGNOF_CELL
-	    if (P4_DFALIGNED (DP))
-		FX_COMPILE2 (p4_f_literal);
-#          endif
-        FX_COMPILE1 (p4_f_literal);
-        FX_FCOMMA (f);
-    } else {
-*/
-        *--FP = f;
-//    }
+    *--FP = f;
     return 1;
 }
 
@@ -609,13 +564,13 @@ P4_LISTWORDS (floating) =
     P4_FXco ("F<",		 p4_f_less_than),
 
     P4_FXco ("F@",		 p4_f_fetch),
-//    P4_RTco ("FCONSTANT",	 p4_f_constant),
+    P4_RTco ("FCONSTANT",	 p4_f_constant),
     P4_FXco ("FDEPTH",		 p4_f_depth),
     P4_FXco ("FDROP",		 p4_f_drop),
     P4_FXco ("FDUP",		 p4_f_dup),
-//    P4_SXco ("FLITERAL",	 p4_f_literal),
-    P4_FXco ("FLOAT+",		 p4_d_float_plus),
-    P4_FXco ("FLOATS",		 p4_d_floats),
+    P4_SXco ("FLITERAL",	 p4_f_literal),
+    P4_FXco ("FLOAT+",		 p4_float_plus),
+    P4_FXco ("FLOATS",		 p4_floats),
     P4_FXco ("FLOOR",		 p4_floor),
     P4_FXco ("FMAX",		 p4_f_max),
     P4_FXco ("FMIN",		 p4_f_min),
@@ -624,13 +579,15 @@ P4_LISTWORDS (floating) =
     P4_FXco ("FROT",		 p4_f_rot),
     P4_FXco ("FROUND",		 p4_f_round),
     P4_FXco ("FSWAP",		 p4_f_swap),
-//    P4_RTco ("FVARIABLE",	 p4_f_variable),
+    P4_RTco ("FVARIABLE",	 p4_f_variable),
     P4_FXco ("REPRESENT",	 p4_represent),
 
     /* floating point extension words */
     P4_FXco ("F.",		 pf_f_dot),
     P4_FXco ("FE.",		 pf_f_e_dot),
     P4_FXco ("FS.",		 pf_f_s_dot),
+    P4_FXco ("F**",		 p4_f_star_star),
+    P4_FXco ("FABS",		 p4_f_abs),
 /*
     P4_FXco ("DF!",		 p4_f_store),
     P4_FXco ("DF@",		 p4_f_fetch),
@@ -638,8 +595,6 @@ P4_LISTWORDS (floating) =
     P4_FXco ("DFALIGNED",	 p4_d_f_aligned),
     P4_FXco ("DFLOAT+",		 p4_d_float_plus),
     P4_FXco ("DFLOATS",		 p4_d_floats),
-    P4_FXco ("F**",		 p4_f_star_star),
-    P4_FXco ("FABS",		 p4_f_abs),
     P4_FXco ("FACOS",		 p4_f_acos),
     P4_FXco ("FACOSH",		 p4_f_acosh),
     P4_FXco ("FALOG",		 p4_f_alog),
