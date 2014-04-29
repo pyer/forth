@@ -405,9 +405,14 @@ See also: CELL+ CELLS CHAR+
 CLOSE-FILE
 
 CMOVE ( c-addr1 c-addr2 u -- )
-If u is greater than zero, copy u consecutive characters from the data space starting at
-c-addr1 to that starting at c-addr2, proceeding character-by-character from lower addresses
-to higher addresses.
+If u is greater than zero, copy u consecutive characters from the data space starting at c-addr1 to that
+starting at c-addr2, proceeding character-by-character from lower addresses to higher addresses.
+See also: CMOVE> MOVE
+
+CMOVE> ( c-addr1 c-addr2 u -- )
+If u is greater than zero, copy u consecutive characters from the data space starting at c-addr1 to that
+starting at c-addr2, proceeding character-by-character from higher addresses to lower addresses.
+See also: CMOVE MOVE
 
 COLS ( -- n )
 Return the number of columns on the screen.
@@ -809,6 +814,13 @@ Like CR but stop after one screenful.
 Return 1 when 'q' or 'n' is pressed and 0 when CR, SPACE or 'y' is pressed.
 Press 'h' to display a little help.
 See also: MORE
+
+MOVE ( addr1 addr2 u -- )
+If u is greater than zero, copy the contents of u consecutive address units at addr1
+to the u consecutive address units at addr2. After MOVE completes, the u consecutive
+address units at addr2 contain exactly what the u consecutive address units at addr1
+contained before the move (deal with overlapping regions).
+See also: CMOVE CMOVE>
 
 MS ( u -- )
 Wait at least u milliseconds.
