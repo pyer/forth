@@ -379,6 +379,41 @@ FCode (p4_cmove)
         *q++ = *p++;
 }
 
+/** CMOVE> ( from-ptr to-ptr len# -- )
+ *  memcpy an area from->to for len bytes, starting 
+ *  with the higher addresses, see => CMOVE
+ */
+FCode (p4_cmove_up)
+{
+    char *p = (char *)SP[2];
+    char *q = (char *)SP[1];
+    p4ucell n = SP[0];
+    SP+=3;
+    p += n;
+    q += n;
+    while (n--)
+        *--q = *--p;
+}
+
+/** MOVE ( from-ptr to-ptr move-len -- ) [ANS]
+ *  memcpy an area from->to for len bytes, dealing with overlapping regions
+ */
+FCode (p4_move)
+{
+    unsigned char *p = (unsigned char *)SP[2];
+    unsigned char *q = (unsigned char *)SP[1];
+    p4ucell n = SP[0];
+    SP+=3;
+    /* check overlap */
+    if ( p < q ) {
+        for (q += n, p += n; n--;)
+            *--q = *--p;
+    } else {
+        while (n--)
+            *q++ = *p++;
+    }
+}
+
 /** COUNT ( string-bstr* -- string-ptr' string-len | some* -- some*' some-len [?] ) [ANS]
  * usually before calling => TYPE
  *
@@ -753,6 +788,8 @@ P4_LISTWORDS (core) =
     P4_FXco ("CHAR+",        p4_char_plus),
     P4_FXco ("CHARS",        p4_chars),
     P4_FXco ("CMOVE",        p4_cmove),
+    P4_FXco ("CMOVE>",       p4_cmove_up),
+    P4_FXco ("MOVE",         p4_move),
     P4_FXco ("COUNT",        p4_count),
     P4_FXco ("DEPTH",        p4_depth),
     P4_FXco ("DROP",         p4_drop),
