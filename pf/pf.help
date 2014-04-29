@@ -50,7 +50,7 @@ $USER
 Skip leading space delimiters. Parse name delimited by a space. Find name and return
 xt, the execution token for name. An ambiguous condition exists if name is not found.
 When interpreting, ’ xyz EXECUTE is equivalent to xyz.
-See also: FIND
+See also: EXECUTE FIND
 
 ( ( "ccc paren " -- )
 Parse ccc delimited by ')' (right parenthesis). ( is an immediate word.
@@ -409,7 +409,9 @@ If u is greater than zero, copy u consecutive characters from the data space sta
 c-addr1 to that starting at c-addr2, proceeding character-by-character from lower addresses
 to higher addresses.
 
-COLS
+COLS ( -- n )
+Return the number of columns on the screen.
+See also: COLS
 
 COMPILE,
 
@@ -456,7 +458,9 @@ Subsequent changes in the search order will not affect the compilation word list
 
 DELETE-FILE
 
-DEPTH
+DEPTH ( -- +n )
++n is the number of single-cell values contained in the data stack before +n was placed on the stack.
+See also: FDEPTH
 
 DO ( n1 n2 -- ) ( R: -- loop-sys )
 Set up loop control parameters with index n2 and limit n1 . An ambiguous
@@ -531,7 +535,10 @@ ERASE ( addr u -- )
 If u is greater than zero, clear all bits in each of u consecutive address units of memory
 beginning at addr.
 
-EXECUTE
+EXECUTE ( i×x xt -- j×x )
+Remove xt from the stack and perform the semantics identified by it. Other stack effects
+are due to the word EXECUTEd.
+See also: '
 
 EXIT ( -- ) ( R: nest-sys -- )
 Return control to the calling definition specified by nest-sys. Before executing EXIT
@@ -600,6 +607,7 @@ FDEPTH ( -- +n )
 +n is the number of values contained on the floating-point stack. If the system has an
 environmental restriction of keeping the floating-point numbers on the data stack, +n is
 the current number of possible floating-point values contained on the data stack.
+See also: DEPTH
 
 FDROP ( F: r -- )
 Remove r from the floating-point stack.
@@ -792,9 +800,15 @@ MOD ( n1 n2 -- n3 )
 Divide n1 by n2, giving the single-cell remainder n3.
 An ambiguous condition exists if n2 is zero.
 
-MORE
+MORE ( -- )
+Initialize a more-like effect, stop display at the end of screen.
+See also: MORE?
 
-MORE?
+MORE? ( -- flag )
+Like CR but stop after one screenful.
+Return 1 when 'q' or 'n' is pressed and 0 when CR, SPACE or 'y' is pressed.
+Press 'h' to display a little help.
+See also: MORE
 
 MS ( u -- )
 Wait at least u milliseconds.
@@ -857,7 +871,7 @@ are less than u+2 items on the stack before PICK is executed.
 
 PRECISION ( -- u )
 Return the number of significant digits currently used by F., FE., or FS. as u.
-See also: F.
+See also: F. FE. FS. SET-PRECISION
 
 PWD
 
@@ -920,7 +934,9 @@ there are less than u+2 items on the stack before ROLL is executed.
 ROT ( x1 x2 x3 -- x2 x3 x1 )
 Rotate the top three stack entries.
 
-ROWS
+ROWS ( -- n )
+Return the number of rows on the screen.
+See also: COLS
 
 S>F ( x -- ) ( F: -- r )
 r is the floating-point equivalent of x.
@@ -941,6 +957,10 @@ of the representation (object-code decompilation, source block, etc.) and the pa
 form of the display is implementation defined.
 SEE may be implemented using pictured numeric output words. Consequently, its use
 may corrupt the transient region identified by #>.
+
+SET-PRECISION ( u -- )
+Set the number of significant digits currently used by F., FE., or FS. to u.
+See also: F. FE. FS. PRECISION
 
 SIGN ( n -- )
 If n is negative, add a minus sign to the beginning of the pictured numeric output string.
