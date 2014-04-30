@@ -111,6 +111,23 @@ struct p4_Seman2		/* for words with different compilation */
     p4code exec[2];		/* two different execution semantics */
 };				/* for cases like TO (value/local variable) */
 
+struct p4_Runtime2              /* describes characteristics of CFA code */
+{
+    const char* type;         /* in place of p4_Word.name */
+    long magic;                 /* mark begin of structure */
+    p4cell flag;                /* the call-threading flags for the exec[]s */
+    char const *name;           /* the header name for it */
+    p4code comp;             /* the word that will CREATE new headers */
+    p4code exec[2];          /* and the values contained in created CFAs */
+//    struct {
+	P4_CODE_RUN((*see));    /* the decompiler routine */
+//	P4_CODE_RUN((*forget)); /* while running forget destroyers */
+//	P4_CODE_RUN((*atexit)); /* while running atexit destroyers */
+//    } run;                      /* we did not make an extra typedef for it */
+};
+
+typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
+
 #define P4WLIST(SET)  SET ## _LTX_p4_WLIST
 #define P4WORDS(SET)  SET ## _LTX_p4_WORDS
 

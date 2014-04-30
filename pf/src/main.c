@@ -42,7 +42,6 @@
 
 const char* pf_version_string(void);
 void pf_init_signal_handlers (void);
-FCode( pf_noop );
 
 /************************************************************************/
 

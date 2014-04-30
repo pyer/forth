@@ -482,9 +482,9 @@ void p4_decompile (p4_namebuf_t* nfa, p4xt xt)
 	    if (*xt != decomp.word->value.runtime->exec[0])
 		continue;
 	    /* we have it! */
-	    if (decomp.word->value.runtime->run.see)
+	    if (decomp.word->value.runtime->see)
 	    {
-		rest = decomp.word->value.runtime->run.see (buf,xt,nfa);
+		rest = decomp.word->value.runtime->see (buf,xt,nfa);
 		if (rest) goto decompile;
 		pf_outs (buf); pf_outs (" ");
 	    }else
