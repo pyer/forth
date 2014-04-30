@@ -39,58 +39,12 @@
 #include "thread.h"
 
 #include "compiler.h"
-//#include "exception.h"
 #include "interpret.h"
 #include "terminal.h"
 
 #if defined PF_WITH_FLOATING
 
-#define CELLBITS	BITSOF (p4cell)
-
-#ifndef signbit
-#define signbit(X) ((X) < 0)
-#endif
-
-/* ------------------------------------------------------------------
- * Exact comparison of raw floats.  The following is intended to
- * capture the sizes listed for IEEE 754 by William Kahan,
- * "Fclass: a Proposed Classification of Standard Floating-Point
- * Operands", March 2, 2002.  He lists 4, >=6, 8, 10, 12, or 16
- * 8-bit bytes.  We assume that 4, 8, 10, 12, or 16 might
- * correspond to a double, and probably 4 could be omitted.
- * --KM&DNW 2Mar03
-#if PFE_SIZEOF_DOUBLE == PFE_SIZEOF_INT
-#  define EXACTLY_EQUAL(A,B)  ( *((int*) &(A)) == *((int*) &(B)) )
-#elif PFE_SIZEOF_DOUBLE == 2 * PFE_SIZEOF_INT
-#  define EXACTLY_EQUAL(A,B) \
-        ( *((int*) &(A)) == *((int*) &(B)) \
-       && *(((int*) &(A)) + 1) == *(((int*) &(B)) + 1) )
-#elif PFE_SIZEOF_DOUBLE == 2 * PFE_SIZEOF_INT + PFE_SIZEOF_SHORT
-#  define EXACTLY_EQUAL(A,B) \
-        ( *((int*) &(A)) == *((int*) &(B)) \
-       && *(((int*) &(A)) + 1) == *(((int*) &(B)) + 1) \
-       && (short)*(((int*) &(A)) + 2) == (short)*(((int*) &(B)) + 2) )
-#elif PFE_SIZEOF_DOUBLE == 3 * PFE_SIZEOF_INT
-#  define EXACTLY_EQUAL(A,B) \
-        ( *((int*) &(A)) == *((int*) &(B)) \
-       && *(((int*) &(A)) + 1) == *(((int*) &(B)) + 1) \
-       && *(((int*) &(A)) + 2) == *(((int*) &(B)) + 2) )
-#elif PFE_SIZEOF_DOUBLE == 4 * PFE_SIZEOF_INT
-#  define EXACTLY_EQUAL(A,B) \
-        ( *((int*) &(A)) == *((int*) &(B)) \
-       && *(((int*) &(A)) + 1) == *(((int*) &(B)) + 1) \
-       && *(((int*) &(A)) + 2) == *(((int*) &(B)) + 2) \
-       && *(((int*) &(A)) + 3) == *(((int*) &(B)) + 3) )
-#else
-#  define EXACTLY_EQUAL(A,B)  (p4_memcmp (&(A), &(B), sizeof (double)) == 0)
-#  ifdef __GNUC__
-#  warning using p4_memcmp() in p4_f_proximate()
-#  elif !defined _PFE_FLOATING_USING_MEMCMP
-#  error   using p4_memcmp() in p4_f_proximate()
-#  endif
-#endif
- */
-
+/* ------------------------------------------------------------------ */
 #define P4_DFALIGNED(P)	(((size_t)(P) & (PFE_SIZEOF_DOUBLE - 1)) == 0)
 /* ------------------------------------------------------------------ */
 FCode (pf_set_precision)
@@ -294,11 +248,11 @@ FCode (p4_f_literal)
         if (P4_DFALIGNED (DP))
             FX_COMPILE2 (p4_f_literal);
 #endif
-        FX_COMPILE (p4_f_literal);
+        FX_COMPILE1 (p4_f_literal);
         FX_FCOMMA (*FP++);
     }
 }
-P4COMPILES (p4_f_literal, p4_f_literal_execution, p4_lit_float_SEE, P4_DEFAULT_STYLE);
+P4COMPILES2 (p4_f_literal, p4_f_literal_execution, pf_noop, p4_lit_float_SEE, P4_DEFAULT_STYLE);
 
 FCode (p4_floor)
 {
@@ -378,7 +332,7 @@ FCode (p4_represent)		/* with help from Lennart Benshop */
     u = SP[0];
     SP--;
 
-    sign = signbit(f);
+    sign = (f < 0.0);
     f = fabs(f);
     if (u > 1) {
         /* one digit is always present before the decimal point */
@@ -480,7 +434,7 @@ FCode (p4_s_floats)
 */
 
 /*-- simple mappings to the ANSI-C library  --*/
-
+/*
 FCode (p4_f_acos)	{ *FP = acos (*FP); }
 FCode (p4_f_acosh)	{ *FP = acosh (*FP); }
 FCode (p4_f_alog)	{ *FP = pow10 (*FP); }
@@ -492,17 +446,9 @@ FCode (p4_f_atanh)	{ *FP = atanh (*FP); }
 FCode (p4_f_cos)	{ *FP = cos (*FP); }
 FCode (p4_f_cosh)	{ *FP = cosh (*FP); }
 FCode (p4_f_exp)	{ *FP = exp (*FP); }
-#if 1  /* ante C99 */
-FCode (p4_f_expm1)	{ *FP = exp (*FP) - 1.0; }
-#else  /* post C99 */
 FCode (p4_f_expm1)	{ *FP = expm1 (*FP); }
-#endif
 FCode (p4_f_ln)		{ *FP = log (*FP); }
-#if 1  /* ante C99 */
-FCode (p4_f_lnp1)	{ *FP = log (*FP + 1.0); }
-#else  /* post C99 */
 FCode (p4_f_lnp1)	{ *FP = log1p (*FP); }
-#endif
 FCode (p4_f_log)	{ *FP = log10 (*FP); }
 FCode (p4_f_sin)	{ *FP = sin (*FP); }
 FCode (p4_f_sincos)	{ --FP; FP [0] = cos (FP [1]); FP [1] = sin (FP [1]); }
@@ -510,21 +456,7 @@ FCode (p4_f_sinh)	{ *FP = sinh (*FP); }
 FCode (p4_f_sqrt)	{ *FP = sqrt (*FP); }
 FCode (p4_f_tan)	{ *FP = tan (*FP); }
 FCode (p4_f_tanh)	{ *FP = tanh (*FP); }
-
-#if defined PF_TMP
-/* environment queries */
-
-static FCode (p__floating_stack)
-{
-    FX_PUSH ((PFE.f0 - PFE.fstack) / sizeof(double));
-}
-
-static FCode (p__max_float)
-{
-    *--FP = DBL_MAX;
-}
-
-#endif
+*/
 /* words not from the ansi'94 forth standard  */
 /* ================= INTERPRET =================== */
 
@@ -595,6 +527,7 @@ P4_LISTWORDS (floating) =
     P4_FXco ("DFALIGNED",	 p4_d_f_aligned),
     P4_FXco ("DFLOAT+",		 p4_d_float_plus),
     P4_FXco ("DFLOATS",		 p4_d_floats),
+
     P4_FXco ("FACOS",		 p4_f_acos),
     P4_FXco ("FACOSH",		 p4_f_acosh),
     P4_FXco ("FALOG",		 p4_f_alog),
@@ -616,6 +549,7 @@ P4_LISTWORDS (floating) =
     P4_FXco ("FSQRT",		 p4_f_sqrt),
     P4_FXco ("FTAN",		 p4_f_tan),
     P4_FXco ("FTANH",		 p4_f_tanh),
+
     P4_FXco ("F~",		 p4_f_proximate),
     P4_FXco ("SF!",		 p4_s_f_store),
     P4_FXco ("SF@",		 p4_s_f_fetch),
