@@ -680,9 +680,117 @@ FCode (p4_rename_file)
  * portable programs can check this with => ENVIRONMENT?
  */
 
+
+/* ********************************************************************** 
+ * my file wordset
+ * similar to C functions
+ */
+int pf_errno;
+
+/** FOPEN ( name-ptr name-len mode-ptr mode-len -- FILE* )
+ * as FILE *fopen(const char *path, const char *mode);
+ * mode:
+       r      Open text file for reading.  The stream is positioned at the beginning of the file.
+       r+     Open for reading and writing.  The stream is positioned at the beginning of the file.
+       w      Truncate file to zero length or create text file for writing.  The stream is positioned at the beginning of the file.
+       w+     Open for reading and writing.  The file is created if it does not exist, otherwise it is truncated.  The stream is  positioned
+              at the beginning of the file.
+       a      Open  for  appending (writing at end of file).  The file is created if it does not exist.  The stream is positioned at the end
+              of the file.
+       a+     Open for reading and appending (writing at end of file).  The file is created if it does not exist.  The initial file position
+              for reading is at the beginning of the file, but output is always appended to the end of the file.
+ */
+FCode (pf_fopen)
+{
+    register int len;
+    char filename[PATH_LENGTH];
+    char mode[4];
+    if ( SP[2] < PATH_LENGTH )
+        len = SP[2];
+    else
+        len = PATH_LENGTH;
+    memcpy(filename, (char*)SP[3], len);
+    filename[len] = '\0';
+    if ( SP[0] < 4 )
+        len = SP[0];
+    else
+        len = 4;
+    memcpy(mode, (char*)SP[1], len);
+    mode[len] = '\0';
+    // adjust stack pointer
+    SP += 3;
+    // and put the (FILE*) result on the stack
+    SP[0] = (p4cell)fopen(filename, mode);
+    pf_errno=errno;
+}
+
+/** FGETC ( FILE* -- c )
+ * as int fgetc(FILE *stream);
+       fgetc() returns the character read as an unsigned char cast to an int or EOF on end of file or error.
+ */
+FCode (pf_fgetc)
+{
+    *SP = fgetc((FILE *)*SP);
+    pf_errno=errno;
+}
+
+/** FGETS ( buffer len FILE* -- len )
+ * as char *fgets(char *s, int size, FILE *stream);
+       fgets() returns s on success, and NULL on error or when end of file occurs while no characters have been read.
+
+ */
+FCode (pf_fgets)
+{
+    register FILE *stream = (FILE *)*SP++;
+    int len = *SP++;
+    *SP = (p4cell)fgets((char *)*SP, len, stream);
+    pf_errno=errno;
+}
+
+/** FPUTC ( c FILE* -- result )
+ * as int fputc(int c, FILE *stream);
+      fputc() returns the character written as an unsigned char cast to an int or EOF on error.
+ */
+FCode (pf_fputc)
+{
+    register FILE *stream = (FILE *)*SP++;
+    *SP = fputc(*SP, stream);
+    pf_errno=errno;
+}
+
+/** FPUTS ( string len FILE* -- result )
+ * as int fputs(const char *s, FILE *stream);
+      fputs() returns a nonnegative number on success, or EOF on error.
+ */
+FCode (pf_fputs)
+{
+    register FILE *stream = (FILE *)*SP++;
+    //int len = *SP++;
+    SP++;
+    *SP = (p4cell)fputs((const char *)*SP, stream);
+    pf_errno=errno;
+}
+
+/** FCLOSE ( FILE* -- )
+ * as fclose(FILE *fp);
+ */
+FCode (pf_fclose)
+{
+    fclose((FILE *)*SP++);
+    pf_errno=errno;
+}
+
+/** ERRNO ( -- errno )
+ */
+FCode (pf_errno)
+{
+    *--SP = pf_errno;
+}
+
+/* ********************************************************************** 
+ */
 P4_LISTWORDS (file) =
 {
-//    P4_INTO ("[ANS]", 0),
     P4_FXco ("BIN",		 p4_bin),
     P4_FXco ("CLOSE-FILE",	 p4_close_file),
     P4_FXco ("CREATE-FILE",	 p4_create_file),
@@ -702,7 +810,14 @@ P4_LISTWORDS (file) =
     P4_FXco ("FILE-STATUS",	 p4_file_status),
     P4_FXco ("FLUSH-FILE",	 p4_flush_file),
 //    P4_FXco ("RENAME-FILE",	 p4_rename_file),
-
+//  my file wordset
+    P4_FXco ("FOPEN",		 pf_fopen),
+    P4_FXco ("FGETC",		 pf_fgetc),
+    P4_FXco ("FGETS",		 pf_fgets),
+    P4_FXco ("FPUTC",		 pf_fputc),
+    P4_FXco ("FPUTS",		 pf_fputs),
+    P4_FXco ("FCLOSE",		 pf_fclose),
+    P4_FXco ("ERRNO",		 pf_errno),
 };
 P4_COUNTWORDS (file, "File-access + extensions");
 
