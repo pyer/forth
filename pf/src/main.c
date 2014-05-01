@@ -181,14 +181,14 @@ void pf_init_system (p4_Thread* th) /* main_init */
     dictlimit = dict + total_size;
 
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
-                      PFE_SIZEOF_CELL,
+                      SIZEOF_CELL,
                       (void**) & PFE.rstack, (void**) & R0);
     p4_dict_allocate (stack_size, sizeof(p4cell),
-                      PFE_SIZEOF_CELL,
+                      SIZEOF_CELL,
                       (void**) & PFE.stack, (void**) & S0);
 #if defined PF_WITH_FLOATING
     p4_dict_allocate (float_stack_size, sizeof(double),
-                      PFE_SIZEOF_DOUBLE,
+                      SIZEOF_FCELL,
                       (void**) &PFE.fstack, (void**) &F0);
 #endif
 
@@ -218,10 +218,13 @@ void pf_init_system (p4_Thread* th) /* main_init */
     pf_load_words (&P4WORDS (forth));
 }
 
-void help_opt(void)
+void help_opt(char *progname)
 {
-    puts("   -f file  : load file");
+    printf("Usage: %s [-f file] [-e word] [v] [h]\n", progname);
+    puts("   -f file  : load file   (before -e option if any)");
+    puts("   -e word  : execute word (after -f option if any)");
     puts("   -v       : print version number");
+    puts("   -h       : print this help");
 }
  
 /************************************************************************/
@@ -229,23 +232,28 @@ void help_opt(void)
 /************************************************************************/
 int main (int argc, char** argv)
 {
+    char cmd = 0;
     char buffer[256];
     int len = 0;
     int opt;
     p4_Thread* thread = (p4_Thread*) memory;
   
-    while ((opt = getopt(argc, argv, "vf:")) != -1) {
+    while ((opt = getopt(argc, argv, "e:f:vh")) != -1) {
         switch (opt) {
-        case 'v':
-            puts(PF_VERSION);
-            return 0;
+        case 'e':
         case 'f':
+            cmd = opt;
             strcpy( buffer, optarg );
             len = strlen(buffer);
             break;
+        case 'v':
+            puts(PF_VERSION);
+            return 0;
+        case 'h':
+            help_opt(argv[0]);
+            return 0;
         default: /* '?' */
-            printf("Usage: %s [-v] [-f file]\n", argv[0]);
-            help_opt();
+            help_opt(argv[0]);
             return 1;
         }
     }
@@ -267,8 +275,12 @@ int main (int argc, char** argv)
         break;
     case 0:
         pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-        if ( len > 0 )
+        if ( cmd == 'f' )
             pf_include(buffer,len);
+        if ( cmd == 'e' ) {
+            pf_interpret(buffer, len, 0);
+	    pf_longjmp_exit ();
+        }
         break;
     default:
         pf_cleanup_terminal();
@@ -277,11 +289,11 @@ int main (int argc, char** argv)
     }
 
     for (;;) {
-             if (isatty (STDIN_FILENO))
-                 pf_outs (" ok\n");
-             len = pf_accept (buffer, 255);
-             pf_interpret(buffer, len, 0);
-             FCode (pf_Q_stack);
+            if (isatty (STDIN_FILENO))
+                pf_outs (" ok\n");
+            len = pf_accept (buffer, 255);
+            pf_interpret(buffer, len, 0);
+            FCode (pf_Q_stack);
     }
 //    return exitcode;
 }
