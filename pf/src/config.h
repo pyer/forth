@@ -1,17 +1,42 @@
 #ifndef ___CONFIG_H
 #define ___CONFIG_H
 
-#define PF_VERSION  "2.0c"
+#define TARGET_OS "linux-gnu"
+#define PF_VERSION  "2.0d"
 
 #if defined ARM
-#include "config_arm.h"
+/* ARM processor options */
+#define SIZEOF_CHAR 1
+#define SIZEOF_DOUBLE 8
+#define SIZEOF_FLOAT 4
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 4
+#define SIZEOF_SHORT 2
+#define SIZEOF_UNSIGNED 4
+#define SIZEOF_VOIDP 4
+
 #define PF_BOOT_FILE "/usr/etc/pf.fth"
 #define PF_HELP_FILE "/usr/share/pf.help"
+
 #else
-#include "config_x86.h"
+/* X86-64 processor options */
+#define SIZEOF_CHAR 1
+#define SIZEOF_DOUBLE 8
+#define SIZEOF_FLOAT 4
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 8
+#define SIZEOF_SHORT 2
+#define SIZEOF_UNSIGNED 4
+#define SIZEOF_VOIDP 8
+
 #define PF_BOOT_FILE "/usr/local/etc/pf.fth"
 #define PF_HELP_FILE "/usr/local/share/pf.help"
+
 #endif
+
+/* Both x86 and arm are little endian */
+/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
+#define BYTEORDER 1234
 
 #define PF_WITH_FFA      1       /* use seperate FlagField */
 #define PF_WITH_FLOATING 1       /* enable floating point numbers */

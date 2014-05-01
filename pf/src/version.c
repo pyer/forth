@@ -28,7 +28,8 @@ const char* pf_version_string(void)
 {
     return
 	"\nPierre's Forth "PF_VERSION
-        "\n(" MAKEDATE " " MAKETIME ")\n";
+        "\n(" MAKEDATE " " MAKETIME ")"
+        "\nForth-2012 System (Subset)\n";
 }
 
 const char* pf_copyright_string(void)

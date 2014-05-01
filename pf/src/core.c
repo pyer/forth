@@ -414,34 +414,6 @@ FCode (p4_move)
     }
 }
 
-/** COUNT ( string-bstr* -- string-ptr' string-len | some* -- some*' some-len [?] ) [ANS]
- * usually before calling => TYPE
- *
- * (as an unwarranted extension, this word does try to be idempotent).
- */
-FCode (p4_count)
-{
-    /* can not unpack twice - this trick prevents from many common errors */
-    if (256 > (p4ucell)(SP[0])) goto possibly_idempotent;
-    --SP;
-    SP[0] = *((*(p4char **)&(SP[1]))++);
-    return;
-
-    /* an idempotent COUNT allows to ease the transition from counted-strings
-     * to string-spans:
-     c" hello world" count type ( is identical with...)
-     s" hello world" count type
-     * however: it makes some NULL argument or just illegal argument to be
-     * silently accepted that can make debugging programs a pain. Therefore
-     * this function has been given some intelligence, with the counter effect
-     * of being somewhat undetermined which part gets triggered at runtime.
-     */
- possibly_idempotent:
-    if (((p4char**)SP)[1][-1] == (p4char)(SP[0])) /* idempotent ? */
-    { if ((p4char)(SP[0])) return; } /* only if not null-count ! */
-    *--PFE.sp = (p4cell)(0); /* makes later functions to copy nothing at all */
-}
-
 /** DEPTH ( -- depth# ) [ANS]
  * return the depth of the parameter stack before
  * the call, see => SP@ - the return-value is in => CELLS
@@ -790,7 +762,6 @@ P4_LISTWORDS (core) =
     P4_FXco ("CMOVE",        p4_cmove),
     P4_FXco ("CMOVE>",       p4_cmove_up),
     P4_FXco ("MOVE",         p4_move),
-    P4_FXco ("COUNT",        p4_count),
     P4_FXco ("DEPTH",        p4_depth),
     P4_FXco ("DROP",         p4_drop),
     P4_FXco ("DUP",          p4_dup),

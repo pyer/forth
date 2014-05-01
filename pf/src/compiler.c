@@ -432,7 +432,7 @@ FCode (pf_c_comma)
 }
 
 /* -------------------------------------------------------------- */
-#define P4_ALIGNED(P)	(((size_t)(P) & (PFE_SIZEOF_CELL - 1)) == 0)
+#define P4_ALIGNED(P)	(((size_t)(P) & (SIZEOF_CELL - 1)) == 0)
 
 /** ALIGN ( -- ) [ANS]
  * will make the dictionary aligned, usually to a

@@ -496,30 +496,6 @@ const p4_char_t * pf_to_number (const p4_char_t *p, p4ucell *n, p4cell *d, p4uce
     return p;
 }
 
-/** _?number_ ( str* str# dcell* -- ?ok )
- * try to convert into number, see => ?NUMBER
- */
-int p4_number_question (const p4_char_t *p, p4ucell n, p4dcell *d)
-{
-    p4ucell base = 0;
-    int sign = 0;
-    if (*p == '-') { p++; n--; sign = 1; }
-
-    if (base == 0)
-        base = BASE;
-
-    d->lo = d->hi = 0;
-    p = pf_to_number (p, &n, (p4cell *) d->lo, base);
-    if (n == 0)
-        goto happy;
-happy:
-    if (sign)
-        d->lo=-d->lo;
-//        p4_d_negate (d);
-
-    return P4_TRUE;
-}
-
 /** >NUMBER ( a str-ptr str-len -- a' str-ptr' str-len) [ANS]
  * try to convert a string into a number, and place
  * that number at a respecting => BASE
@@ -548,6 +524,35 @@ FCode (pf_char)
     if ( len==0 )
         p4_throw (P4_ON_INVALID_NAME);
     *--SP = (p4cell) *fn;
+}
+
+/* -------------------------------------------------------------- */
+/** COUNT ( string-bstr* -- string-ptr' string-len | some* -- some*' some-len [?] ) [ANS]
+ * usually before calling => TYPE
+ *
+ * (as an unwarranted extension, this word does try to be idempotent).
+ */
+FCode (pf_count)
+{
+    /* can not unpack twice - this trick prevents from many common errors */
+    if (256 > (p4ucell)(SP[0])) goto possibly_idempotent;
+    --SP;
+    SP[0] = *((*(p4char **)&(SP[1]))++);
+    return;
+
+    /* an idempotent COUNT allows to ease the transition from counted-strings
+     * to string-spans:
+     c" hello world" count type ( is identical with...)
+     s" hello world" count type
+     * however: it makes some NULL argument or just illegal argument to be
+     * silently accepted that can make debugging programs a pain. Therefore
+     * this function has been given some intelligence, with the counter effect
+     * of being somewhat undetermined which part gets triggered at runtime.
+     */
+ possibly_idempotent:
+    if (((p4char**)SP)[1][-1] == (p4char)(SP[0])) /* idempotent ? */
+    { if ((p4char)(SP[0])) return; } /* only if not null-count ! */
+    *--PFE.sp = (p4cell)(0); /* makes later functions to copy nothing at all */
 }
 
 /* -------------------------------------------------------------- */
@@ -1207,16 +1212,18 @@ char* pf_string ( void )
     return str;
 }
 
-/** ( --- addr )
+/** ( --- addr len )
  */
 void pf_convert_string(void)
 {
     if (STATE)
     {
-//        FX_COMPILE (pf_convert_string);
 	FX (pf_parse_comma_quote);
+	FX (pf_count);
     }else{
-	*--SP = (p4cell)pf_string();
+	char *cs = pf_string();
+        *--SP = (p4cell)NAMEPTR(cs);
+        *--SP = (p4cell)NAMELEN(cs);
     }
 }
 
@@ -1357,6 +1364,7 @@ P4_LISTWORDS (interpret) =
     P4_FXco (">BODY",        pf_to_body),
     P4_FXco (">NUMBER",      pf_to_number),
     P4_FXco ("CHAR",         pf_char),
+    P4_FXco ("COUNT",        pf_count),
     P4_FXco ("FIND",         pf_find),
     P4_FXco ("HERE",         pf_here),
     P4_FXco ("HOLD",         pf_hold),

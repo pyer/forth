@@ -45,7 +45,7 @@
 #if defined PF_WITH_FLOATING
 
 /* ------------------------------------------------------------------ */
-#define P4_DFALIGNED(P)	(((size_t)(P) & (PFE_SIZEOF_DOUBLE - 1)) == 0)
+#define P4_DFALIGNED(P)	(((size_t)(P) & (SIZEOF_FCELL - 1)) == 0)
 /* ------------------------------------------------------------------ */
 FCode (pf_set_precision)
 {
@@ -226,7 +226,7 @@ FCode (p4_f_dup)
 /* originally P4_SKIPS_FLOAT */
 p4xt* p4_lit_float_SEE (p4xt* ip, char* p, p4_Semant* s)
 {
-# if PFE_SIZEOF_DOUBLE > PFE_SIZEOF_CELL
+# if SIZEOF_FCELL > SIZEOF_CELL
     if (!P4_DFALIGNED (ip))
         ip++;
 # endif
@@ -244,7 +244,7 @@ FCode (p4_f_literal)
 {
     if (STATE)
     {
-#if PFE_SIZEOF_DOUBLE > PFE_SIZEOF_CELL
+# if SIZEOF_FCELL > SIZEOF_CELL
         if (P4_DFALIGNED (DP))
             FX_COMPILE2 (p4_f_literal);
 #endif

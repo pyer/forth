@@ -42,8 +42,8 @@ char p4_category (p4code p);
 static void pf_prCell (p4cell n)
 {
     pf_outf ("\n%*ld [%0*lX] ",
-      (int) DECWIDTH, (p4celll)n,
-      (int) HEXWIDTH, (p4ucelll)n);
+      (int) DECWIDTH, (p4cell)n,
+      (int) HEXWIDTH, (unsigned long)n);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -134,11 +134,11 @@ FCode (pf_dot_s)
  */
 FCode (pf_dot_status)
 {
-    pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4celll) (dictlimit - dict),(p4celll) (DP - dict));
-    pf_outf ("\nStack space:         %7ld cells",  (p4celll) (S0 - PFE.stack));  /* sizeof (p4cell) */
-    pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4celll) (R0 - PFE.rstack));  /* sizeof (p4xt**) */
+    pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4cell) (dictlimit - dict),(p4cell) (DP - dict));
+    pf_outf ("\nStack space:         %7ld cells",  (p4cell) (S0 - PFE.stack));  /* sizeof (p4cell) */
+    pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4cell) (R0 - PFE.rstack));  /* sizeof (p4xt**) */
 #if defined PF_WITH_FLOATING
-    pf_outf ("\nFloating stack space:%7ld floats", (p4celll) (F0 - PFE.fstack)); /* sizeof (double) */
+    pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (F0 - PFE.fstack)); /* sizeof (double) */
     pf_outf ("\nPRECISION:           %3d", (int) PRECISION);
 #endif
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
@@ -206,7 +206,7 @@ FCode (pf_dump)
     {
         if (pf_more_Q())
             break;
-        pf_outf ("%0*lX ", (int)HEXWIDTH, (p4ucelll)p);
+        pf_outf ("%0*lX ", (int)HEXWIDTH, (unsigned long)p);
         for (j = 0; j < 16; j++)
             pf_outf ("%02X ", p [j]);
         for (j = 0; j < 16; j++)
@@ -240,6 +240,7 @@ FCode (pf_words)
         }
         nfa = *name_to_link (nfa);
     }
+    FX (pf_cr);
 }
 
 /* ----------------------------------------------------------------------- */
