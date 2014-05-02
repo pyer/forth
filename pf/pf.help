@@ -55,6 +55,7 @@ See also: EXECUTE FIND
 ( ( "ccc paren " -- )
 Parse ccc delimited by ')' (right parenthesis). ( is an immediate word.
 The number of characters in ccc may be zero to the number of characters in the parse area.
+( and ) must be on the same line. If not, the input buffer is not refilled.
 
 * ( n1 n2 -- n3 )
 Multiply n1 by n2 giving the product n3.
@@ -335,9 +336,6 @@ the run-time semantics given below to the current definition.
 Run-time: ( -- )
 Continue execution.
 See also: REPEAT UNTIL WHILE AGAIN
-
-BIN
-TBD
 
 BL ( -- char )
 char is the character value for a space.
@@ -670,6 +668,47 @@ r3 is the lesser of r1 and r2.
 
 FNEGATE ( F: r1 -- r2 )
 r2 is the negation of r1.
+
+FOPEN ( name-ptr name-len mode-ptr mode-len -- FILE* )
+
+ * as FILE *fopen(const char *path, const char *mode);
+ * mode:
+       r      Open text file for reading.  The stream is positioned at the beginning of the file.
+       r+     Open for reading and writing.  The stream is positioned at the beginning of the file.
+       w      Truncate file to zero length or create text file for writing.  The stream is positioned at the beginning of the file.
+       w+     Open for reading and writing.  The file is created if it does not exist, otherwise it is truncated.  The stream is  positioned
+              at the beginning of the file.
+       a      Open  for  appending (writing at end of file).  The file is created if it does not exist.  The stream is positioned at the end
+              of the file.
+       a+     Open for reading and appending (writing at end of file).  The file is created if it does not exist.  The initial file position
+              for reading is at the beginning of the file, but output is always appended to the end of the file.
+See also: '
+
+/** FGETC ( FILE* -- c )
+ * as int fgetc(FILE *stream);
+       fgetc() returns the character read as an unsigned char cast to an int or EOF on end of file or error.
+ */
+
+/** FGETS ( buffer len FILE* -- len )
+ * as char *fgets(char *s, int size, FILE *stream);
+       fgets() returns s on success, and NULL on error or when end of file occurs while no characters have been read.
+
+/** FPUTC ( c FILE* -- result )
+ * as int fputc(int c, FILE *stream);
+      fputc() returns the character written as an unsigned char cast to an int or EOF on error.
+
+/** FPUTS ( string len FILE* -- result )
+ * as int fputs(const char *s, FILE *stream);
+      fputs() returns a nonnegative number on success, or EOF on error.
+ */
+/** FCLOSE ( FILE* -- )
+ * as fclose(FILE *fp);
+ */
+
+/** ERRNO ( -- errno )
+ */
+
+
 
 FORTH ( -- )
 Transform the search order consisting of widn, . . . wid2, wid1 (where wid1 is searched
@@ -1144,4 +1183,210 @@ See also: (
 ] ( -- )
 Enter compilation state.
 See also: [
+
+
+File-Access words
+-----------------
+( is not conform, doesn't refill the input buffer; ) must be on the same line.
+INCLUDE-FILE is not implemented.
+S" is not conform.
+SOURCE-ID is not implemented.
+
+
+BIN ( fam1 -- fam2 )
+Modify the implementation-defined file access method fam1 to additionally select a
+“binary”, i.e., not line oriented, file access method, giving access method fam2.
+See also: R/O R/W W/O
+
+CLOSE-FILE ( fileid -- ior )
+Close the file identified by fileid. ior is the implementation-defined I/O result code.
+
+CREATE-FILE ( c-addr u fam -- fileid ior )
+Create the file named in the character string specified by c-addr and u, and open it with
+file access method fam. The meaning of values of fam is implementation defined. If a
+file with the same name already exists, recreate it as an empty file.
+If the file was successfully created and opened, ior is zero, fileid is its identifier, and the
+file has been positioned to the start of the file.
+Otherwise, ior is the implementation-defined I/O result code and fileid is undefined.
+See also: OPEN-FILE
+
+DELETE-FILE ( c-addr u -- ior )
+Delete the file named in the character string specified by c-addr u. ior is the implement-
+ation-defined I/O result code.
+
+FILE-POSITION ( fileid -- ud ior )
+ud is the current file position for the file identified by fileid. ior is the implementation-
+defined I/O result code. ud is undefined if ior is non-zero.
+
+FILE-SIZE ( fileid -- ud ior )
+ud is the size, in characters, of the file identified by fileid. ior is the implementation-
+defined I/O result code. This operation does not affect the value returned by FILE-
+POSITION. ud is undefined if ior is non-zero.
+
+INCLUDED ( i×x c-addr u -- j×x )
+Remove c-addr u from the stack. Save the current input source specification, including
+the current value of SOURCE-ID. Open the file specified by c-addr u, store the resulting
+fileid in SOURCE-ID, and make it the input source. Store zero in BLK. Other stack
+effects are due to the words included.
+Repeat until end of file: read a line from the file, fill the input buffer from the contents
+of that line, set >IN to zero, and interpret.
+Text interpretation begins at the start of the file.
+When the end of the file is reached, close the file and restore the input source specification
+to its saved value.
+An ambiguous condition exists if the named file can not be opened, if an I/O excep-
+tion occurs reading the file, or if an I/O exception occurs while closing the file. When
+an ambiguous condition exists, the status (open or closed) of any files that were being
+interpreted is implementation-defined.
+INCLUDED may allocate memory in data space before it starts interpreting the file.
+
+OPEN-FILE ( c-addr u fam -- fileid ior )
+Open the file named in the character string specified by c-addr u, with file access method
+indicated by fam. The meaning of values of fam is implementation defined.
+If the file is successfully opened, ior is zero, fileid is its identifier, and the file has been
+positioned to the start of the file.
+Otherwise, ior is the implementation-defined I/O result code and fileid is undefined.
+
+R/O ( -- fam )
+fam is the implementation-defined value for selecting the “read only” file access method.
+
+R/W ( -- fam )
+fam is the implementation-defined value for selecting the “read/write” file access method.
+
+READ-FILE ( c-addr u1 fileid -- u2 ior )
+Read u1 consecutive characters to c-addr from the current position of the file identified
+by fileid.
+If u1 characters are read without an exception, ior is zero and u2 is equal to u1.
+If the end of the file is reached before u1 characters are read, ior is zero and u2 is the
+number of characters actually read.
+If the operation is initiated when the value returned by FILE-POSITION is equal to the
+value returned by FILE-SIZE for the file identified by fileid, ior is zero and u2 is zero.
+If an exception occurs, ior is the implementation-defined I/O result code, and u2 is the
+number of characters transferred to c-addr without an exception.
+An ambiguous condition exists if the operation is initiated when the value returned by
+FILE-POSITION is greater than the value returned by FILE-SIZE for the file iden-
+tified by fileid, or if the requested operation attempts to read portions of the file not
+written.
+At the conclusion of the operation, FILE-POSITION returns the next file position after
+the last character read.
+See also: READ-LINE WRITE-FILE WRITE-LINE
+
+READ-LINE ( c-addr u1 fileid -- u2 flag ior )
+Read the next line from the file specified by fileid into memory at the address c-addr. At
+most u1 characters are read. Up to two implementation-defined line-terminating charac-
+ters may be read into memory at the end of the line, but are not included in the count u2.
+The line buffer provided by c-addr should be at least u1+2 characters long.
+If the operation succeeded, flag is true and ior is zero. If a line terminator was received
+before u1 characters were read, then u2 is the number of characters, not including the line
+terminator, actually read (0 <= u2 <= u1). When u1 = u2 the line terminator has yet to
+be reached.
+If the operation is initiated when the value returned by FILE-POSITION is equal to the
+value returned by FILE-SIZE for the file identified by fileid, flag is false, ior is zero,
+and u2 is zero. If ior is non-zero, an exception occurred during the operation and ior is
+the implementation-defined I/O result code.
+An ambiguous condition exists if the operation is initiated when the value returned by
+FILE-POSITION is greater than the value returned by FILE-SIZE for the file iden-
+tified by fileid, or if the requested operation attempts to read portions of the file not
+written.
+At the conclusion of the operation, FILE-POSITION returns the next file position after
+the last character read.
+See also: READ-FILE WRITE-FILE WRITE-LINE
+
+REPOSITION-FILE ( ud fileid -- ior )
+Reposition the file identified by fileid to ud. ior is the implementation-defined I/O result
+code. An ambiguous condition exists if the file is positioned outside the file boundaries.
+At the conclusion of the operation, FILE-POSITION returns the value ud.
+
+RESIZE-FILE ( ud fileid -- ior )
+Set the size of the file identified by fileid to ud. ior is the implementation-defined I/O result code.
+If the resultant file is larger than the file before the operation, the portion of the file added
+as a result of the operation might not have been written.
+At the conclusion of the operation, FILE-SIZE returns the value ud and FILE-
+POSITION returns an unspecified value.
+
+W/O ( -- fam )
+fam is the implementation-defined value for selecting the “write only” file access method.
+
+WRITE-FILE ( c-addr u fileid -- ior )
+Write u characters from c-addr to the file identified by fileid starting at its current posi-
+tion. ior is the implementation-defined I/O result code.
+At the conclusion of the operation, FILE-POSITION returns the next file position after
+the last character written to the file, and FILE-SIZE returns a value greater than or
+equal to the value returned by FILE-POSITION.
+See also: READ-FILE READ-LINE WRITE-LINE
+
+WRITE-LINE ( c-addr u fileid -- ior )
+Write u characters from c-addr followed by the implementation-dependent line termina-
+tor to the file identified by fileid starting at its current position. ior is the implementation-
+defined I/O result code.
+At the conclusion of the operation, FILE-POSITION returns the next file position after
+the last character written to the file, and FILE-SIZE returns a value greater than or
+equal to the value returned by FILE-POSITION.
+See also: READ-FILE READ-LINE WRITE-FILE
+
+
+File-Access extension words
+---------------------------
+
+FILE-STATUS ( c-addr u -- x ior )
+Return the status of the file identified by the character string c-addr u. If the file ex-
+ists, ior is zero; otherwise ior is the implementation-defined I/O result code. x contains
+implementation-defined information about the file.
+
+FLUSH-FILE ( fileid -- ior )
+Attempt to force any buffered information written to the file referred to by fileid to be
+written to mass storage, and the size information for the file to be recorded in the storage
+directory if changed. If the operation is successful, ior is zero. Otherwise, it is an
+implementation-defined I/O result code.
+
+INCLUDE ( i×x “name” -- j×x )
+Skip leading white space and parse name delimited by a white space character. Push the
+address and length of the name on the stack and perform the function of INCLUDED.
+
+
+File-Access my extension words
+------------------------------
+Similar to C functions
+
+FCLOSE ( FILE* -- )
+Flushes the stream and closes the underlying file descriptor.
+
+ERRNO ( -- errno )
+Returns error number of the last system call.
+Its value is significant only when the return value of the call indicated an error
+(i.e., -1 from most system calls; -1 or NULL from most library functions); a function that succeeds is allowed to change errno.
+Valid error numbers are all nonzero; errno is never set to zero by any system call or library function.
+
+FGETC ( FILE* -- c )
+Reads the next character from stream and returns it as an unsigned char cast to an int, or EOF on end of file or error.
+Returns the character read as an unsigned char cast to an int or EOF on end of file or error.
+
+FGETS ( buffer len FILE* -- len )
+Reads in at most one less than len characters from stream and stores them into the buffer.
+Reading  stops after an EOF or a newline. If a newline is read, it is stored into the buffer.
+A terminating null byte ('\0') is stored after the last character in the buffer.
+Returns s on success, and NULL on error or when end of file occurs while no characters have been read.
+
+FOPEN ( name-ptr name-len mode-ptr mode-len -- FILE* )
+Open the file named in the character string specified by name-ptr name-len, with mode specified by mode-ptr mode-len.
+Returns a pointer to a FILE structure or NULL.
+Same as "FILE *fopen(const char *path, const char *mode);"
+mode strings are:
+       r      Open text file for reading.  The stream is positioned at the beginning of the file.
+       r+     Open for reading and writing.  The stream is positioned at the beginning of the file.
+       w      Truncate file to zero length or create text file for writing.  The stream is positioned at the beginning of the file.
+       w+     Open for reading and writing.  The file is created if it does not exist, otherwise it is truncated.  The stream is  positioned
+              at the beginning of the file.
+       a      Open  for  appending (writing at end of file).  The file is created if it does not exist.  The stream is positioned at the end
+              of the file.
+       a+     Open for reading and appending (writing at end of file).  The file is created if it does not exist.  The initial file position
+              for reading is at the beginning of the file, but output is always appended to the end of the file.
+Example: "/tmp/plop" "a+" fopen
+
+FPUTC ( c FILE* -- result )
+Writes the character c, cast to an unsigned char, to stream.
+Returns the character written as an unsigned char cast to an int or EOF on error.
+
+FPUTS ( string len FILE* -- result )
+Writes the string s to stream, without its terminating null byte ('\0').
+Returns a nonnegative number on success, or EOF on error.
 
