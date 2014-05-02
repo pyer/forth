@@ -1,0 +1,21 @@
+Pyer's Forth
+============
+
+Version
+-------
+Pyer's Forth 2.0d
+(May  1 2014 22:47:31)
+Forth-2012 System (Subset)
+
+
+Compliance to Forth-2012 System
+===============================
+PF complies nearly to Forth-2012 except for following words.
+
+File Access word set
+--------------------
+( is not conform, doesn't refill the input buffer; ) must be on the same line.
+INCLUDE-FILE is not implemented.
+S" is not conform.
+SOURCE-ID is not implemented.
+
