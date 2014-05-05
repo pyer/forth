@@ -7,7 +7,6 @@ Forth 200x Standardisation Committee
 Forth 2012 RC2
 13th November, 2013
 
-
 ! ( x a-addr -- )
 Store x at a-addr.
 See also: @
@@ -97,9 +96,6 @@ Display n1 right aligned in a field n2 characters wide. If the number of charact
 to display n1 is greater than n2, all digits are displayed with no leading spaces in a field
 as wide as necessary.
 See also: . ."
-
-.S ( -- )
-Display the stack contents.
 
 .STATUS
 Display the status of the current PF system.
@@ -316,12 +312,6 @@ word lists in the search order.
 AND ( x1 x2 -- x3 )
 x3 is the bit-by-bit logical "and" of x1 with x2.
 
-AT-XY ( u1 u2 -- )
-Perform implementation-dependent steps so that the next character displayed will appear
-in column u1, row u2 of the user output device, the upper left corner of which is column
-zero, row zero. An ambiguous condition exists if the operation cannot be performed on
-the user output device with the specified parameters.
-
 BACKSPACE
 TBD
 
@@ -400,8 +390,6 @@ CHARS ( n1 -- n2 )
 n2 is the size in address units of n1 characters.
 See also: CELL+ CELLS CHAR+
 
-CLOSE-FILE
-
 CMOVE ( c-addr1 c-addr2 u -- )
 If u is greater than zero, copy u consecutive characters from the data space starting at c-addr1 to that
 starting at c-addr2, proceeding character-by-character from lower addresses to higher addresses.
@@ -445,8 +433,6 @@ a-addr is the address of name’s data field. The execution semantics of name ma
 extended by using DOES>.
 See also: DOES>
 
-CREATE-FILE
-
 CURRENT
 
 DEBUG
@@ -458,8 +444,6 @@ DEFINITIONS ( -- )
 Make the compilation word list the same as the first word list in the search order. Speci-
 fies that the names of subsequent definitions will be placed in the compilation word list.
 Subsequent changes in the search order will not affect the compilation word list.
-
-DELETE-FILE
 
 DEPTH ( -- +n )
 +n is the number of single-cell values contained in the data stack before +n was placed on the stack.
@@ -494,10 +478,6 @@ See also: CREATE
 
 DROP ( x -- )
 Remove x from the stack.
-
-DUMP ( addr u -- )
-Display the contents of u consecutive addresses starting at addr. The format of the
-display is implementation dependent.
 
 DUP ( x -- x x )
 Duplicate x.
@@ -625,12 +605,6 @@ a multiple of three.
 The value of BASE is ignored.
 See also: >FLOAT F. FS. PRECISION
 
-FILE-POSITION
-
-FILE-SIZE
-
-FILE-STATUS
-
 FILL ( c-addr u char -- )
 If u is greater than zero, store char in each of u consecutive characters of memory beginning at c-addr.
 
@@ -658,8 +632,6 @@ n2 is the size in address units of n1 floating-point numbers.
 FLOOR ( F: r1 -- r2 )
 Round r1 to an integral value using the “round toward negative infinity” rule, giving r2.
 
-FLUSH-FILE
-
 FMAX ( F: r1 r2 -- r3 )
 r3 is the greater of r1 and r2.
 
@@ -668,47 +640,6 @@ r3 is the lesser of r1 and r2.
 
 FNEGATE ( F: r1 -- r2 )
 r2 is the negation of r1.
-
-FOPEN ( name-ptr name-len mode-ptr mode-len -- FILE* )
-
- * as FILE *fopen(const char *path, const char *mode);
- * mode:
-       r      Open text file for reading.  The stream is positioned at the beginning of the file.
-       r+     Open for reading and writing.  The stream is positioned at the beginning of the file.
-       w      Truncate file to zero length or create text file for writing.  The stream is positioned at the beginning of the file.
-       w+     Open for reading and writing.  The file is created if it does not exist, otherwise it is truncated.  The stream is  positioned
-              at the beginning of the file.
-       a      Open  for  appending (writing at end of file).  The file is created if it does not exist.  The stream is positioned at the end
-              of the file.
-       a+     Open for reading and appending (writing at end of file).  The file is created if it does not exist.  The initial file position
-              for reading is at the beginning of the file, but output is always appended to the end of the file.
-See also: '
-
-/** FGETC ( FILE* -- c )
- * as int fgetc(FILE *stream);
-       fgetc() returns the character read as an unsigned char cast to an int or EOF on end of file or error.
- */
-
-/** FGETS ( buffer len FILE* -- len )
- * as char *fgets(char *s, int size, FILE *stream);
-       fgets() returns s on success, and NULL on error or when end of file occurs while no characters have been read.
-
-/** FPUTC ( c FILE* -- result )
- * as int fputc(int c, FILE *stream);
-      fputc() returns the character written as an unsigned char cast to an int or EOF on error.
-
-/** FPUTS ( string len FILE* -- result )
- * as int fputs(const char *s, FILE *stream);
-      fputs() returns a nonnegative number on success, or EOF on error.
- */
-/** FCLOSE ( FILE* -- )
- * as fclose(FILE *fp);
- */
-
-/** ERRNO ( -- errno )
- */
-
-
 
 FORTH ( -- )
 Transform the search order consisting of widn, . . . wid2, wid1 (where wid1 is searched
@@ -799,14 +730,6 @@ Receive one character char, a member of the implementation-defined character set
 Keyboard events that do not correspond to such characters are discarded until a valid
 character is received, and those events are subsequently unavailable.
 All standard characters can be received. Characters received by KEY are not displayed.
-
-KEY? ( -- flag )
-If a character is available, return true. Otherwise, return false. If non-character keyboard
-events are available before the first valid character, they are discarded and are subse-
-quently unavailable. The character shall be returned by the next execution of KEY.
-After KEY? returns with a value of true, subsequent executions of KEY? prior to the
-execution of KEY or EKEY also return true, without discarding keyboard events.
-See also: KEY
 
 LATEST ( -- nfa )
 NFA of the last created name.
@@ -903,8 +826,6 @@ ONLY ( -- )
 Set the search order to the implementation-defined minimum search order.
 The minimum search order shall include the words FORTH-WORDLIST and SET-ORDER.
 
-OPEN-FILE
-
 OR ( x1 x2 -- x3 )
 x3 is the bit-by-bit inclusive-or of x1 with x2.
 
@@ -946,10 +867,6 @@ See also: >R R>
 
 RAISE-SIGNAL
 
-READ-FILE         
-
-READ-LINE
-
 RECURSE
 Compilation: ( -- )
 Append the execution semantics of the current definition to the current definition. An
@@ -964,8 +881,6 @@ Run-time: ( -- )
 Continue execution at the location given by dest.
 See also: BEGIN WHILE AGAIN
 
-REPOSITION-FILE
-
 REPRESENT ( c-addr u -- n flag1 flag2 ) ( F: r -- )
 At c-addr, place the character-string external representation of the significand of the
 floating-point number r. Return the decimal-base exponent as n, the sign as flag1 and
@@ -979,8 +894,6 @@ If flag1 is true then r is negative.
 An ambiguous condition exists if the value of BASE is not decimal ten.
 When flag2 is false, n and flag1 are implementation defined, as are the contents of c-addr.
 Under these circumstances, the string at c-addr shall consist of graphic characters.
-
-RESIZE-FILE
 
 RM
 
@@ -1007,13 +920,6 @@ Run-time: ( -- c-addr u )
 Return c-addr and u describing a string consisting of the characters ccc. A program shall
 not alter the returned string.
 See also: C"
-
-SEE ( “ spaces name” -- )
-Display a human-readable representation of the named word’s definition. The source
-of the representation (object-code decompilation, source block, etc.) and the particular
-form of the display is implementation defined.
-SEE may be implemented using pictured numeric output words. Consequently, its use
-may corrupt the transient region identified by #>.
 
 SET-PRECISION ( u -- )
 Set the number of significant digits currently used by F., FE., or FS. to u.
@@ -1139,16 +1045,6 @@ Perform a comparison of a test value n1 with a lower limit n2 and an upper limit
 returning true if either (n2 < n3 and (n2 <= n1 and n1 < n3))
 or (n2 > n3 and (n2 <= n1 or n1 < n3)) is true, returning false otherwise.
 
-WORDS ( -- )
-List the definition names in the first word list of the search order. The format of the
-display is implementation-dependent.
-WORDS may be implemented using pictured numeric output words. Consequently, its
-use may corrupt the transient region identified by #>.
-
-WRITE-FILE        
-
-WRITE-LINE
-
 XOR ( x1 x2 -- x3 )
 x3 is the bit-by-bit exclusive-or of x1 with x2.
 
@@ -1190,14 +1086,45 @@ See also: (
 Enter compilation state.
 See also: [
 
-
-File-Access words
+Facility word set
 -----------------
+AT-XY KEY? PAGE
+---
+Extensions words
+MS TIME&DATE
+
+AT-XY ( u1 u2 -- )
+Perform implementation-dependent steps so that the next character displayed will appear
+in column u1, row u2 of the user output device, the upper left corner of which is column
+zero, row zero. An ambiguous condition exists if the operation cannot be performed on
+the user output device with the specified parameters.
+
+KEY? ( -- flag )
+If a character is available, return true. Otherwise, return false. If non-character keyboard
+events are available before the first valid character, they are discarded and are subse-
+quently unavailable. The character shall be returned by the next execution of KEY.
+After KEY? returns with a value of true, subsequent executions of KEY? prior to the
+execution of KEY or EKEY also return true, without discarding keyboard events.
+See also: KEY
+
+PAGE ( -- )
+Move to another page for output. Actual function depends on the output device.
+On a terminal, PAGE clears the screen and resets the cursor position to the upper left corner.
+On a printer, PAGE performs a form feed.
+
+FILE
+File-Access word set
+--------------------
 ( is not conform, doesn't refill the input buffer; ) must be on the same line.
 INCLUDE-FILE is not implemented.
 S" is not conform.
 SOURCE-ID is not implemented.
-
+---
+Extension words
+FILE-STATUS FLUSH-FILE INCLUDE
+---
+C-like words
+FCLOSE ERRNO FGETC FGETS FOPEN FPUTC FPUTS
 
 BIN ( fam1 -- fam2 )
 Modify the implementation-defined file access method fam1 to additionally select a
@@ -1329,7 +1256,6 @@ the last character written to the file, and FILE-SIZE returns a value greater th
 equal to the value returned by FILE-POSITION.
 See also: READ-FILE READ-LINE WRITE-FILE
 
-
 File-Access extension words
 ---------------------------
 
@@ -1349,8 +1275,8 @@ Skip leading white space and parse name delimited by a white space character. Pu
 address and length of the name on the stack and perform the function of INCLUDED.
 
 
-File-Access my extension words
-------------------------------
+File-Access C-like words
+------------------------
 Similar to C functions
 
 FCLOSE ( FILE* -- )
@@ -1395,4 +1321,33 @@ Returns the character written as an unsigned char cast to an int or EOF on error
 FPUTS ( string len FILE* -- result )
 Writes the string s to stream, without its terminating null byte ('\0').
 Returns a nonnegative number on success, or EOF on error.
+
+TOOLS
+Programming-Tools word set
+.S ? DUMP SEE WORDS 
+---
+Extensions words
+BYE
+
+.S ( -- )
+Copy and display the values currently on the data stack.
+
+?  ( a-addr -- )
+Display the value stored at a-addr.
+
+DUMP ( addr u -- )
+Display the contents of u consecutive addresses starting at addr.
+The format of the display is implementation dependent.
+
+SEE ( “ spaces name” -- )
+Display a human-readable representation of the named word’s definition.
+
+WORDS ( -- )
+List the definition names in the first word list of the search order.
+
+Programming-Tools extensions words
+----------------------------------
+
+BYE ( -- )
+Return control to the host operating system, if any.
 

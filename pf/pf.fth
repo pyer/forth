@@ -1,5 +1,7 @@
 ( pf.help version 1.0 )
 
+: ?  @ . ;
+
 : decimal 10 base ! ;
 : hex     16 base ! ;
 
