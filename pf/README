@@ -10,7 +10,12 @@ Forth-2012 System (Subset)
 
 Compliance to Forth-2012 System
 ===============================
-PF complies nearly to Forth-2012 except for following words.
+PF doesn't comply to Forth-2012 because a lot of words are missing.
+Implemented words are Forth-2012 compliant.
+
+Core words
+----------
+Some words are not implemented.
 
 File-Access words
 -----------------
