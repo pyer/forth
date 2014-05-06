@@ -3,9 +3,9 @@ Pyer's Forth
 
 Version
 -------
-> Pyer's Forth 2.1a
-> (May  6 2014 19:30:15)
-> Not Forth-2012 System (Subset)
+- Pyer's Forth 2.1a
+- (May  6 2014 19:30:15)
+- Not Forth-2012 System (Subset)
 
 
 Compliance to Forth-2012 System
