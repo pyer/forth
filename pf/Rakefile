@@ -5,10 +5,7 @@
 #
 require 'rake/clean'
 
-# pf is stand alone forth executable
 task :default => [:x86]
-# pfe is pfe + libpfe
-#task :default => ['pfe']
 
 task :help do
   puts "before compiling ARM architecture, set up environment: source /usr/local/angstrom/arm/environment-setup"
@@ -19,18 +16,18 @@ task :arm do
 # before compiling, set up environment:
 # source /usr/local/angstrom/arm/environment-setup
   Rake::Task[:install].invoke
-  sh "scp pf      bbb:/usr/bin/pf"
-  sh "scp pf.fth  bbb:/usr/etc/pf.fth"
-  sh "scp pf.help bbb:/usr/share/pf.help"
+  sh "scp pf          bbb:/usr/bin/pf"
+  sh "scp lib/pf.fth  bbb:/usr/etc/pf.fth"
+  sh "scp doc/pf.help bbb:/usr/share/pf.help"
   sh "rm pf"
 end
 
 task :x86 do
   ARCH='X86'
   Rake::Task[:install].invoke
-  sh "sudo install -m 755 pf /usr/local/bin/pf"
-  sh "sudo install -m 755 pf.fth /usr/local/etc/pf.fth"
-  sh "sudo install -m 755 pf.help /usr/local/share/pf.help"
+  sh "sudo install -m 755 pf          /usr/local/bin/pf"
+  sh "sudo install -m 755 lib/pf.fth  /usr/local/etc/pf.fth"
+  sh "sudo install -m 755 doc/pf.help /usr/local/share/pf.help"
   sh "rm pf"
 end
 
