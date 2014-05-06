@@ -29,7 +29,7 @@ const char* pf_version_string(void)
     return
 	"\nPyer's Forth "PF_VERSION
         "\n(" MAKEDATE " " MAKETIME ")"
-        "\nForth-2012 System (Subset)"
+        "\nNot Forth-2012 System (Subset)"
         "\n"
         "\nProviding the Programming-Tools word set"
         "\nProviding BYE from the Programming-Tools Extensions word set"
