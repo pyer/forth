@@ -2,7 +2,7 @@
 #define ___CONFIG_H
 
 #define TARGET_OS "linux-gnu"
-#define PF_VERSION  "2.0d"
+#define PF_VERSION  "2.1a"
 
 #if defined ARM
 /* ARM processor options */
