@@ -41,9 +41,6 @@ FCode (p4_debug_colon);
 FCode (p4_debug_does_RT);
 FCode (p4_debug_does);
 
-#if defined PF_WITH_FLOATING
-int pf_convert_float(void);
-#endif
 /* -------------------------------------------------------------- */
 // display a message when a word is redefined
 int redefined_msg = 0;
@@ -1226,6 +1223,26 @@ void pf_convert_string(void)
         *--SP = (p4cell)NAMELEN(cs);
     }
 }
+
+/* -------------------------------------------------------------- */
+#if defined PF_WITH_FLOATING
+/* in floating.c */
+int pf_to_float (const char *p, p4cell n, double *r);
+
+int pf_convert_float(void)
+{
+    double f;
+    /* scanned word sits at PFE.word. (not at HERE) */
+    if ( BASE != 10 )
+        return 0; /* quick path */
+
+    /* WORD-string is at HERE */
+    if (! pf_to_float (PFE.word.ptr, PFE.word.len, &f))
+        return 0; /* quick path */
+    *--FP = f;
+    return 1;
+}
+#endif
 
 /* -------------------------------------------------------------- */
 /**

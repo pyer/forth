@@ -457,22 +457,6 @@ FCode (p4_f_sqrt)	{ *FP = sqrt (*FP); }
 FCode (p4_f_tan)	{ *FP = tan (*FP); }
 FCode (p4_f_tanh)	{ *FP = tanh (*FP); }
 */
-/* words not from the ansi'94 forth standard  */
-/* ================= INTERPRET =================== */
-
-int pf_convert_float(void)
-{
-    double f;
-    /* scanned word sits at PFE.word. (not at HERE) */
-    if ( BASE != 10 )
-        return 0; /* quick path */
-
-    /* WORD-string is at HERE */
-    if (! pf_to_float (PFE.word.ptr, PFE.word.len, &f))
-        return 0; /* quick path */
-    *--FP = f;
-    return 1;
-}
 
 /* ************************************************** */
 

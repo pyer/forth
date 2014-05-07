@@ -41,9 +41,6 @@ struct p4_Thread
 	unsigned len;          /* p4ucell is 8byte on x86_64 but */
     } word;                    /* parsing is not exceeding 16bit anyway */
 
-    double asinh_MAX_over_4;          /* see complex-ext.c */
-    double sqrt_MAX_over_4;           /* see complex-ext.c */
-
 };
 
 struct p4_Thread* p4TH;
