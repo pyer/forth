@@ -3,6 +3,7 @@
 
 // display a message when a word is redefined
 int redefined_msg;
+void show_word(void);
 
 p4_namebuf_t *LATEST;
 

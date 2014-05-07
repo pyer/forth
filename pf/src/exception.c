@@ -71,11 +71,7 @@ static void show_error (const char* str)
     if (! str) str = "";
     int len = strlen(str);
     pf_outf ("\nError: %.*s ", len, str);
-
-    if (PFE.word.ptr && PFE.word.len)
-    {
-        pf_type (PFE.word.ptr, PFE.word.len);
-    }
+    show_word();
     pf_longjmp_abort ();
 }
 

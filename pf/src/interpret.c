@@ -47,17 +47,21 @@ int redefined_msg = 0;
 /* -------------------------------------------------------------- */
 p4_char_t *hold;		/* auxiliary pointer for number output */
 /* -------------------------------------------------------------- */
-/* -------------------------------------------------------------- */
 // input buffer
 char* source;
 int length = 0;
 int to_in = 0;
+/* -------------------------------------------------------------- */
+// parsed word
 
-void print_source(void)
+/* -------------------------------------------------------------- */
+void show_word(void)
 {
-    pf_type(source,length);
+    if (PFE.word.ptr && PFE.word.len)
+    {
+        pf_type (PFE.word.ptr, PFE.word.len);
+    }
 }
-
 /* -------------------------------------------------------------- */
 /** SOURCE ( -- c-addr u )
  *  c-addr is the address of, and u is the number of characters in, the input buffer.
