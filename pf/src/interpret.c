@@ -33,7 +33,6 @@
 #define HLD	hold
 
 /* -------------------------------------------------------------- */
-FCode (pf_exception_string);
 FCode_RT (pf_defer_RT);
 
 FCode (p4_debug_colon_RT);
@@ -53,13 +52,15 @@ int length = 0;
 int to_in = 0;
 /* -------------------------------------------------------------- */
 // parsed word
+char* word_ptr;
+int word_len = -1;
 
 /* -------------------------------------------------------------- */
 void show_word(void)
 {
-    if (PFE.word.ptr && PFE.word.len)
+    if (word_ptr && word_len)
     {
-        pf_type (PFE.word.ptr, PFE.word.len);
+        pf_type (word_ptr, word_len);
     }
 }
 /* -------------------------------------------------------------- */
@@ -427,14 +428,14 @@ void pf_parse_word( char delimiter )
     int   n = length;
     int   i = to_in;
 
-    PFE.word.ptr = (p4_char_t*) q + i;
-    PFE.word.len = 0;
+    word_ptr = (p4_char_t*) q + i;
+    word_len = 0;
 
     /* BL && QUOTED -> before whitespace and after doublequote */
     while ( i < n && q[i]>=' ' && q[i]!=delimiter ) {
         i++;
     }
-    PFE.word.len = i - to_in;
+    word_len = i - to_in;
     /* put the ">IN" pointer just after the delimiter that was found */
     to_in = i+1;
 }
@@ -450,7 +451,7 @@ p4char * pf_tick_nfa (void)
     pf_skip_spaces();
     pf_parse_word(' ');
     *DP = 0; /* PARSE-WORD-NOHERE */
-    p = pf_find (PFE.word.ptr, PFE.word.len);
+    p = pf_find (word_ptr, word_len);
     if (! p)
         p4_throw (P4_ON_UNDEFINED);
     return p;
@@ -562,8 +563,8 @@ int pf_find_word(void)
     register p4char *nfa;
     register p4xt xt;
 
-    /* WORD-string is at HERE and at PFE.word.ptr / PFE.word.len */
-    nfa = pf_find (PFE.word.ptr, PFE.word.len);
+    /* WORD-string is at HERE and at word_ptr / word_len */
+    nfa = pf_find (word_ptr, word_len);
     if (! nfa)
         return 0;
 
@@ -585,9 +586,9 @@ int pf_find_word(void)
  */
 int pf_convert_number(void)
 {
-    /* WORD-string is at HERE and at PFE.word.ptr / PFE.word.len */
-    const p4_char_t *p = PFE.word.ptr;
-    p4ucell          n = PFE.word.len;
+    /* WORD-string is at HERE and at word_ptr / word_len */
+    const p4_char_t *p = word_ptr;
+    p4ucell          n = word_len;
 
     p4ucell base = 0;
     int sign = 0;
@@ -712,8 +713,8 @@ FCode (pf_dot_r)
 FCode (pf_parse_comma_quote)
 {
     pf_parse_word('"');
-    const p4_char_t *s = PFE.word.ptr;    
-    int len   = PFE.word.len; 
+    const p4_char_t *s = word_ptr;    
+    int len   = word_len; 
     *DP++ = len;                /* store count byte */
     while (--len >= 0)          /* store string */
         *DP++ = *s++;
@@ -743,7 +744,7 @@ FCode (pf_dot_quote)
 //        pf_skip_spaces();
 //        to_in++;	// skip only one space
         pf_parse_word('"');
-        pf_type ((const char *)PFE.word.ptr, PFE.word.len);
+        pf_type ((const char *)word_ptr, word_len);
     }
 }
 P4COMPILES (pf_dot_quote, pf_dot_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE);
@@ -777,9 +778,9 @@ FCode (pf_c_quote)
 //        to_in++;	// skip only one space
         pf_parse_word('"');
         p = PAD;
-	n = PFE.word.len;
+	n = word_len;
         *p++ = n;
-        memcpy (p, PFE.word.ptr, n);
+        memcpy (p, word_ptr, n);
         *--SP = (p4cell)PAD;
     }
 }
@@ -817,9 +818,9 @@ FCode (pf_s_quote)
 //        to_in++;	// skip only one space
         pf_parse_word('"');
         p = PAD;
-	n = PFE.word.len;
+	n = word_len;
         *p++ = n;
-        memcpy (p, PFE.word.ptr, n);
+        memcpy (p, word_ptr, n);
         *--SP = (p4cell)p;
         *--SP = n;
     }
@@ -994,8 +995,8 @@ void pf_load_words (const p4Words* ws)
 	/* the C-name is really type-byte + count-byte away */
 	___ char type = *w->name;
 
-	PFE.word.ptr = ((p4_char_t*)(w->name+2));
-	PFE.word.len = -1;
+	word_ptr = ((p4_char_t*)(w->name+2));
+	word_len = -1;
         *--SP = (p4cell)(w->ptr);
 	
 	switch (type)
@@ -1003,15 +1004,12 @@ void pf_load_words (const p4Words* ws)
 	case p4_LOAD:
 	    FX (pf_load_words); /* RECURSION !! */
 	    continue;
-	case p4_EXPT:
-	    FX (pf_exception_string);
-	    continue;
 	case p4_SXCO:
 	    ___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
 	    p4_header_in();
 	    FX_COMMA ( semant->comp );
 	    if (! (semant ->name))
-		semant ->name = (p4_namebuf_t*)( PFE.word.ptr-1 ); 
+		semant ->name = (p4_namebuf_t*)( word_ptr-1 ); 
 	    /* discard const */
 	    /* BEWARE: the arg' name must come from a wordset entry to
 	       be both static and have a byte in front that could be 
@@ -1056,7 +1054,7 @@ void pf_load_words (const p4Words* ws)
 	default:
 	    pf_outf("\nERROR: unknown typecode for loadlist entry "
 		      "0x%x -> \"%s\"", 
-		      type, PFE.word.ptr);
+		      type, word_ptr);
 	} /*switch*/
 	
 	/* implicit IMMEDIATE still around: */
@@ -1143,14 +1141,14 @@ p4char* p4_header_comma (const p4char *name, int len)
 p4char* p4_header_in (void)
 {
     /* quick path for wordset-loader: */
-    if (PFE.word.len == -1) {
-      PFE.word.len = strlen ((char*) PFE.word.ptr);
+    if (word_len == -1) {
+      word_len = strlen ((char*) word_ptr);
     } else {
       pf_skip_spaces();
       pf_parse_word(' ');
     }
     *DP = 0; /* PARSE-WORD-NOHERE */
-    p4char *h = p4_header_comma (PFE.word.ptr, PFE.word.len);
+    p4char *h = p4_header_comma (word_ptr, word_len);
     return h;
 }
 
@@ -1168,9 +1166,9 @@ char* pf_word ( char del )
     int   n;
     pf_skip_spaces();
     pf_parse_word(del);
-    p = (char *)PFE.word.ptr;
-    *here++ = (char)PFE.word.len;
-    for ( n = PFE.word.len; n>0; n-- )
+    p = (char *)word_ptr;
+    *here++ = (char)word_len;
+    for ( n = word_len; n>0; n-- )
         *here++ = *p++;
     *here = 0; // zero-terminated string
     return (char *)DP;
@@ -1186,9 +1184,9 @@ char* cap_word ( char del )
     char  c;
     pf_skip_spaces();
     pf_parse_word(del);
-    p = (char *)PFE.word.ptr;
-    *here++ = (char)PFE.word.len;
-    for ( n = PFE.word.len; n>0; n-- ) {
+    p = (char *)word_ptr;
+    *here++ = (char)word_len;
+    for ( n = word_len; n>0; n-- ) {
         c = *p++;
         if ( c>='a' && c<='z')
             c -= 32;
@@ -1204,9 +1202,9 @@ char* pf_string ( void )
     char *here = (char *)DP;
     char *str = here;
     int   n;
-    char *p = (char *)PFE.word.ptr;
-    *here++ = (char)PFE.word.len;
-    for ( n = PFE.word.len; n>0; n-- )
+    char *p = (char *)word_ptr;
+    *here++ = (char)word_len;
+    for ( n = word_len; n>0; n-- )
         *here++ = *p++;
     *here++ = 0; // zero-terminated string
     DP = here;
@@ -1241,7 +1239,7 @@ int pf_convert_float(void)
         return 0; /* quick path */
 
     /* WORD-string is at HERE */
-    if (! pf_to_float (PFE.word.ptr, PFE.word.len, &f))
+    if (! pf_to_float (word_ptr, word_len, &f))
         return 0; /* quick path */
     *--FP = f;
     return 1;
@@ -1259,7 +1257,7 @@ void pf_interpret(char *buf, int len, int n)
     length = len;
     to_in = 0;
     while( to_in < length ) {
-	/* the parsed string is in PFE.word.ptr / PFE.word.len,
+	/* the parsed string is in word_ptr / word_len,
 	 * and by setting the HERE-string to length null, THROW
 	 * will not try to report it but instead it prints PFE.word.
 	 */
@@ -1272,7 +1270,7 @@ void pf_interpret(char *buf, int len, int n)
         }
         pf_parse_word(' ');
 	*DP = 0; /* PARSE-WORD-NOHERE */
-	if (PFE.word.len>0) {
+	if (word_len>0) {
 	    if (pf_find_word())
 		   continue;
 	    if (pf_convert_number())

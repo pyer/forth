@@ -206,7 +206,6 @@ void pf_init_system (p4_Thread* th) /* main_init */
     FP = F0;
     PRECISION = 6;
 #endif
-    PFE.word.len = -1;
     BASE = 10;
     /* Wipe the dictionary: */
     memset (dict, 0, (dictlimit - dict));

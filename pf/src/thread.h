@@ -36,11 +36,6 @@ struct p4_Thread
 
     void (*execute)(p4xt);	/* := normal_execute */
 
-    struct {
-	const p4_char_t* ptr;
-	unsigned len;          /* p4ucell is 8byte on x86_64 but */
-    } word;                    /* parsing is not exceeding 16bit anyway */
-
 };
 
 struct p4_Thread* p4TH;

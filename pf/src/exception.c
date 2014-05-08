@@ -346,41 +346,6 @@ FCode (pf_abort_quote)
 P4COMPILES (pf_abort_quote, pf_abort_quote_execution,
   P4_SKIPS_STRING, P4_DEFAULT_STYLE);
 
-/* ((EXCEPTION-STRING)) ( -- zstring* id )
- */ 
-FCode_RT (pf_exception_string_RT)
-{
-    p4_Exception* expt = (p4_Exception*) WP_PFA;
-    *--SP = (p4cell) expt->name;
-    *--SP = (p4cell) expt->id;
-}
-
-/** (EXCEPTION-STRING: ( exception# [description<closeparen>] -- )
- * append a node with the given id and a pointer to an 
- * extern zstring to the => NEXT-EXCEPTION chain-list.
- */
-FCode (pf_exception_string)
-{
-    p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    FX_RUNTIME1(pf_exception_string);
-    {
-      p4cell id = *SP++;
-      p4_Exception* expt = (void*) DP;
-      DP += sizeof(*expt);
-      if (id < next_exception)
-         next_exception = id - 1;
-      expt->next = exception_link;
-      exception_link = expt;
-      expt->name = (char*) DP;
-      expt->id = id;
-    }
-    pf_parse_word(')'); /* PARSE-NOHERE-NOTHROW */
-    memcpy (DP, PFE.word.ptr, PFE.word.len);
-    DP += PFE.word.len;
-}
-P4RUNTIME1(pf_exception_string, pf_exception_string_RT);
-
 P4_LISTWORDS (exception) =
 {
     P4_FXco ("CATCH",			p4_catch),
