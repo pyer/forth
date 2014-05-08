@@ -539,16 +539,14 @@ FCode_RT (pf_constant_RT)
  * forth the CONSTANT-value may get into a shared
  * ROM-area and is never copied to a RAM-address.
  */
-p4_Runtime2 pf_constantRuntime;
 FCode (pf_constant)
 {
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    //FX_RUNTIME1 (pf_constant);
-    FX_RCOMMA (pf_constantRuntime.exec[0]);
+    FX_RUNTIME1 (pf_constant);
     FX_VCOMMA (*SP++);
 }
-P4RUNTIMES1_(pf_constant, pf_constant_RT, 0,pf_constant_RT_SEE);
+P4RUNTIMES1_(pf_constant, pf_constant_RT, 0 ,pf_constant_RT_SEE);
 
 static P4_CODE_RUN(pf_value_RT_SEE)
 {
@@ -572,16 +570,14 @@ FCode_RT (pf_value_RT)
  * => VARIABLE and => CONSTANT - look also for => LOCALS| and
  * => VAR
  */
-p4_Runtime2 pf_valueRuntime;
 FCode (pf_value)
 {
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    //FX_RUNTIME1 (pf_value);
-    FX_RCOMMA (pf_valueRuntime.exec[0]);
+    FX_RUNTIME1 (pf_value);
     FX_VCOMMA (*SP++);
 }
-P4RUNTIMES1_ (pf_value, pf_value_RT, 0,pf_value_RT_SEE);
+P4RUNTIMES1_ (pf_value, pf_value_RT, 0 ,pf_value_RT_SEE);
 
 /** "((VAR))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => VARIABLE
@@ -591,22 +587,30 @@ FCode_RT (pf_variable_RT)
     *--SP = (p4cell) WP_PFA;
 }
 
+static P4_CODE_RUN(pf_variable_RT_SEE)
+{
+    strcat (p, p4_str_dot (*P4_TO_BODY (xt), p+200, BASE));
+    strcat (p, "VARIABLE ");
+    strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
+    return 0;
+}
+
 /** VARIABLE ( 'name' -- ) [ANS] [DOES: -- name* ]
  * => CREATE a new variable, so that everytime the variable is
  * name, the address is returned for using with => @ and => !
  * - be aware that in FIG-forth VARIABLE did take an argument
  * being the initial value. ANSI-forth does different here.
  */
-p4_Runtime2 pf_variableRuntime;
 FCode (pf_variable)
 {
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    //FX_RUNTIME1(pf_variable);
-    FX_RCOMMA (pf_variableRuntime.exec[0]);
+    FX_RUNTIME1(pf_variable);
     FX_VCOMMA (0);
 }
-P4RUNTIME1(pf_variable, pf_variable_RT);
+//P4RUNTIME1(pf_variable, pf_variable_RT);
+P4RUNTIMES1_ (pf_variable, pf_variable_RT, 0, pf_variable_RT_SEE);
+
 /* -------------------------------------------------------------- */
 /** "((LIT))" ( -- value ) [HIDDEN]
  * execution compiled by => LITERAL
