@@ -37,7 +37,6 @@
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
 #define HEXWIDTH (sizeof (p4cell) * 2)
 
-char p4_category (p4code p);
 /* ----------------------------------------------------------------------- */
 static void pf_prCell (p4cell n)
 {
