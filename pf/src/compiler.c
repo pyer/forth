@@ -32,7 +32,6 @@
 #include "interpret.h"
 
 /* -------------------------------------------------------------- */
-p4_Runtime2 P4RUNTIME_(pf_colon);
 
 FCode (p4_drop);
 FCode (p4_swap);
@@ -273,13 +272,11 @@ FCode (pf_builds_RT)
  *  the ans-forth => CREATE is the same as =>"<BUILDS"
  : <BUILDS BL WORD HEADER DOCREATE A, 0 A, ;
  */
-p4_Runtime2 pf_buildsRuntime;
 FCode (pf_builds)
 {
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    //FX_RUNTIME1 (pf_builds);
-    FX_RCOMMA (pf_buildsRuntime.exec[0]);
+    FX_RUNTIME1 (pf_builds);
     FX_RCOMMA (0);
 }
 P4RUNTIMES1_(pf_builds, pf_builds_RT, 0, pf_builds_RT_SEE);
@@ -353,15 +350,13 @@ FCode_RT (pf_colon_RT)
  * the execution of the resulting colon-word can also
  * return with => EXIT
  */
-p4_Runtime2 pf_colonRuntime;
 FCode (pf_colon)
 {
     FX (pf_Q_exec);
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     P4_NAMEFLAGS(LATEST) |= P4xSMUDGED;
-    //FX_RUNTIME1 (pf_colon);
-    FX_RCOMMA (pf_colonRuntime.exec[0]);
+    FX_RUNTIME1 (pf_colon);
     CSP = SP;
     STATE = P4_TRUE;
 }
