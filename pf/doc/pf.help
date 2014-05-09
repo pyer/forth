@@ -1344,6 +1344,18 @@ Display a human-readable representation of the named word’s definition.
 
 WORDS ( -- )
 List the definition names in the first word list of the search order.
+Display the category and the name.
+Categories:
+    : is a definition
+    C is a constant
+    V is a variable
+    v is a value
+    K is a floating-point constant
+    F is a floating-point variable
+    B is a BUILDS word
+    D is a DOES> word
+    d is a defered word
+    p is a primitive
 
 Programming-Tools extensions words
 ----------------------------------
