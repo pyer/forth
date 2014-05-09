@@ -35,10 +35,10 @@
 /* -------------------------------------------------------------- */
 FCode_RT (pf_defer_RT);
 
-FCode (p4_debug_colon_RT);
-FCode (p4_debug_colon);
-FCode (p4_debug_does_RT);
-FCode (p4_debug_does);
+FCode (pf_debug_colon_RT);
+FCode (pf_debug_colon);
+FCode (pf_debug_does_RT);
+FCode (pf_debug_does);
 
 /* -------------------------------------------------------------- */
 // display a message when a word is redefined
@@ -196,7 +196,7 @@ void pf_call (p4xt xt)
 
 /* -------------------------------------------------------------- */
 /**
- * the NEXT call. Can be replaced by p4_debug_execute to
+ * the NEXT call. Can be replaced by pf_debug_execute to
  * trace the inner forth interpreter.
  */
 void pf_normal_execute (p4xt xt)
@@ -918,7 +918,7 @@ FCode_RT (p4_f_constant_RT);
 char pf_category (p4code p)
 {
 //printf(" [%lx] (var=%lx) ", p, P4CODE(pf_value_RT) );
-    if (p == P4CODE(pf_colon_RT) || p == P4CODE(p4_debug_colon_RT))
+    if (p == P4CODE(pf_colon_RT) || p == P4CODE(pf_debug_colon_RT))
         return ':';
     if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_dictvar_RT))
         return 'V';
@@ -934,7 +934,7 @@ char pf_category (p4code p)
 #endif
     if (p == P4CODE(pf_builds_RT))
         return 'B';
-    if (p == P4CODE(pf_does_RT) || p == P4CODE(p4_debug_does_RT))
+    if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT))
         return 'D';
     if (p == P4CODE(pf_defer_RT))
         return 'd'; 
@@ -944,7 +944,7 @@ char pf_category (p4code p)
 
 char pf_show_category (p4code p)
 {
-    if (p == P4CODE(pf_colon_RT) || p == P4CODE(p4_debug_colon_RT)) {
+    if (p == P4CODE(pf_colon_RT) || p == P4CODE(pf_debug_colon_RT)) {
         pf_outs ("definition");
         return ':';
     }
@@ -974,7 +974,7 @@ char pf_show_category (p4code p)
         pf_outs ("BUILDS");
         return 'B';
     }
-    if (p == P4CODE(pf_does_RT) || p == P4CODE(p4_debug_does_RT)) {
+    if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT)) {
         pf_outs ("DOES>");
         return 'D';
     }
