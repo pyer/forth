@@ -910,22 +910,32 @@ P4RUNTIME1(pf_defer, pf_defer_RT);
 /* -------------------------------------------------------------- */
 /* return the category of the word which nfa is p
  */
+#if defined PF_WITH_FLOATING
+FCode_RT (p4_f_variable_RT);
+FCode_RT (p4_f_constant_RT);
+#endif
+
 char pf_category (p4code p)
 {
+//printf(" [%lx] (var=%lx) ", p, P4CODE(pf_value_RT) );
     if (p == P4CODE(pf_colon_RT) || p == P4CODE(p4_debug_colon_RT))
         return ':';
-    if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_value_RT) || p == P4CODE(pf_builds_RT))
+    if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_value_RT) || p == P4CODE(pf_dictvar_RT))
         return 'V';
-    if (p == P4CODE(pf_constant_RT))
+    if (p == P4CODE(pf_constant_RT) || p == P4CODE(pf_dictget_RT))
         return 'C';
-//    if (p == P4CODE(p4_vocabulary_RT))
-//        return 'W';
+#if defined PF_WITH_FLOATING
+    if (p == P4CODE(p4_f_variable_RT))
+        return 'V';
+    if (p == P4CODE(p4_f_constant_RT))
+        return 'C';
+#endif
+    if (p == P4CODE(pf_builds_RT))
+        return 'B';
     if (p == P4CODE(pf_does_RT) || p == P4CODE(p4_debug_does_RT))
         return 'D';
-//    if (p == P4CODE(p4_marker_RT))
-//        return 'M';
     if (p == P4CODE(pf_defer_RT))
-        return 'F'; 
+        return 'd'; 
     /* must be primitive */
     return 'p';
 }
@@ -1027,29 +1037,27 @@ void pf_load_words (const p4Words* ws)
 	    FX_COMMA ( *SP ); 
             ((*(p4cell **)&(SP))++);
 	    break;
+	case p4_DCON:
+	case p4_DVAL:
+            p4_header_in();
+            P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+	    FX_RUNTIME1_RT (pf_dictget);
+	    FX_COMMA (*SP++);
+	    break;
 	case p4_DVAR:
             p4_header_in();
             P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictvar);
 	    FX_COMMA (*SP++);
 	    break;
-	case p4_DCON:
-            p4_header_in();
-            P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-	    FX_RUNTIME1_RT (pf_dictget);
-	    FX_COMMA (*SP++);
+	case p4_OCON:
+	    FX (pf_constant);
 	    break;
 	case p4_OVAL:
-	case p4_IVAL:
 	    FX (pf_value);
 	    break;
 	case p4_OVAR:
-	case p4_IVAR:
 	    FX (pf_variable);
-	    break;
-	case p4_OCON:
-	case p4_ICON:
-	    FX (pf_constant);
 	    break;
 	default:
 	    pf_outf("\nERROR: unknown typecode for loadlist entry "
