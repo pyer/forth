@@ -157,23 +157,19 @@ typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
 #define p4_SXCO 'X'     /* CS */ /* smart-word (semant) */
 #define p4_RTCO 'r'     /* RT */ /* creates a word with special runtime */
  
-#define p4_OVAR 'v'     /* OV */ /* ordinary variable */
-#define p4_IVAR 'V'     /* IV */
 #define p4_OCON 'c'     /* OC */ /* ordinary constant */
-#define p4_ICON 'C'     /* IC */
 #define p4_OVAL 'l'     /* OL */ /* ordinary value */
-#define p4_IVAL 'L'     /* IL */
+#define p4_OVAR 'v'     /* OV */ /* ordinary variable */
 
-#define p4_DVAR 'm'     /* DV */ /* dict variable (threaded) */
-#define p4_DCON 'n'     /* DV */ /* dict constant (threaded) */
-#define p4_DVAL 'n'     /* DV */ /* dict value (idem constant) */
+#define p4_DCON 'd'     /* DV */ /* dict constant (threaded) */
+#define p4_DVAL 'm'     /* DV */ /* dict value (idem constant) */
+#define p4_DVAR 'w'     /* DV */ /* dict variable (threaded) */
 
-#define p4_INTO 'i'     /* make sure the vocabulary exists, and put all */
+#define p4_INTO 'I'     /* make sure the vocabulary exists, and put all */
                         /* of the following words into it, and with nonzero */
                         /* arg, make sure the voc is in the default search */ 
                         /* order (so they are visible after load) */
-#define p4_LOAD 'I'     /* load the referenced wordset, now, recursively */
-#define p4_EXPT 'e'     /* set an exception-id and descriptive string */
+#define p4_LOAD 'L'     /* load the referenced wordset, now, recursively */
 
 /* return the byte offset of a given component to beginning of structure: */
 #define OFFSET_OF(T,C)	((char *)&(((T *)0)->C) - (char *)0)
@@ -189,16 +185,13 @@ typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&P4SEMANTICS(SEM) }
 #define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&P4RUNTIME_(RUN) }
 
-#define P4_OVAR( NM)            { "v\237"NM, ((p4code)0) }
 #define P4_OCON( NM, VAL)       { "c\237"NM, (p4code)(VAL) }
-#define P4_OVAL( NM, VAL)       { "l\237"NM, (p4code)(VAL) }
 
-#define P4_DVAR( NM, VAL)       { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
-#define P4_DCON( NM, VAL)       { "n\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
-#define P4_DVAL( NM, VAL)       { "n\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
+#define P4_DCON( NM, VAL)       { "d\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
+#define P4_DVAL( NM, VAL)       { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
+#define P4_DVAR( NM, VAL)       { "w\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 
-#define P4_INTO( NM, DESCR)     { "i\377"NM, (p4code)(DESCR) } /*search-also*/
-#define P4_LOAD( NM, WORDS)     { "I\377"NM, (p4code)(&P4WORDS(WORDS)) }
-#define P4_EXPT( NM, ID)        { "e\237"NM, (p4code)(ID) } /*exception*/
+#define P4_INTO( NM, DESCR)     { "I\377"NM, (p4code)(DESCR) } /*search-also*/
+#define P4_LOAD( NM, WORDS)     { "L\377"NM, (p4code)(&P4WORDS(WORDS)) }
 
 #endif 
