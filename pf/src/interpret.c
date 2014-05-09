@@ -920,15 +920,17 @@ char pf_category (p4code p)
 //printf(" [%lx] (var=%lx) ", p, P4CODE(pf_value_RT) );
     if (p == P4CODE(pf_colon_RT) || p == P4CODE(p4_debug_colon_RT))
         return ':';
-    if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_value_RT) || p == P4CODE(pf_dictvar_RT))
+    if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_dictvar_RT))
         return 'V';
-    if (p == P4CODE(pf_constant_RT) || p == P4CODE(pf_dictget_RT))
+    if (p == P4CODE(pf_value_RT) || p == P4CODE(pf_dictget_RT))
+        return 'v';
+    if (p == P4CODE(pf_constant_RT))
         return 'C';
 #if defined PF_WITH_FLOATING
     if (p == P4CODE(p4_f_variable_RT))
-        return 'V';
+        return 'F';
     if (p == P4CODE(p4_f_constant_RT))
-        return 'C';
+        return 'K';
 #endif
     if (p == P4CODE(pf_builds_RT))
         return 'B';
