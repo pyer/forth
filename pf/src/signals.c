@@ -379,13 +379,13 @@ static void sig_handler (int sig)		/* Signal handler for all signals */
             switch (s->cLass)
             {
              default:		  /* an ANSI-Forth defined condition */
-                 printf("signal %i throw %i", sig, s->cLass);
+                 printf("signal %i throw %i\n", sig, s->cLass);
                  p4_throw (s->cLass);
              case Abort:		/* another catchable signal */
-                 printf("signal %i abort %s", sig, msg); 
+                 printf("signal %i abort %s\n", sig, msg); 
                  p4_throwstr (-256 - sig, msg);
              case Fatal:		/* a signal that kills us */
-                 printf("Received signal %s, %s", s->name, msg);
+                 printf("Received signal %s, %s\n", s->name, msg);
                  pf_longjmp_exit ();
             }
 	    ____;
