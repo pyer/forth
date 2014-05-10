@@ -932,8 +932,8 @@ char pf_category (p4code p)
     if (p == P4CODE(p4_f_constant_RT))
         return 'K';
 #endif
-    if (p == P4CODE(pf_builds_RT))
-        return 'B';
+    if (p == P4CODE(pf_create_RT))
+        return 'c';
     if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT))
         return 'D';
     if (p == P4CODE(pf_defer_RT))
@@ -970,12 +970,12 @@ char pf_show_category (p4code p)
         return 'K';
     }
 #endif
-    if (p == P4CODE(pf_builds_RT)) {
-        pf_outs ("BUILDS");
-        return 'B';
+    if (p == P4CODE(pf_create_RT)) {
+        pf_outs ("CREATE word");
+        return 'c';
     }
     if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT)) {
-        pf_outs ("DOES>");
+        pf_outs ("DOES> word");
         return 'D';
     }
     if (p == P4CODE(pf_defer_RT)) {
@@ -999,7 +999,7 @@ p4cell * cfa_to_body (p4xt xt)
     if (P4_XT_VALUE(xt) == FX_GET_RT (pf_dictvar) || 
 	P4_XT_VALUE(xt) == FX_GET_RT (pf_dictget)) 
         return ((p4cell*)( (char*)p4TH + P4_TO_BODY(xt)[0] ));
-    else if (P4_XT_VALUE(xt) == FX_GET_RT (pf_builds) ||
+    else if (P4_XT_VALUE(xt) == FX_GET_RT (pf_create) ||
              P4_XT_VALUE(xt) == FX_GET_RT (pf_does) || 
              P4_XT_VALUE(xt) == FX_GET_RT (pf_defer))
         return P4_TO_DOES_BODY(xt); 
