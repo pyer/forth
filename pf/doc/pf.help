@@ -1121,7 +1121,7 @@ Extension words
 FILE-STATUS FLUSH-FILE INCLUDE
 ---
 C-like words
-FCLOSE ERRNO FGETC FGETS FOPEN FPUTC FPUTS
+ERRNO FCLOSE FGETC FGETS FOPEN FPUTC FPUTS
 
 BIN ( fam1 -- fam2 )
 Modify the implementation-defined file access method fam1 to additionally select a
@@ -1276,14 +1276,14 @@ File-Access C-like words
 ------------------------
 Similar to C functions
 
-FCLOSE ( FILE* -- )
-Flushes the stream and closes the underlying file descriptor.
-
 ERRNO ( -- errno )
 Returns error number of the last system call.
 Its value is significant only when the return value of the call indicated an error
 (i.e., -1 from most system calls; -1 or NULL from most library functions); a function that succeeds is allowed to change errno.
 Valid error numbers are all nonzero; errno is never set to zero by any system call or library function.
+
+FCLOSE ( FILE* -- )
+Flushes the stream and closes the underlying file descriptor.
 
 FGETC ( FILE* -- c )
 Reads the next character from stream and returns it as an unsigned char cast to an int, or EOF on end of file or error.
