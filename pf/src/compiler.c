@@ -235,19 +235,19 @@ FCode (pf_forward_resolve)
 FCode_XE (pf_semicolon_execution);
 FCode (pf_semicolon);
 
-static P4_CODE_RUN(pf_builds_RT_SEE)
+static P4_CODE_RUN(pf_create_RT_SEE)
 {
     strcat (p, "CREATE ");
     strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
     return 0;
 }
 
-/** "((BUILDS))" ( -- pfa ) [HIDDEN]
+/** "((CREATE))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => CREATE which
  * is not much unlike a => VARIABLE
  * (in ANS Forth Mode we reserve an additional DOES-field)
  */
-FCode (pf_builds_RT)
+FCode (pf_create_RT)
 {
     *--SP = (p4cell)( WP_PFA + 1 );
 }
@@ -262,24 +262,14 @@ FCode (pf_builds_RT)
  * portable expression =>"0" =>"BUFFER:")
  */
 
-/** <BUILDS ( 'name' -- ) [FTH]
- *  make a => HEADER whose runtime will be changed later
- *  using => DOES>  <br />
- *  note that ans'forth does not define => <BUILDS and
- *  it suggests to use => CREATE directly. <br />
- *  ... if you want to write FIG-programs in pure pfe then you have
- *  to use => CREATE: to get the FIG-like meaning of => CREATE whereas
- *  the ans-forth => CREATE is the same as =>"<BUILDS"
- : <BUILDS BL WORD HEADER DOCREATE A, 0 A, ;
- */
-FCode (pf_builds)
+FCode (pf_create)
 {
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    FX_RUNTIME1 (pf_builds);
+    FX_RUNTIME1 (pf_create);
     FX_RCOMMA (0);
 }
-P4RUNTIMES1_(pf_builds, pf_builds_RT, 0, pf_builds_RT_SEE);
+P4RUNTIMES1_(pf_create, pf_create_RT, 0, pf_create_RT_SEE);
 
 /** "(DOES>)" ( -- pfa ) [HIDDEN]
  * execution compiled by => DOES>
@@ -1154,10 +1144,8 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("R>",           pf_r_from),
     P4_SXco ("R@",           pf_r_fetch),
     /* definition checks */
-    //P4_DVaR ("STATE",        state),
     P4_DVAR ("STATE",        state),
-    P4_RTco ("<BUILDS",      pf_builds),
-    P4_RTco ("CREATE",       pf_builds), // CREATE and <BUILDS are synonyms
+    P4_RTco ("CREATE",       pf_create),
     P4_SXco ("DOES>",        pf_does),
     P4_RTco (":",            pf_colon),
     P4_SXco (";",            pf_semicolon),
