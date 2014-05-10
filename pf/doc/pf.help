@@ -187,9 +187,6 @@ See also: #> # #S
 <> ( x1 x2 -- flag )
 flag is true if and only if x1 is not bit-for-bit the same as x2.
 
-<BUILDS
-TBD
-
 = ( n1 n2 -- flag )
 flag is true if and only if n1 is bit-for-bit the same as n2.
 
@@ -1352,7 +1349,6 @@ Categories:
     v is a value
     K is a floating-point constant
     F is a floating-point variable
-    B is a BUILDS word
     D is a DOES> word
     d is a defered word
     p is a primitive
