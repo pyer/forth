@@ -1349,6 +1349,7 @@ Categories:
     v is a value
     K is a floating-point constant
     F is a floating-point variable
+    c is a CREATE word
     D is a DOES> word
     d is a defered word
     p is a primitive
