@@ -104,8 +104,8 @@ FCode (pf_forward_mark);
 FCode (pf_forward_resolve);
 FCode (pf_bracket_compile);
 
-FCode_RT (pf_builds_RT);
-FCode  (pf_builds);
+FCode_RT (pf_create_RT);
+FCode  (pf_create);
 FCode_RT (pf_does_RT);
 FCode  (pf_does);
 
