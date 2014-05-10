@@ -155,8 +155,9 @@ void pf_help(const char *name, int len)
     FILE *fh = fopen( PF_HELP_FILE, "r" );
     if( fh != NULL ) {
         while( fgets( buffer, 255, fh ) != NULL ) {
-            if( found == 0 && strncmp(buffer,(char *)name,len) == 0 && buffer[len] == ' ' ) {
-                found = 1;
+            if( found == 0 && strncmp(buffer,(char *)name,len) == 0 ) {
+                if( buffer[len] == ' ' || buffer[len] == '\n' || buffer[len] == '\0' )
+                    found = 1;
             }
             if( found ) {
                 int buflen = strlen(buffer);
