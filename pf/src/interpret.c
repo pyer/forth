@@ -1035,12 +1035,13 @@ void pf_load_words (const p4Words* ws)
 
 	word_ptr = ((p4_char_t*)(w->name+2));
 	word_len = -1;
-        *--SP = (p4cell)(w->ptr);
+//        *--SP = (p4cell)(w->ptr);
 	
 	switch (type)
 	{
 	case p4_SXCO:
-	    ___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
+	    //___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
+	    ___ p4_Semant* semant = (p4_Semant*)(void*)(w->ptr);
 	    p4_header_in();
 	    FX_COMMA ( semant->comp );
 	    if (! (semant ->name))
@@ -1052,12 +1053,14 @@ void pf_load_words (const p4Words* ws)
 	    */
 	    break; ____;
 	case p4_RTCO:
-	    ___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
+	    //___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
+	    ___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
 	    p4_header_in();
 	    FX_COMMA ( runtime->comp );
 	    break; ____;
 	case p4_IXCO:         /* these are real primitives which do */
 	case p4_FXCO:         /* not reference an info-block but just */
+            *--SP = (p4cell)(w->ptr);
 	    p4_header_in();   /* the p4code directly */
 	    FX_COMMA ( *SP ); 
             ((*(p4cell **)&(SP))++);
@@ -1067,23 +1070,30 @@ void pf_load_words (const p4Words* ws)
             p4_header_in();
             P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictget);
-	    FX_COMMA (*SP++);
+	    //FX_COMMA (*SP++);
+	    FX_COMMA (w->ptr);
 	    break;
 	case p4_DVAR:
             p4_header_in();
             P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
 	    FX_RUNTIME1_RT (pf_dictvar);
-	    FX_COMMA (*SP++);
+	    //FX_COMMA (*SP++);
+	    FX_COMMA (w->ptr);
 	    break;
 	case p4_OCON:
+            *--SP = (p4cell)(w->ptr);
 	    FX (pf_constant);
 	    break;
+/*
 	case p4_OVAL:
+            *--SP = (p4cell)(w->ptr);
 	    FX (pf_value);
 	    break;
 	case p4_OVAR:
+            *--SP = (p4cell)(w->ptr);
 	    FX (pf_variable);
 	    break;
+*/
 	default:
 	    pf_outf("\nERROR: unknown typecode for loadlist entry "
 		      "0x%x -> \"%s\"", 
