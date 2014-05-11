@@ -206,7 +206,7 @@ void help_opt(char *progname)
     printf("Usage: %s [-f file] [-e word] [v] [h]\n", progname);
     puts("   -f file  : load file   (before -e option if any)");
     puts("   -e word  : execute word (after -f option if any)");
-    puts("   -v       : print version number");
+    puts("   -v       : print version");
     puts("   -h       : print this help");
 }
  
@@ -230,7 +230,8 @@ int main (int argc, char** argv)
             len = strlen(buffer);
             break;
         case 'v':
-            puts(PF_VERSION);
+//            puts(PF_VERSION);
+            puts(pf_version_string());
             return 0;
         case 'h':
             help_opt(argv[0]);
