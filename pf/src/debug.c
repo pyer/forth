@@ -114,10 +114,10 @@ int maxlevel;
 long opcounter ;
 
 /* ----------------------------------------------------------------------- */
-FCode (p4_debug_colon_RT);
-FCode (p4_debug_colon);
-FCode (p4_debug_does_RT);
-FCode (p4_debug_does);
+FCode (pf_debug_colon_RT);
+FCode (pf_debug_colon);
+FCode (pf_debug_does_RT);
+FCode (pf_debug_does);
 
 FCode_RT (pf_defer_RT);
 
@@ -170,11 +170,14 @@ FCode_RT (pf_forget_wordset_RT)
 static const char* p4_loader_next_wordset (p4_Decompile* decomp)
 {
     p4xt xt;
+
     do {
+//printf("decomp->next=%lx\n",decomp->next);
 	if (! decomp->next) return 0;
 	xt = name_to_cfa (decomp->next);
 	decomp->next = *CFA_TO_LINK(xt);
     } while (*xt != P4CODE(pf_forget_wordset_RT));
+puts("decomp->word");
     /* assert xt is wordset_RT */
     /* FIXME: forget-layout? BODY[0] has the value? */
     ___ p4Words* ws = *(p4Words**) P4_TO_BODY(xt); 
@@ -198,8 +201,10 @@ static p4_char_t p4_loader_next (p4_Decompile* decomp)
 	goto nothing_left;
     return decomp->word->loader->type;
  nothing_left:
+puts("before");
     if (! p4_loader_next_wordset (decomp))
 	return '\0';
+puts("after");
     if (! decomp->left) 
 	goto nothing_left;
     goto next_loader;
@@ -429,7 +434,7 @@ static P4_CODE_RUN(pf_colon_RT_SEE)
 
 static P4_CODE_RUN(pf_does_RT_SEE)
 {
-    strcat (p, "<BUILDS ");
+    strcat (p, "CREATE ");
     strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
     strcat (p, " ( ALLOT )");
     return (*P4_TO_DOES_CODE(xt))-1;
@@ -455,12 +460,13 @@ void p4_decompile (p4_namebuf_t* nfa, p4xt xt)
     p4_bool_t iscode = P4_FALSE;
     *buf = '\0';
     FX (pf_cr);
+//puts("decompile");
 
     if (     *xt == P4CODE(pf_colon_RT) || 
-	     *xt == P4CODE(p4_debug_colon_RT))
+	     *xt == P4CODE(pf_debug_colon_RT))
     { rest = pf_colon_RT_SEE(buf,xt,nfa); goto decompile; }
     else if (*xt == P4CODE(pf_does_RT)|| 
-	     *xt == P4CODE(p4_debug_does_RT))
+	     *xt == P4CODE(pf_debug_does_RT))
     { rest = pf_does_RT_SEE(buf,xt,nfa); goto decompile; }
 
     if (*xt == (p4code) P4_TO_BODY(xt)) {
@@ -619,7 +625,7 @@ static void interaction (p4xt *ip)
                   FX (pf_cr);
                   p4_decompile_rest ((p4xt *) cfa_to_body (*ip), 1, 4, P4_FALSE);
                   break;
-              case 'd':
+              case 'D':
                   pf_outs ("\nDOES>");
                   p4_decompile_rest ((p4xt *) (*ip)[-1], 0, 4, P4_FALSE);
                   break;
@@ -652,33 +658,30 @@ static void interaction (p4xt *ip)
 static void do_adjust_level (const p4xt xt)
 {
     if (*xt == P4CODE(pf_colon_RT) ||
-	*xt == P4CODE(p4_debug_colon_RT) ||
+	*xt == P4CODE(pf_debug_colon_RT) ||
 	*xt == P4CODE(pf_does_RT) ||
-	*xt == P4CODE(p4_debug_does_RT))
+	*xt == P4CODE(pf_debug_does_RT))
         level++;
     else if (*xt == P4CODE (pf_semicolon_execution))
-// || *xt == P4CODE (p4_locals_exit_execution))
         level--;
 }
 
-void pf_normal_execute (p4xt xt); // in main.c
-
-static void p4_debug_execute (p4xt xt)
+static void pf_debug_execute (p4xt xt)
 {
     do_adjust_level (xt);
     pf_normal_execute (xt);
 }
 
-static void p4_debug_on (void)
+static void pf_debug_on (void)
 {
     debugging = 1;
     opcounter = 0;
-    PFE.execute = p4_debug_execute;
+    PFE.execute = pf_debug_execute;
     level = maxlevel = 0;
     pf_outf ("\nSingle stepping, type 'h' or '?' for help\n");
 }
 
-void p4_debug_off (void)
+static void pf_debug_off (void)
 {
     debugging = 0;
     PFE.execute = pf_normal_execute;
@@ -701,31 +704,31 @@ do_single_step (void)		/* single stepping */
     }
 }
 
-FCode (p4_debug_colon_RT)
+FCode (pf_debug_colon_RT)
 {
     FCode (pf_colon_RT);
     if (!debugging)
     {
-        p4_debug_on ();
+        pf_debug_on ();
         do_single_step ();
-        p4_debug_off ();
+        pf_debug_off ();
     }
 }
-FCode (p4_debug_colon) { /* dummy */ }
-P4RUNTIME1(p4_debug_colon, p4_debug_colon_RT);
+FCode (pf_debug_colon) { /* dummy */ }
+P4RUNTIME1(pf_debug_colon, pf_debug_colon_RT);
 
-FCode (p4_debug_does_RT)
+FCode (pf_debug_does_RT)
 {
     FCode (pf_does_RT);
     if (!debugging)
     {
-        p4_debug_on ();
+        pf_debug_on ();
         do_single_step ();
-        p4_debug_off ();
+        pf_debug_off ();
     }
 }
-FCode (p4_debug_does) { /* dummy */ }
-P4RUNTIME1(p4_debug_does, p4_debug_does_RT);
+FCode (pf_debug_does) { /* dummy */ }
+P4RUNTIME1(pf_debug_does, pf_debug_does_RT);
 
 /** DEBUG ( "word" -- ) [FTH]
  * this word will place an debug-runtime into
@@ -736,18 +739,16 @@ P4RUNTIME1(p4_debug_does, p4_debug_does_RT);
  * interactive and should be self-explanatory.
  * (use => NO-DEBUG to turn it off again)
  */
-FCode (p4_debug)
+FCode (pf_debug)
 {
-    p4xt xt;
-
-    xt = pf_tick_cfa ();
-    if (P4_XT_VALUE(xt) == FX_GET_RT (p4_debug_colon) 
-      || P4_XT_VALUE(xt) == FX_GET_RT (p4_debug_does))
+    p4xt xt = pf_tick_cfa ();
+    if (P4_XT_VALUE(xt) == FX_GET_RT (pf_debug_colon) 
+      || P4_XT_VALUE(xt) == FX_GET_RT (pf_debug_does))
         return;
     else if (P4_XT_VALUE(xt) == FX_GET_RT (pf_colon))
-        P4_XT_VALUE(xt) = FX_GET_RT (p4_debug_colon);
+        P4_XT_VALUE(xt) = FX_GET_RT (pf_debug_colon);
     else if (P4_XT_VALUE(xt) == FX_GET_RT (pf_does))
-        P4_XT_VALUE(xt) = FX_GET_RT (p4_debug_does);
+        P4_XT_VALUE(xt) = FX_GET_RT (pf_debug_does);
     else
         p4_throw (P4_ON_ARG_TYPE);
 }
@@ -755,41 +756,36 @@ FCode (p4_debug)
 /** NO-DEBUG ( "word" -- ) [FTH]
  * the inverse of " => DEBUG word "
  */
-FCode (p4_no_debug)
+FCode (pf_no_debug)
 {
-    p4xt xt;
-
-    xt = pf_tick_cfa ();
-    if (P4_XT_VALUE(xt) == FX_GET_RT (p4_debug_colon))
+    p4xt xt = pf_tick_cfa ();
+    if (P4_XT_VALUE(xt) == FX_GET_RT (pf_debug_colon))
         P4_XT_VALUE(xt) = FX_GET_RT (pf_colon);
-    else if (P4_XT_VALUE(xt) == FX_GET_RT (p4_debug_does))
+    else if (P4_XT_VALUE(xt) == FX_GET_RT (pf_debug_does))
         P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
     else
         p4_throw (P4_ON_ARG_TYPE);
 }
 
 /** SEE ( "word" -- )
- *  decompile word - tries to show it in re-compilable form.
- *
- *  => (SEE) tries to display the word as a reasonable indented
- *  source text. If you defined your own control structures or
- *  use extended control-flow patterns, the indentation may be
- *  suboptimal.
- simulate:
-   : SEE  [COMPILE] ' (SEE) ; 
+ *  tries to display the word as a reasonable indented source text
+ *  or displays the type of word.
  */
-
 FCode (pf_see)
 {
     p4char *nfa = pf_tick_nfa();
-    p4_decompile (nfa, name_to_cfa(nfa));
+    p4xt cfa = name_to_cfa(nfa);
+    printf("\n%.*s is a ", NAMELEN(nfa), NAMEPTR(nfa));
+    char c = pf_show_category(*cfa);
+    if ( c==':' || c=='c' || c=='D' || c=='d' )
+       p4_decompile (nfa, cfa);
+    FX (pf_cr);
 }
 
 P4_LISTWORDS (debug) =
 {
-//    P4_INTO ("FORTH", 0),
-    P4_FXco ("DEBUG",        p4_debug),
-    P4_FXco ("NO-DEBUG",     p4_no_debug),
+    P4_FXco ("DEBUG",        pf_debug),
+    P4_FXco ("NO-DEBUG",     pf_no_debug),
     P4_FXco ("SEE",          pf_see),
 };
 P4_COUNTWORDS (debug, "Debugger words");
