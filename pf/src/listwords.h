@@ -165,12 +165,6 @@ typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
 #define p4_DVAL 'm'     /* DV */ /* dict value (idem constant) */
 #define p4_DVAR 'w'     /* DV */ /* dict variable (threaded) */
 
-#define p4_INTO 'I'     /* make sure the vocabulary exists, and put all */
-                        /* of the following words into it, and with nonzero */
-                        /* arg, make sure the voc is in the default search */ 
-                        /* order (so they are visible after load) */
-#define p4_LOAD 'L'     /* load the referenced wordset, now, recursively */
-
 /* return the byte offset of a given component to beginning of structure: */
 #define OFFSET_OF(T,C)	((char *)&(((T *)0)->C) - (char *)0)
 
@@ -190,8 +184,5 @@ typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
 #define P4_DCON( NM, VAL)       { "d\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 #define P4_DVAL( NM, VAL)       { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 #define P4_DVAR( NM, VAL)       { "w\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
-
-#define P4_INTO( NM, DESCR)     { "I\377"NM, (p4code)(DESCR) } /*search-also*/
-#define P4_LOAD( NM, WORDS)     { "L\377"NM, (p4code)(&P4WORDS(WORDS)) }
 
 #endif 
