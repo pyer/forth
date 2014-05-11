@@ -1022,29 +1022,10 @@ FCode (pf_to_body)
 }
 
 /* -------------------------------------------------------------- */
-static FCode (pf_load_words)
-{
-    void* p = (void*) *SP++;
-    if (p) pf_load_words (p);
-}
-
 void pf_load_words (const p4Words* ws)
 {
     int k = ws->n;
     const p4Word* w = ws->w;
-    char dictname[NAME_SIZE_MAX+1]; char* dn;
-
-    if (ws->name) 
-    {  
-        //P4_info1 ("load '%s'", (ws->name));
-        strncpy (dictname, ws->name, NAME_SIZE_MAX);
-        dictname[NAME_SIZE_MAX] = '\0';
-        if ((dn= strchr (dictname, ' '))
-            ||  (dn= strchr (dictname, '(')))
-            *dn = '\0';
-    }else{
-        sprintf (dictname, "%p", DP);
-    }
 
     for ( ; --k >= 0; w++)
     {
@@ -1058,9 +1039,6 @@ void pf_load_words (const p4Words* ws)
 	
 	switch (type)
 	{
-	case p4_LOAD:
-	    FX (pf_load_words); /* RECURSION !! */
-	    continue;
 	case p4_SXCO:
 	    ___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
 	    p4_header_in();
