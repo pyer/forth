@@ -99,15 +99,6 @@ void abort_system (void)
 #endif
 }
 
-/** BYE ( -- ) no-return
- * should quit the forth environment completly
- */
-FCode (p4_bye)
-{
-    pf_outs ("\nGoodbye!\n");
-    pf_longjmp_exit ();
-}
-
 /************************************************************************/
 extern const p4Words
     P4WORDS(compiler),
@@ -125,27 +116,6 @@ extern const p4Words
     P4WORDS(terminal),
     P4WORDS(tools),
     P4WORDS(version);
-
-P4_LISTWORDS(forth) =
-{
-    P4_FXco ("BYE", p4_bye),
-    P4_LOAD ("", core),
-    P4_LOAD ("", compiler),
-    P4_LOAD ("", interpret),
-    P4_LOAD ("", file),
-    P4_LOAD ("", terminal),
-    P4_LOAD ("", shell),
-    P4_LOAD ("", exception),
-#if defined PF_WITH_FLOATING
-    P4_LOAD ("", floating),
-#endif
-    P4_LOAD ("", signals),
-    P4_LOAD ("", tools),
-    P4_LOAD ("", facility),
-    P4_LOAD ("", debug),
-    P4_LOAD ("", version),
-};
-P4_COUNTWORDS(forth, "Forth Base system");
 
 /************************************************************************/
 /**
@@ -214,7 +184,21 @@ void pf_init_system (p4_Thread* th) /* main_init */
     p4_header_comma ("FORTH", 5);
     FX_XCOMMA ((p4xt)(pf_noop_));
     /* and load other words */
-    pf_load_words (&P4WORDS (forth));
+    pf_load_words (&P4WORDS (core));
+    pf_load_words (&P4WORDS (compiler));
+    pf_load_words (&P4WORDS (interpret));
+    pf_load_words (&P4WORDS (file));
+    pf_load_words (&P4WORDS (terminal));
+    pf_load_words (&P4WORDS (shell));
+    pf_load_words (&P4WORDS (exception));
+#if defined PF_WITH_FLOATING
+    pf_load_words (&P4WORDS (floating));
+#endif
+    pf_load_words (&P4WORDS (signals));
+    pf_load_words (&P4WORDS (tools));
+    pf_load_words (&P4WORDS (facility));
+    pf_load_words (&P4WORDS (debug));
+    pf_load_words (&P4WORDS (version));
 }
 
 void help_opt(char *progname)
