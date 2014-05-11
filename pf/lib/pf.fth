@@ -47,9 +47,4 @@
 : led3_on  ( -- ) led3 led_on  ;
 : led3_off ( -- ) led3 led_off ;
 
-
-.version
-cr
-
 : hello ." Hello world !" cr ;
-hello
