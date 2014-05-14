@@ -942,51 +942,6 @@ char pf_category (p4code p)
     return 'p';
 }
 
-char pf_show_category (p4code p)
-{
-    if (p == P4CODE(pf_colon_RT) || p == P4CODE(pf_debug_colon_RT)) {
-        pf_outs ("definition");
-        return ':';
-    }
-    if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_dictvar_RT)) {
-        pf_outs ("variable");
-        return 'V';
-    }
-    if (p == P4CODE(pf_value_RT) || p == P4CODE(pf_dictget_RT)) {
-        pf_outs ("value");
-        return 'v';
-    }
-    if (p == P4CODE(pf_constant_RT)) {
-        pf_outs ("constant");
-        return 'C';
-    }
-#if defined PF_WITH_FLOATING
-    if (p == P4CODE(p4_f_variable_RT)) {
-        pf_outs ("floating-point variable");
-        return 'F';
-    }
-    if (p == P4CODE(p4_f_constant_RT)) {
-        pf_outs ("floating-point constant");
-        return 'K';
-    }
-#endif
-    if (p == P4CODE(pf_create_RT)) {
-        pf_outs ("CREATE word");
-        return 'c';
-    }
-    if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT)) {
-        pf_outs ("DOES> word");
-        return 'D';
-    }
-    if (p == P4CODE(pf_defer_RT)) {
-        pf_outs ("defered word");
-        return 'd'; 
-    }
-    /* must be primitive */
-        pf_outs ("primitive");
-    return 'p';
-}
-
 /* -------------------------------------------------------------- */
 /* >BODY is known to work on both DOES-style and VAR-style words
  * and it will even return the thread-local address of remote-style words
