@@ -185,14 +185,6 @@ FCode (p4_f_fetch)
     *--FP = *(double *) *SP++;
 }
 
-static P4_CODE_RUN(p4_f_constant_RT_SEE)
-{
-    /*  (*P4_TO_CODE(xt) == PFX (p4_f_constant_RT)) */
-    sprintf (p, "%g FCONSTANT %.*s", *(double *) p4_dfaligned ((p4cell) P4_TO_BODY (xt)),
-	     NAMELEN(nfa), NAMEPTR(nfa));
-    return 0; /* no colon */
-}
-
 FCode_RT (p4_f_constant_RT)
 {
     *--FP = *(double *)WP_PFA;
@@ -205,7 +197,7 @@ FCode (p4_f_constant)
     FX_RUNTIME1 (p4_f_constant);
     FX_FCOMMA (*FP++);
 }
-P4RUNTIMES1_(p4_f_constant, p4_f_constant_RT, 0,p4_f_constant_RT_SEE);
+P4RUNTIME1(p4_f_constant, p4_f_constant_RT);
 
 FCode (p4_f_depth)
 {
