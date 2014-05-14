@@ -235,13 +235,6 @@ FCode (pf_forward_resolve)
 FCode_XE (pf_semicolon_execution);
 FCode (pf_semicolon);
 
-static P4_CODE_RUN(pf_create_RT_SEE)
-{
-    strcat (p, "CREATE ");
-    strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
-    return 0;
-}
-
 /** "((CREATE))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => CREATE which
  * is not much unlike a => VARIABLE
@@ -269,7 +262,7 @@ FCode (pf_create)
     FX_RUNTIME1 (pf_create);
     FX_RCOMMA (0);
 }
-P4RUNTIMES1_(pf_create, pf_create_RT, 0, pf_create_RT_SEE);
+P4RUNTIME1(pf_create, pf_create_RT);
 
 /** "(DOES>)" ( -- pfa ) [HIDDEN]
  * execution compiled by => DOES>
@@ -499,14 +492,6 @@ char * p4_str_dot (p4cell n, char *p, int base)
     return p;
 }
 
-static P4_CODE_RUN(pf_constant_RT_SEE)
-{
-    strcat (p, p4_str_dot (*P4_TO_BODY (xt), p+200, BASE));
-    strcat (p, "CONSTANT ");
-    strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
-    return 0;
-}
-
 /** "((CONSTANT))" ( -- ) [HIDDEN]
  * runtime compiled by => CONSTANT
  */
@@ -531,15 +516,7 @@ FCode (pf_constant)
     FX_RUNTIME1 (pf_constant);
     FX_VCOMMA (*SP++);
 }
-P4RUNTIMES1_(pf_constant, pf_constant_RT, 0 ,pf_constant_RT_SEE);
-
-static P4_CODE_RUN(pf_value_RT_SEE)
-{
-    strcat (p, p4_str_dot (*P4_TO_BODY (xt), p+200, BASE));
-    strcat (p, "VALUE ");
-    strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
-    return 0;
-}
+P4RUNTIME1(pf_constant, pf_constant_RT);
 
 /** "((VALUE))" ( -- value ) [HIDDEN]
  * runtime compiled by => VALUE
@@ -562,7 +539,7 @@ FCode (pf_value)
     FX_RUNTIME1 (pf_value);
     FX_VCOMMA (*SP++);
 }
-P4RUNTIMES1_ (pf_value, pf_value_RT, 0 ,pf_value_RT_SEE);
+P4RUNTIME1(pf_value, pf_value_RT);
 
 /** "((VAR))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => VARIABLE
@@ -570,14 +547,6 @@ P4RUNTIMES1_ (pf_value, pf_value_RT, 0 ,pf_value_RT_SEE);
 FCode_RT (pf_variable_RT)
 {
     *--SP = (p4cell) WP_PFA;
-}
-
-static P4_CODE_RUN(pf_variable_RT_SEE)
-{
-    strcat (p, p4_str_dot (*P4_TO_BODY (xt), p+200, BASE));
-    strcat (p, "VARIABLE ");
-    strncat (p, (char*) NAMEPTR(nfa), NAMELEN(nfa));
-    return 0;
 }
 
 /** VARIABLE ( 'name' -- ) [ANS] [DOES: -- name* ]
@@ -593,8 +562,7 @@ FCode (pf_variable)
     FX_RUNTIME1(pf_variable);
     FX_VCOMMA (0);
 }
-//P4RUNTIME1(pf_variable, pf_variable_RT);
-P4RUNTIMES1_ (pf_variable, pf_variable_RT, 0, pf_variable_RT_SEE);
+P4RUNTIME1(pf_variable, pf_variable_RT);
 
 /* -------------------------------------------------------------- */
 /** "((LIT))" ( -- value ) [HIDDEN]
