@@ -15,6 +15,13 @@ p4cell *csp;		/* compiler security, saves sp here */
 #define P4SEMANTICS(X) X##_Semant
 #define P4RUNTIME_(X)  X##Runtime
 
+#define P4RUNTIME1(C,E1)            \
+p4_Runtime2 P4RUNTIME_(C) =         \
+{ P4_RUNTIME_MAGIC, 0, 0,           \
+  P4CODE(C), { P4CODE(E1), NULL },  \
+}
+
+
 /* compile execution semantics from within C-code: */
 #define FX_DEF_COMPILE1(X) p4_Seman2  P4SEMANTICS(X)
 #define FX_DEF_COMPILE2(X) p4_Seman2  P4SEMANTICS(X)
@@ -54,30 +61,6 @@ p4_Seman2 P4SEMANTICS(C) =			\
                   FX_ZCOMMA (FX_GET_COMPILE1(X)); } while(0)
 #define FX_COMPILE2(X) do { extern     FX_DEF_COMPILE2(X);  \
                   FX_ZCOMMA (FX_GET_COMPILE2(X)); } while(0)
-
-#define P4RUNTIME_(X)  X##Runtime
-
-#define P4RUNTIMES1_(C,E1,FLAGS,SEE)            \
-p4_Runtime2 P4RUNTIME_(C) =                     \
-{ (const char*) "@",                          \
-  P4_RUNTIME_MAGIC, FLAGS, 0,                   \
-  P4CODE(C), { P4CODE(E1), NULL },              \
-  SEE                            \
-}
-
-#define P4RUNTIMES2_(C,E1,E2,FLAGS,SEE)         \
-p4_Runtime2 P4RUNTIME_(C) =                     \
-{ (const char*) "@",                          \
-  P4_RUNTIME_MAGIC, FLAGS, 0,                   \
-  P4CODE(C), { P4CODE(E1), P4CODE(E2) },        \
-  SEE                            \
-}
-//  { SEE, NULL, NULL },
-
-#define P4RUNTIMES1(C,E,FLAGS) P4RUNTIMES1_(C,E,FLAGS,0)
-#define P4RUNTIMES2(C,E1,E2,FLAGS) P4RUNTIMES1_(C,E1,E2,FLAGS,0)
-
-#define P4RUNTIME1(C,E1)    P4RUNTIMES1(C,E1,0)
 
 
 /* 
