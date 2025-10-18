@@ -27,8 +27,8 @@
 #define SIZEOF_DOUBLE 8
 #define SIZEOF_VOIDP  8
 
-#define PF_BOOT_FILE "/usr/local/etc/pf.fth"
-#define PF_HELP_FILE "/usr/local/share/pf.help"
+#define PF_BOOT_FILE "/etc/pf.fth"
+#define PF_HELP_FILE "/usr/share/pf.help"
 
 #endif
 

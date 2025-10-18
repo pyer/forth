@@ -38,10 +38,10 @@ struct p4_Thread
 
 };
 
-struct p4_Thread* p4TH;
+extern struct p4_Thread* p4TH;
 
-char* dict;
-char* dictlimit;
+extern char* dict;
+extern char* dictlimit;
 
 
 #define PFE (*p4TH)

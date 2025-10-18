@@ -19,16 +19,14 @@ task :arm do
   sh "scp pf          bbb:/usr/bin/pf"
   sh "scp lib/pf.fth  bbb:/usr/etc/pf.fth"
   sh "scp doc/pf.help bbb:/usr/share/pf.help"
-  sh "rm pf"
 end
 
 task :x86 do
   ARCH='X86'
   Rake::Task[:install].invoke
-  sh "sudo install -m 755 pf          /usr/local/bin/pf"
-  sh "sudo install -m 755 lib/pf.fth  /usr/local/etc/pf.fth"
-  sh "sudo install -m 755 doc/pf.help /usr/local/share/pf.help"
-  sh "rm pf"
+  sh "sudo install -m 755 pf          /bin/pf"
+  sh "sudo install -m 755 lib/pf.fth  /etc/pf.fth"
+  sh "sudo install -m 755 doc/pf.help /usr/share/pf.help"
 end
 
 task :install => ['pf'] do
@@ -39,8 +37,8 @@ CLEAN.include('target')
 
 directory 'target'
 
-file 'pf' => ['target','target/main.o','target/compiler.o','target/core.o','target/exception.o','target/facility.o','target/interpret.o','target/file.o','target/floating.o','target/history.o','target/debug.o','target/terminal.o','target/shell.o','target/signals.o','target/tools.o','target/version.o' ] do
-  sh "gcc -D#{ARCH} -g -Wall -Wstrict-prototypes -W,--warn-common -funsigned-char -fPIC -rdynamic -o pf target/main.o target/compiler.o target/core.o target/exception.o target/facility.o target/interpret.o target/file.o target/floating.o target/history.o target/debug.o target/terminal.o target/shell.o target/signals.o target/tools.o target/version.o -lm"
+file 'pf' => ['target','target/main.o','target/compiler.o','target/core.o','target/exception.o','target/facility.o','target/interpret.o','target/file.o','target/floating.o','target/history.o','target/terminal.o','target/shell.o','target/signals.o','target/tools.o','target/version.o' ] do
+  sh "gcc -D#{ARCH} -g -Wall -Wstrict-prototypes -fcommon -funsigned-char -fPIC -rdynamic -o pf target/main.o target/compiler.o target/core.o target/exception.o target/facility.o target/interpret.o target/file.o target/floating.o target/history.o target/terminal.o target/shell.o target/signals.o target/tools.o target/version.o -lm"
 end
 
 rule /target\/.*\.o/ => proc {|t| t.pathmap('src/%n.c')} do |t|

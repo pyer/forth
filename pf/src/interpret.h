@@ -2,10 +2,10 @@
 #define __INTERPRET_H
 
 // display a message when a word is redefined
-int redefined_msg;
+extern int redefined_msg;
 void show_word(void);
 
-p4_namebuf_t *LATEST;
+extern p4_namebuf_t *LATEST;
 
 /* you must differentiate between VAR-style body and DOES-style body */
 #define CFA_TO_LINK(C)   ((p4char**)(C) - 1 )

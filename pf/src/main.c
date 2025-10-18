@@ -47,6 +47,7 @@ void pf_init_signal_handlers (void);
 
 static char memory[TOTAL_SIZE]; /* BSS */
 
+p4_Thread* p4TH;
 /************************************************************************/
 int exitcode = 0;
 
@@ -103,7 +104,7 @@ void abort_system (void)
 extern const p4Words
     P4WORDS(compiler),
     P4WORDS(core),
-    P4WORDS(debug),
+//    P4WORDS(debug),
     P4WORDS(exception),
     P4WORDS(facility),
     P4WORDS(file),
@@ -197,7 +198,7 @@ void pf_init_system (p4_Thread* th) /* main_init */
     pf_load_words (&P4WORDS (signals));
     pf_load_words (&P4WORDS (tools));
     pf_load_words (&P4WORDS (facility));
-    pf_load_words (&P4WORDS (debug));
+//    pf_load_words (&P4WORDS (debug));
     pf_load_words (&P4WORDS (version));
 }
 

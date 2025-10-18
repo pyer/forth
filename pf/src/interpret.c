@@ -35,10 +35,12 @@
 /* -------------------------------------------------------------- */
 FCode_RT (pf_defer_RT);
 
+/*
 FCode (pf_debug_colon_RT);
 FCode (pf_debug_colon);
 FCode (pf_debug_does_RT);
 FCode (pf_debug_does);
+*/
 
 /* -------------------------------------------------------------- */
 // display a message when a word is redefined
@@ -918,7 +920,8 @@ FCode_RT (p4_f_constant_RT);
 char pf_category (p4code p)
 {
 //printf(" [%lx] (var=%lx) ", p, P4CODE(pf_value_RT) );
-    if (p == P4CODE(pf_colon_RT) || p == P4CODE(pf_debug_colon_RT))
+    //if (p == P4CODE(pf_colon_RT) || p == P4CODE(pf_debug_colon_RT))
+    if (p == P4CODE(pf_colon_RT))
         return ':';
     if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_dictvar_RT))
         return 'V';
@@ -934,7 +937,8 @@ char pf_category (p4code p)
 #endif
     if (p == P4CODE(pf_create_RT))
         return 'c';
-    if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT))
+    //if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT))
+    if (p == P4CODE(pf_does_RT))
         return 'D';
     if (p == P4CODE(pf_defer_RT))
         return 'd'; 

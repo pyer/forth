@@ -27,8 +27,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
 #include <math.h>
+#include <float.h>
 #include <errno.h>
 
 #include "config.h"
@@ -359,6 +359,7 @@ FCode (pf_f_dot)
 
 FCode (pf_f_e_dot)			/* with help from Lennart Benshop */
 {
+  /*
     double f = fabs (*FP);
     double h = 0.5 * pow10 (-PRECISION);
     int n;
@@ -375,6 +376,7 @@ FCode (pf_f_e_dot)			/* with help from Lennart Benshop */
     }
     pf_outf ("%+*.*fE%+03d ", (int) PRECISION + 5, (int) PRECISION,
       *FP++ * pow10 (n), -n);
+  */
 }
 
 FCode (pf_f_s_dot)

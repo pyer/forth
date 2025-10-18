@@ -13,7 +13,7 @@
  *     (modified $Date: 2008-05-04 02:57:30 $)
  */
 
-jmp_buf jump_loop;
+extern jmp_buf jump_loop;
 void pf_longjmp_loop(int arg);
 
 #define pf_longjmp_abort()	(pf_longjmp_loop('A'))

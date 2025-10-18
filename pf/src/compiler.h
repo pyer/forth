@@ -1,7 +1,7 @@
 #ifndef __PF_COMPILER_H
 #define __PF_COMPILER_H
 
-p4cell *csp;		/* compiler security, saves sp here */
+extern p4cell *csp;		/* compiler security, saves sp here */
 #define CSP		(csp)
 
 #define FX_COMPILE_COMMA_XE(X) FX_ZCOMMA(X)
