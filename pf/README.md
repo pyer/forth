@@ -1,13 +1,6 @@
 Pyer's Forth
 ============
 
-Version
--------
-- Pyer's Forth 2.1a
-- (May  6 2014 19:30:15)
-- Not Forth-2012 System (Subset)
-
-
 Compliance to Forth-2012 System
 ===============================
 PF doesn't comply to Forth-2012 because a lot of words are missing.
@@ -30,7 +23,6 @@ File-Access extension words
 
 Added words
 -----------
-- HELP and MAN which are synonyms.
 - FOPEN
 - FGETC
 - FGETS

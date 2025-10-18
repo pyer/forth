@@ -678,10 +678,6 @@ Execution: ( -- f-addr )
 f-addr is the address of the data space reserved by FVARIABLE when it created name.
 A program is responsible for initializing the contents of the reserved space.
 
-HELP ( " spaces name" -- xt )
-Skip leading space delimiters. Parse name delimited by a space. Display name help.
-See also: MAN
-
 HERE ( -- addr )
 addr is the data-space pointer.
 
@@ -748,11 +744,6 @@ LL
 LOAD-SIGNALS
 
 LS
-
-MAN ( " spaces name" -- xt )
-Skip leading space delimiters. Parse name delimited by a space. Display name help.
-Synonym of hELP.
-See also: HELP
 
 MARKER
 

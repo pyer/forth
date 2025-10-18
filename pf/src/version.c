@@ -27,25 +27,17 @@
 const char* pf_version_string(void)
 {
     return
-	"\nPyer's Forth "PF_VERSION
+        "\nPyer's Forth "PF_VERSION
         "\n(" MAKEDATE " " MAKETIME ")"
         "\nNot a Forth-2012 System"
-/*        "\n"
-        "\nProviding the Programming-Tools word set"
-        "\nProviding BYE from the Programming-Tools Extensions word set"
-        "\nProviding the Exception Extensions word set"
-        "\nProviding the Facility word set"
-        "\nProviding MS and TIME&DATE from the Facility Extensions word set"
-        "\nProviding the File word set"
-*/
         "\n";
 }
 
 const char* pf_copyright_string(void)
 {
     return
-	"\nCopyright (C) Dirk Uwe Zoller  1993 - 1995."
-	"\nCopyright (C) Tektronix, Inc.  1998 - 2003."
+        "\nCopyright (C) Dirk Uwe Zoller  1993 - 1995."
+        "\nCopyright (C) Tektronix, Inc.  1998 - 2003."
         "\nCopyright (C) Guido U. Draheim 2005 - 2008."
         "\nCopyright (C) Pierre Bazonnard 2013 - 2014.\n";
 }
@@ -53,23 +45,23 @@ const char* pf_copyright_string(void)
 const char* pf_license_string (void)
 {
     return
-	"\nThis program is free software; you can redistribute it and/or"
-	"\nmodify it under the terms of the GNU Library General Public"
-	"\nLicense as published by the Free Software Foundation; either"
-	"\nversion 2 of the License, or (at your option) any later version.\n";
+    "\nThis program is free software; you can redistribute it and/or"
+    "\nmodify it under the terms of the GNU Library General Public"
+    "\nLicense as published by the Free Software Foundation; either"
+    "\nversion 2 of the License, or (at your option) any later version.\n";
 }
 
 const char* pf_warranty_string (void)
 {
     return
-	"\nThis program is distributed in the hope that it will be useful,"
-	"\nbut WITHOUT ANY WARRANTY; without even the implied warranty of"
-	"\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU"
-	"\nLibrary General Public License for more details."
-	"\n"
-	"\nYou should have received a copy of the GNU Library General Public"
-	"\nLicense along with this program; if not, write to the Free Software"
-	"\nFoundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
+    "\nThis program is distributed in the hope that it will be useful,"
+    "\nbut WITHOUT ANY WARRANTY; without even the implied warranty of"
+    "\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU"
+    "\nLibrary General Public License for more details."
+    "\n"
+    "\nYou should have received a copy of the GNU Library General Public"
+    "\nLicense along with this program; if not, write to the Free Software"
+    "\nFoundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
 }
 
 /************************************************************************/
@@ -119,10 +111,10 @@ P4_LISTWORDS (version) =
 //    P4_INTO ("FORTH", 0),
     
     /* forth distributor info */
-    P4_FXco (".VERSION",	pf_version),
-    P4_FXco (".COPYRIGHT",	pf_copyright),
-    P4_FXco (".LICENSE",	pf_license),
-    P4_FXco (".WARRANTY",	pf_warranty),
+    P4_FXco (".VERSION",    pf_version),
+    P4_FXco (".COPYRIGHT",  pf_copyright),
+    P4_FXco (".LICENSE",    pf_license),
+    P4_FXco (".WARRANTY",   pf_warranty),
 
 };
 P4_COUNTWORDS (version, "Version, copyright, license and warranty words");

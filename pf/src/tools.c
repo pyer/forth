@@ -145,43 +145,6 @@ FCode (pf_dot_status)
 }
 
 /************************************************************************/
-/** HELP ( -- )
- *
- */
-void pf_help(const char *name, int len)
-{
-    char buffer[256];
-    int found = 0;
-    FILE *fh = fopen( PF_HELP_FILE, "r" );
-    if( fh != NULL ) {
-        while( fgets( buffer, 255, fh ) != NULL ) {
-            if( found == 0 && strncmp(buffer,(char *)name,len) == 0 ) {
-                if( buffer[len] == ' ' || buffer[len] == '\n' || buffer[len] == '\0' )
-                    found = 1;
-            }
-            if( found ) {
-                int buflen = strlen(buffer);
-                if( buflen < 2 )
-                    break;
-                pf_type(buffer,buflen);
-            }
-        }
-        fclose( fh );
-    } else {
-        printf( "File %s not found\n", PF_HELP_FILE );
-    }
-}
-
-FCode (pf_help)
-{
-    const char *fn = cap_word (' ');
-    char len = *fn++;
-    FX (pf_cr);
-    pf_help( fn, len );
-}
-
-/************************************************************************/
-
 /** DUMP ( addr len -- )
  * show a hex-dump of the given area, if it's more than a screenful
  * it will ask using => ?CR
@@ -249,8 +212,6 @@ P4_LISTWORDS (tools) =
 //    P4_INTO ("FORTH", 0),
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
-    P4_FXco ("HELP",         pf_help),
-    P4_FXco ("MAN",          pf_help),
     P4_FXco ("DUMP",         pf_dump),
     P4_FXco ("WORDS",        pf_words),
 };

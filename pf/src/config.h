@@ -2,7 +2,7 @@
 #define ___CONFIG_H
 
 #define TARGET_OS "linux-gnu"
-#define PF_VERSION  "2.1a"
+#define PF_VERSION  "2.2a"
 
 #if defined ARM
 /* ARM processor options */
@@ -14,8 +14,7 @@
 #define SIZEOF_DOUBLE 8
 #define SIZEOF_VOIDP  4
 
-#define PF_BOOT_FILE "/usr/etc/pf.fth"
-#define PF_HELP_FILE "/usr/share/pf.help"
+#define PF_BOOT_FILE "/usr/etc/pf.4th"
 
 #else
 /* X86-64 processor options */
@@ -27,8 +26,7 @@
 #define SIZEOF_DOUBLE 8
 #define SIZEOF_VOIDP  8
 
-#define PF_BOOT_FILE "/etc/pf.fth"
-#define PF_HELP_FILE "/usr/share/pf.help"
+#define PF_BOOT_FILE "/etc/pf.4th"
 
 #endif
 
