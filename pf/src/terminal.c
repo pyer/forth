@@ -41,7 +41,7 @@ int cols  = 80;
 int rows  = 25;
 int out   = 0;
 int lines = 0;
-int more  = 25;
+int more  = 0;
 /************************************************************************/
 int get_cols(void)
 {
@@ -107,8 +107,8 @@ void query_winsize (void)
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) >=0 ) {
         cols = ws.ws_col;
         rows = ws.ws_row;
-	//xmax = ws.ws_xpixel;
-	//ymax = ws.ws_ypixel;
+    //xmax = ws.ws_xpixel;
+    //ymax = ws.ws_ypixel;
     }
 #endif
 }
@@ -324,7 +324,7 @@ FCode (pf_key_question)
 int pf_escape_sequence(void)
 {
     unsigned char c;
-    int key = 0x1B;	// Esc
+    int key = 0x1B;    // Esc
 //    sleep(1);
     if ( !kbhit() )
         return key;
@@ -400,27 +400,27 @@ int pf_accept (char *tib, int tiblen)
     {
         refresh_line(tib,i,j);
         switch (c = pf_getkey ())
-	{
+    {
          case K_ESC:
              clear_line(tib,i,j);
              j=i=0;
-	     continue;
+         continue;
          case K_HOME:
              j=0;
-	     continue;
+         continue;
          case K_LEFT:
              if (j>0) {
                  j--;
              }
-	     continue;
+         continue;
          case K_RIGHT:
              if (j<i) {
                  j++;
              }
-	     continue;
+         continue;
          case K_END:
              j=i;
-	     continue;
+         continue;
          case K_UP:
              history = previous_history();
              if( history ) {
@@ -429,7 +429,7 @@ int pf_accept (char *tib, int tiblen)
                i=strlen(tib);
                j=i;
              }
-	     continue;
+         continue;
          case K_DOWN:
              history = next_history();
              clear_line(tib,i,j);
@@ -440,12 +440,12 @@ int pf_accept (char *tib, int tiblen)
              } else {
                j=i=0;
              }
-	     continue;
+         continue;
          case '\t':
              while (i < tiblen)
              {
                  tib[i++] = ' ';
-                 FX (pf_space);
+                 pf_putc(' ');
                  if (out % 4 == 0)
                      break;
              }
@@ -485,7 +485,7 @@ int pf_accept (char *tib, int tiblen)
                i++;
              }
              continue;
-	}
+    }
     }
  fin:
     tib[i] = 0;
@@ -516,31 +516,13 @@ FCode (pf_accept)
 }
 
 /* ----------------------------------------------------------------------- */
-/** HISTORY ( -- )
- */
-FCode (pf_history)
-{
-    register HIST_ENTRY **the_list = history_list();
-    register int i = 0;
-
-    FX (pf_more);
-    while (the_list[i])
-    {
-        FX (pf_more_Q);
-        printf("%d: ",i);
-        pf_outs( the_list[i]->line);
-        i++;
-    }
-}
-
-/* ----------------------------------------------------------------------- */
 /** MORE ( -- )
  * initialized for more-like effect
  * - see => MORE?
  */
 FCode (pf_more)
 {
-    more = rows - 2;
+    more = rows - 1;
     lines = 0;
 }
 
@@ -552,40 +534,46 @@ int pf_more_Q (void)
 {
     static char help[] = "\r[next line=<return>, next page=<space>, quit=q] ";
 
-    FX (pf_cr);
+    if (more == 0)
+        return 0;
+    pf_cr_();
     if (lines < more)
         return 0;
-    lines = 0;
     for (;;)
     {
         pf_outs ("more? ");
         register int ch = pf_getkey();
-        pf_outc ('\r'); out=0;
+        pf_outc (ch);
+        pf_outc ('\r');
+        out=0;
         switch (ch)
-	{
-         case 'n':		/* no more */
+          {
+         case 'n':        /* no more */
          case 'N':
-         case 'q':		/* quit    */
+         case 'q':        /* quit    */
          case 'Q':
+             more = 0;
+             pf_cr_();
              return 1;
-         case 'y':		/* more    */
+         case 'y':        /* more    */
          case 'Y':
-         case ' ':		/* page    */
-             more = rows - 2;
+         case ' ':        /* page    */
+             more = rows - 1;
+             lines = 0;
              return 0;
-         case '\r':		/* line    */
-         case '\n':		/* line    */
+         case '\r':        /* line    */
+         case '\n':        /* line    */
              more = 1;
              return 0;
-         default:		/* unknown */
+         default:        /* unknown */
              pf_bell();
              /* ... */
-         case '?':		/* help    */
-         case 'h':		/* help    */
+         case '?':        /* help    */
+         case 'h':        /* help    */
          case 'H':
              pf_outs (help);
              break;
-	}
+         }
     }
 }
 
@@ -603,8 +591,8 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 
 Forth200x
 This standard removes six words that were marked 'obsolescent' in the ANS Forth '94 document. These are:
-6.2.0060	#TIB		6.2.1390	EXPECT		6.2.2240	SPAN
-6.2.0970	CONVERT		6.2.2040	QUERY		6.2.2290	TIB
+6.2.0060    #TIB        6.2.1390    EXPECT       6.2.2240    SPAN
+6.2.0970    CONVERT     6.2.2040    QUERY        6.2.2290    TIB
 
 Words affected:
 #TIB, CONVERT, EXPECT, QUERY, SPAN, TIB, WORD.
@@ -629,34 +617,33 @@ P4_LISTWORDS (terminal) =
     P4_FXco ("COLS",         pf_cols),
     P4_FXco ("ROWS",         pf_rows),
 
-    P4_OCON ("K-LEFT",		K_LEFT),
-    P4_OCON ("K-RIGHT",		K_RIGHT),
-    P4_OCON ("K-UP",		K_UP),
-    P4_OCON ("K-DOWN",		K_DOWN),
-    P4_OCON ("K-HOME",		K_HOME),
-    P4_OCON ("K-END",		K_END),
-    P4_OCON ("K-PRIOR",		K_PRIOR),
-    P4_OCON ("K-NEXT",		K_NEXT),
-    P4_OCON ("K-INSERT",	K_INSERT),
-    P4_OCON ("K-DELETE",        K_DELETE),
+    P4_OCON ("K-LEFT",       K_LEFT),
+    P4_OCON ("K-RIGHT",      K_RIGHT),
+    P4_OCON ("K-UP",         K_UP),
+    P4_OCON ("K-DOWN",       K_DOWN),
+    P4_OCON ("K-HOME",       K_HOME),
+    P4_OCON ("K-END",        K_END),
+    P4_OCON ("K-PRIOR",      K_PRIOR),
+    P4_OCON ("K-NEXT",       K_NEXT),
+    P4_OCON ("K-INSERT",     K_INSERT),
+    P4_OCON ("K-DELETE",     K_DELETE),
 /*
-    P4_OCON ("K-F1",			K_k1),
-    P4_OCON ("K-F2",			K_k2),
-    P4_OCON ("K-F3",			K_k3),
-    P4_OCON ("K-F4",			K_k4),
-    P4_OCON ("K-F5",			K_k5),
-    P4_OCON ("K-F6",			K_k6),
-    P4_OCON ("K-F7",			K_k7),
-    P4_OCON ("K-F8",			K_k8),
-    P4_OCON ("K-F9",			K_k9),
-    P4_OCON ("K-F10",			K_k0),
-    P4_OCON ("K-F11",		K_F1),
-    P4_OCON ("K-F12",		K_F2),
+    P4_OCON ("K-F1",            K_k1),
+    P4_OCON ("K-F2",            K_k2),
+    P4_OCON ("K-F3",            K_k3),
+    P4_OCON ("K-F4",            K_k4),
+    P4_OCON ("K-F5",            K_k5),
+    P4_OCON ("K-F6",            K_k6),
+    P4_OCON ("K-F7",            K_k7),
+    P4_OCON ("K-F8",            K_k8),
+    P4_OCON ("K-F9",            K_k9),
+    P4_OCON ("K-F10",            K_k0),
+    P4_OCON ("K-F11",        K_F1),
+    P4_OCON ("K-F12",        K_F2),
 */
     P4_FXco ("KEY",          pf_key),
     P4_FXco ("KEY?",         pf_key_question),
     P4_FXco ("ACCEPT",       pf_accept),
-    P4_FXco ("HISTORY",      pf_history),
 
     P4_FXco ("CR",           pf_cr),
     P4_FXco ("EMIT",         pf_emit),

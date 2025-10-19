@@ -32,6 +32,7 @@ task :install => ['pf'] do
 end
 
 CLEAN.include('target')
+CLEAN.include('pf')
 
 directory 'target'
 

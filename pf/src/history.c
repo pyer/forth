@@ -47,14 +47,14 @@
 #define HISTORY_OVERWRITE 1
 
 /* **************************************************************** */
-/*								    */
-/*		   Memory Allocation and Deallocation.		    */
-/*								    */
+/*                                    */
+/*           Memory Allocation and Deallocation.            */
+/*                                    */
 /* **************************************************************** */
 #ifdef __STDC__
-#  define PTR_T	void *
+#  define PTR_T    void *
 #else
-#  define PTR_T	char *
+#  define PTR_T    char *
 #endif
 
 static void memory_error_and_abort ( char *fname )
@@ -87,7 +87,7 @@ PTR_T xrealloc ( PTR_T pointer, size_t bytes )
   return (temp);
 }
 
-#define FREE(x)	if (x) free (x)
+#define FREE(x)    if (x) free (x)
 
 /* **************************************************************** */
 /* The number of slots to increase the_history by. */
@@ -102,7 +102,7 @@ static int history_size;
 /* If HISTORY_STIFLED is non-zero, then this is the maximum number of
    entries to remember. */
 int history_max_entries;
-int max_input_history;	/* backwards compatibility */
+int max_input_history;    /* backwards compatibility */
 
 /* The current location of the interactive history pointer.  Just makes
    life easier for outside callers. */
@@ -124,9 +124,9 @@ char history_comment_char = '\0';
 char history_filename[210];
 
 /* **************************************************************** */
-/*								    */
-/*			History initialization			    */
-/*								    */
+/*                                    */
+/*            History initialization                */
+/*                                    */
 /* **************************************************************** */
 
 /* Begin a session in which the history functions might be used.  This
@@ -145,9 +145,9 @@ void using_history (void)
 }
 
 /* **************************************************************** */
-/*								    */
-/*			History file managment			    */
-/*								    */
+/*                                    */
+/*            History file managment                */
+/*                                    */
 /* **************************************************************** */
 
 /* Read a range of lines from FILENAME, adding them to the history list.
@@ -198,11 +198,11 @@ int read_history_range ( const char *filename, int from, int to )
     {
   error_and_exit:
       if (errno != 0)
-	chars_read = errno;
+    chars_read = errno;
       else
-	chars_read = EIO;
+    chars_read = EIO;
       if (file >= 0)
-	close (file);
+    close (file);
 
       FREE (buffer);
       return (chars_read);
@@ -222,29 +222,29 @@ int read_history_range ( const char *filename, int from, int to )
   for (line_start = line_end = buffer; line_end < bufend && current_line < from; line_end++)
     if (*line_end == '\n')
       {
-      	p = line_end + 1;
-	current_line++;
-	line_start = p;
+          p = line_end + 1;
+    current_line++;
+    line_start = p;
       }
 
   /* If there are lines left to gobble, then gobble them now. */
   for (line_end = line_start; line_end < bufend; line_end++)
     if (*line_end == '\n')
       {
-	/* Change to allow Windows-like \r\n end of line delimiter. */
-	if (line_end > line_start && line_end[-1] == '\r')
-	  line_end[-1] = '\0';
-	else
-	  *line_end = '\0';
+    /* Change to allow Windows-like \r\n end of line delimiter. */
+    if (line_end > line_start && line_end[-1] == '\r')
+      line_end[-1] = '\0';
+    else
+      *line_end = '\0';
 
-	if (*line_start)
-		add_history (line_start);
+    if (*line_start)
+        add_history (line_start);
 
-	current_line++;
-	if (current_line >= to)
-	  break;
+    current_line++;
+    if (current_line >= to)
+      break;
 
-	line_start = line_end + 1;
+    line_start = line_end + 1;
       }
 
   FREE (buffer);
@@ -287,7 +287,7 @@ static int history_do_write ( const char *filename, int nelements, int overwrite
   /* Build a buffer of all the lines to write, and write them in one syscall.
      Suggested by Peter Ho (peter@robosts.oxford.ac.uk). */
   {
-    HIST_ENTRY **the_history;	/* local */
+    HIST_ENTRY **the_history;    /* local */
     register int j;
     int buffer_size;
     char *buffer;
@@ -296,23 +296,23 @@ static int history_do_write ( const char *filename, int nelements, int overwrite
     /* Calculate the total number of bytes to write. */
     for (buffer_size = 0, i = history_length - nelements; i < history_length; i++)
       {
-	buffer_size += strlen (the_history[i]->line) + 1;
+    buffer_size += strlen (the_history[i]->line) + 1;
       }
 
     /* Allocate the buffer, and fill it. */
     buffer = (char *)malloc (buffer_size);
     if (buffer == 0)
       {
-      	rv = errno;
-	close (file);
-	return rv;
+          rv = errno;
+    close (file);
+    return rv;
       }
 
     for (j = 0, i = history_length - nelements; i < history_length; i++)
       {
-	strcpy (buffer + j, the_history[i]->line);
-	j += strlen (the_history[i]->line);
-	buffer[j++] = '\n';
+    strcpy (buffer + j, the_history[i]->line);
+    j += strlen (the_history[i]->line);
+    buffer[j++] = '\n';
       }
 
     if (write (file, buffer, buffer_size) < 0)
@@ -342,9 +342,9 @@ int write_history (void)
 }
 
 /* **************************************************************** */
-/*								    */
-/*			History Functions			    */
-/*								    */
+/*                                    */
+/*            History Functions                */
+/*                                    */
 /* **************************************************************** */
 
 /* Returns the magic number which says what history element we are
@@ -368,8 +368,8 @@ HIST_ENTRY ** history_list (void)
 HIST_ENTRY * current_history (void)
 {
   return ((history_offset == history_length) || the_history == 0)
-		? (HIST_ENTRY *)NULL
-		: the_history[history_offset];
+        ? (HIST_ENTRY *)NULL
+        : the_history[history_offset];
 }
 
 /* Back up history_offset to the previous history entry, and return
@@ -396,8 +396,8 @@ HIST_ENTRY * history_get ( int offset )
 
   local_index = offset - history_base;
   return (local_index >= history_length || local_index < 0 || the_history == 0)
-		? (HIST_ENTRY *)NULL
-		: the_history[local_index];
+        ? (HIST_ENTRY *)NULL
+        : the_history[local_index];
 }
 
 HIST_ENTRY * alloc_history_entry ( char *string )
@@ -418,22 +418,22 @@ void add_history ( char *string )
   HIST_ENTRY *temp;
 
       if (history_size == 0)
-	{
-	  history_size = DEFAULT_HISTORY_GROW_SIZE;
-	  the_history = (HIST_ENTRY **)xmalloc (history_size * sizeof (HIST_ENTRY *));
-	  history_length = 1;
-	}
+    {
+      history_size = DEFAULT_HISTORY_GROW_SIZE;
+      the_history = (HIST_ENTRY **)xmalloc (history_size * sizeof (HIST_ENTRY *));
+      history_length = 1;
+    }
       else
-	{
-	  if (history_length == (history_size - 1))
-	    {
-	      history_size += DEFAULT_HISTORY_GROW_SIZE;
-	      the_history = (HIST_ENTRY **)
-		xrealloc (the_history, history_size * sizeof (HIST_ENTRY *));
-	    }
-	  history_length++;
+    {
+      if (history_length == (history_size - 1))
+        {
+          history_size += DEFAULT_HISTORY_GROW_SIZE;
+          the_history = (HIST_ENTRY **)
+        xrealloc (the_history, history_size * sizeof (HIST_ENTRY *));
+        }
+      history_length++;
           history_offset = history_length;
-	}
+    }
   temp = alloc_history_entry (string);
   the_history[history_length] = (HIST_ENTRY *)NULL;
   the_history[history_length - 1] = temp;

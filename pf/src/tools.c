@@ -33,6 +33,7 @@
 #include "thread.h"
 #include "interpret.h"
 #include "terminal.h"
+#include "history.h"
 
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
 #define HEXWIDTH (sizeof (p4cell) * 2)
@@ -50,28 +51,28 @@ static void pf_prCell (p4cell n)
  *     print the stack content in vertical nice format.
  *     tries to show cell-stack and float-stack side-by-side,
  *
- *	 Depending on configuration,
- *	there are two parameter stacks: for integers and for
- *	floating point operations. If both stacks are empty, =>'.S'
- *	will display the message <code>&lt;stacks empty&gt;</code>.
+ *     Depending on configuration,
+ *    there are two parameter stacks: for integers and for
+ *    floating point operations. If both stacks are empty, =>'.S'
+ *    will display the message <code>&lt;stacks empty&gt;</code>.
  *
- *	If only the floating point stack is empty, =>'.S' displays
- *	the integer stack items  in one column, one item per line,
- *	both in hex and in decimal like this (the first item is topmost):
+ *    If only the floating point stack is empty, =>'.S' displays
+ *    the integer stack items  in one column, one item per line,
+ *    both in hex and in decimal like this (the first item is topmost):
  12345 HEX 67890 .S
-    	424080 [00067890]
+        424080 [00067890]
          12345 [00003039] ok
  *
  *      If both stacks ar not empty, => .S displays both stacks, in two
- *	columns, one item per line
+ *    columns, one item per line
  HEX 123456.78E90 ok
  DECIMAL 123456.78E90 .S
-    	   291 [00000123]          1.234568E+95
+           291 [00000123]          1.234568E+95
     1164414608 [45678E90] ok
- * 	Confusing example? Remember that floating point input only works
- * 	when the => BASE number is =>'DECIMAL'. The first number looks like
- * 	a floating point but it is a goodhex double integer too - the number
- * 	base is =>'HEX'. Thus it is accepted as a hex number. Second try 
+ *     Confusing example? Remember that floating point input only works
+ *     when the => BASE number is =>'DECIMAL'. The first number looks like
+ *     a floating point but it is a goodhex double integer too - the number
+ *     base is =>'HEX'. Thus it is accepted as a hex number. Second try 
  *      with a decimal base will input the floating point number.
  *
  *      If only the integer stack is empty, => .S shows two columns, but
@@ -113,15 +114,15 @@ FCode (pf_dot_s)
     } else { /* fd dd */
         int bd = dd < fd ? dd : fd;
         for (i = 0; i < bd; i++) {
-	    FX (pf_cr);
-	    pf_prCell (SP[i]);
+        FX (pf_cr);
+        pf_prCell (SP[i]);
             pf_outf ("%15.*G ", (int)PRECISION, FP[i]);
         }
-	for (; i < dd; i++) {
-	    FX (pf_cr);
-	    pf_prCell (SP[i]);
+    for (; i < dd; i++) {
+        FX (pf_cr);
+        pf_prCell (SP[i]);
         }
-	for (; i < fd; i++) {
+    for (; i < fd; i++) {
             pf_outf ("\n%*.*G ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)PRECISION, FP[i]);
         }
     }
@@ -174,8 +175,8 @@ FCode (pf_dump)
             pf_outf ("%02X ", p [j]);
         for (j = 0; j < 16; j++)
             pf_outf ("%c", (isspace (p [j]) ? ' ' : 
-			    ! isascii (p [j]) ? '_' :
-			    isprint (p [j]) ? p [j] : '.'));
+                ! isascii (p [j]) ? '_' :
+                isprint (p [j]) ? p [j] : '.'));
     }
     FX (pf_space);
 }
@@ -186,14 +187,14 @@ FCode (pf_dump)
  */
 FCode (pf_words)
 {
-    p4_namebuf_t *nfa = LATEST;		/* NFA of most recently CREATEd header */
+    p4_namebuf_t *nfa = LATEST;        /* NFA of most recently CREATEd header */
 //# define WILD_TAB 26 /* traditional would be 20 (26*4=80), now 26*3=78 */
-# define WILD_TAB 20 /* traditional would be 20 (26*4=80), now 26*3=78 */
+//# define WILD_TAB 20 /* traditional would be 20 (26*4=80), now 26*3=78 */
+/*
     FX (pf_more);
     FX (pf_cr);
-    while (nfa)
-    {
-	char c = pf_category (*name_to_cfa(nfa));
+    while (nfa) {
+    char c = pf_category (*name_to_cfa(nfa));
         pf_outc(c); pf_outc(' ');
         pf_dot_name(nfa);
         pf_emits (WILD_TAB - get_outs() % WILD_TAB, ' ');
@@ -204,6 +205,38 @@ FCode (pf_words)
         nfa = *name_to_link (nfa);
     }
     FX (pf_cr);
+*/
+
+    FX (pf_cr);
+    while (nfa) {
+        //char c = pf_category (*name_to_cfa(nfa));
+        // pf_outc(c); pf_outc(' ');
+        pf_dot_name(nfa);
+        nfa = *name_to_link (nfa);
+        if (pf_more_Q())
+            break;
+    }
+
+}
+
+/* ----------------------------------------------------------------------- */
+/** HISTORY ( -- )
+ */
+FCode (pf_history)
+{
+    register HIST_ENTRY **the_list = history_list();
+    register int i = 0;
+
+    FX (pf_more);
+    FX (pf_cr);
+    while (the_list[i])
+    {
+        printf("%d: ",i);
+        pf_outs( the_list[i]->line);
+        i++;
+        if (pf_more_Q())
+            break;
+    }
 }
 
 /* ----------------------------------------------------------------------- */
@@ -214,6 +247,7 @@ P4_LISTWORDS (tools) =
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco ("DUMP",         pf_dump),
     P4_FXco ("WORDS",        pf_words),
+    P4_FXco ("HISTORY",      pf_history),
 };
 P4_COUNTWORDS (tools, "Tools words");
 

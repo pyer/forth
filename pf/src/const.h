@@ -16,8 +16,6 @@
  *
  */
 /* ---------------------------------------------------------------------- */
-/* size of command line history buffer */
-#define HISTORY_SIZE	0x1000
 /* minimum space for <# # #S HOLD #> etc. */
 #define MIN_HOLD	0x100
 /* minimum free space in PAD */
