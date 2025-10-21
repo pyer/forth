@@ -1,4 +1,4 @@
-( pf.help version 1.0 )
+( pf.4th version 1.1 )
 
 : ?  @ . ;
 
@@ -6,6 +6,18 @@
 : hex     16 base ! ;
 
 32 CONSTANT BL
+
+: .date
+  <# #s #> type
+  <# # # 45 hold #> type
+  <# # # 45 hold #> type ;
+
+: .time
+  <# # # #> type
+  <# # # 58 hold #> type
+  <# # # 58 hold #> type ;
+
+: .now now .date space .time space ;
 
 : cursor_on  27 emit ." [?25h" ;
 : cursor_off 27 emit ." [?25l" ;
