@@ -67,10 +67,10 @@ FCode (pf_seed)
     srandom((unsigned int) *SP++);
 }
 
-/** TIME&amp;DATE ( -- sec# min# hrs# day# month# year# ) [ANS]
+/** NOW ( -- sec# min# hrs# day# month# year# ) [ANS]
  * return the broken down current time
  */
-FCode (pf_time_and_date)
+FCode (pf_now)
 {
     time_t t;
     struct tm *tm;
@@ -98,11 +98,9 @@ P4_LISTWORDS (facility) =
     P4_FXco ("EKEY?",		p4_ekey_question),
     P4_FXco ("EMIT?",		p4_emit_question),
 */
-    P4_FXco ("AT-XY",        pf_gotoxy),	// in terminal.c
-    P4_FXco ("MS",           pf_ms),
-    P4_FXco ("PAGE",         pf_clear_screen),	// in terminal.c
-    P4_FXco ("RANDOM",       pf_random),
-    P4_FXco ("SEED",         pf_seed),
-    P4_FXco ("TIME&DATE",    pf_time_and_date),
+    P4_FXco ("MS",     pf_ms),
+    P4_FXco ("RANDOM", pf_random),
+    P4_FXco ("SEED",   pf_seed),
+    P4_FXco ("NOW",    pf_now),
 };
 P4_COUNTWORDS (facility, "Facility");
