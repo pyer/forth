@@ -242,7 +242,6 @@ FCode (pf_history)
 /* ----------------------------------------------------------------------- */
 P4_LISTWORDS (tools) =
 {
-//    P4_INTO ("FORTH", 0),
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco ("DUMP",         pf_dump),

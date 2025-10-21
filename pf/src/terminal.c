@@ -260,18 +260,24 @@ FCode(pf_spaces)
 }
 
 /* -------------------------------------------------------------- */
-/** GOTOXY ( col line -- )
+/** AT-XY ( col line -- )
  * move the cursor to the specified position on the screen -
  * this is usually done by sending a corresponding esc-sequence
  * to the terminal. 
  */
-FCode (pf_gotoxy)
+FCode (pf_atxy)
 {
     printf ("\033[%d;%dH", (int)SP[0] + 1, (int)SP[1] + 1);
     SP += 2;
 }
 
-FCode (pf_clear_screen)
+/** PAGE ( -- )
+ * Move to another page for output.  Actual function depends on the output device.
+ * On a terminal, PAGE clears the screen and resets the cursor position
+ * to the upper left corner.
+ * On a printer, PAGE performs a form feed.
+ */
+FCode (pf_page)
 {
     printf ("\033[2J");
 }
@@ -613,7 +619,6 @@ The function of QUERY may be performed with ACCEPT and EVALUATE.
 
 P4_LISTWORDS (terminal) =
 {
-//    P4_INTO ("FORTH", 0),
     P4_FXco ("COLS",         pf_cols),
     P4_FXco ("ROWS",         pf_rows),
 
@@ -637,7 +642,7 @@ P4_LISTWORDS (terminal) =
     P4_OCON ("K-F7",            K_k7),
     P4_OCON ("K-F8",            K_k8),
     P4_OCON ("K-F9",            K_k9),
-    P4_OCON ("K-F10",            K_k0),
+    P4_OCON ("K-F10",           K_k0),
     P4_OCON ("K-F11",        K_F1),
     P4_OCON ("K-F12",        K_F2),
 */
@@ -651,8 +656,8 @@ P4_LISTWORDS (terminal) =
     P4_FXco ("TYPE",         pf_type),
     P4_FXco ("SPACE",        pf_space),
     P4_FXco ("SPACES",       pf_spaces),
-    P4_FXco ("GOTOXY",       pf_gotoxy),
-    P4_FXco ("CLEAR-SCREEN", pf_clear_screen),
+    P4_FXco ("AT-XY",        pf_atxy),
+    P4_FXco ("PAGE",         pf_page),
 
     P4_FXco ("MORE",         pf_more),
     P4_FXco ("MORE?",        pf_more_Q),
