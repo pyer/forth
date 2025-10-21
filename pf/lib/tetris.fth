@@ -38,16 +38,6 @@ variable brow			\ where the brick is
 variable bcol
 
 
-\ stupid random number generator
-
-variable seed
-
-: randomize	time&date + + + + + seed ! ;
-
-: random	\ max --- n ; return random number < max
-		seed @ 13 * [ hex ] 07FFF [ decimal ] and
-		dup seed !  swap mod ;
-
 \ Access pairs of characters in memory:
 
 : 2c@		dup 1+ c@ swap c@ ;
@@ -159,12 +149,11 @@ create bricks	' brick1 ,  ' brick2 ,  ' brick3 ,  ' brick4 ,
 
 create brick-val 1 c, 2 c, 3 c, 3 c, 4 c, 5 c, 5 c,
 
-
 : is-brick	\ brick --- ; activate a shape of brick
 		>body ['] brick >body 32 cmove ;
 
 : new-brick	\ --- ; select a new brick by random, count it
-		1 pieces +!  7 random
+		1 pieces +!  random 7 mod
 		bricks over cells + @ is-brick
 		brick-val swap chars + c@ score +! ;
 
@@ -278,7 +267,7 @@ create brick-val 1 c, 2 c, 3 c, 3 c, 4 c, 5 c, 5 c,
 		endcase  true ;
 
 : initialize	\ --- ; prepare for playing
-		randomize empty-pit refresh
+		empty-pit refresh
 		0 score !  0 pieces !  0 levels !  100 delay ! ;
 
 : adjust-delay	\ --- ; make it faster with increasing score
