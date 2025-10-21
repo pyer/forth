@@ -1,0 +1,14 @@
+TOOLS WORDS
+===========
+
+
+.S                ( -- )
+
+.STATUS           ( -- )
+
+DUMP              ( -- )
+
+WORDS             ( -- )
+
+HISTORY           ( -- )
+

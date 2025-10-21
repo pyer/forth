@@ -1,0 +1,38 @@
+TERMINAL WORDS
+==============
+
+The words ACCEPT, KEY, KEY?, CR, EMIT, SPACE, SPACES, TYPE, are documented in core words.
+
+The words K-LEFT, K-RIGHT, K-UP, K-DOWN, K-HOME, K-END, K-PRIOR, K-NEXT, K-INSERT, K-DELETE
+return the code sent by the keyboard when the key is pressed.
+
+
+AT-XY             ( col line -- )
+                  Move the cursor to the specified position on the screen.
+                  This is usually done by sending a corresponding esc-sequence to the terminal. 
+
+COLS              ( -- n )
+                  n is the number of columns of the screen.
+
+EMITS             ( n char -- )
+                  Type a string of n chars by repeating a single character which is char.
+             See: SPACES, TYPE.
+
+MORE              ( -- )
+                  Initialize a more-like effect.
+             See: MORE?
+
+MORE?             ( -- flag )
+                  Like CR but stop after one screenful and return a flag when a key is pressed.
+             See: CR, MORE
+
+PAGE              ( -- )
+                  Move to another page for output.
+                  Actual function depends on the output device.
+                  On a terminal, PAGE clears the screen and resets the cursor position
+                  to the upper left corner.
+                  On a printer, PAGE performs a form feed.
+
+ROWS              ( -- n )
+                  n is the number of rows of the screen.
+
