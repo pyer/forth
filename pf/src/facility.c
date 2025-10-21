@@ -10,22 +10,6 @@
  *     (modified $Date: 2008-04-20 04:46:29 $)
  *
  *  @description
- *      There are the following primitive words for input and output:
- *
- *      => KEY waits for a character typed on the keyboard and returns
- *      that character, but => KEY does not return non-character
- *      input events like function keys pressed - use => EKEY for 
- *      a more complete keyboard query.
- *      Furthermore, => KEY? returns true if a key is available for
- *      reading using => KEY (function key presses are not detected
- *      but discarded).
- *
- *      => EMIT will display the character at the current cursor
- *      position, control characters take effect depending on the
- *      system. => TYPE displays all the chars in the given string 
- *      buffer.
- *
- *      To get the current cursor position, use =>'AT-XY'.
  */
 
 //#include <stdio.h>
@@ -38,7 +22,6 @@
 #include "macro.h"
 #include "listwords.h"
 #include "thread.h"
-#include "terminal.h"
 
 /* -------------------------------------------------------------- */
 /** MS ( milliseconds# -- ) [ANS]
@@ -88,16 +71,6 @@ FCode (pf_now)
 
 P4_LISTWORDS (facility) =
 {
-/*
-    P4_INTO ("[ANS]", 0),
-    P4_FXco ("AT-XY",		p4_at_x_y),
-    P4_FXco ("KEY?",		p4_key_question),
-    P4_FXco ("PAGE",		p4_dot_clrscr),
-    P4_FXco ("EKEY",		p4_ekey),
-    P4_FXco ("EKEY>CHAR",	p4_ekey_to_char),
-    P4_FXco ("EKEY?",		p4_ekey_question),
-    P4_FXco ("EMIT?",		p4_emit_question),
-*/
     P4_FXco ("MS",     pf_ms),
     P4_FXco ("RANDOM", pf_random),
     P4_FXco ("SEED",   pf_seed),

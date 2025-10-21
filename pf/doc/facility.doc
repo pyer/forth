@@ -1,0 +1,24 @@
+FACILITY WORDS
+==============
+
+
+MS                ( milliseconds# -- )
+                  Wait at least the specified milliseconds
+                  (suspend the forth tasklet)
+
+RANDOM            ( -- x )
+                  Generate a random number.
+             See: SEED.
+
+SEED              ( x -- )
+                  Initialize the random number generator.
+             See: RANDOM.
+
+NOW               ( -- sec# min# hrs# day# month# year# )
+                  Return the broken down current time.
+             See: .NOW.
+
+.NOW              ( sec# min# hrs# day# month# year# -- )
+                  Display date and time in ISO 8601 format without the time zone.
+             See: NOW.
+
