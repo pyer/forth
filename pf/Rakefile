@@ -17,14 +17,14 @@ task :arm do
 # source /usr/local/angstrom/arm/environment-setup
   Rake::Task[:install].invoke
   sh "scp pf          bbb:/usr/bin/pf"
-  sh "scp lib/pf.4th  bbb:/usr/etc/pf.4th"
+  sh "scp lib/pf.4th  bbb:/usr/lib/pf.4th"
 end
 
 task :x86 do
   ARCH='X86'
   Rake::Task[:install].invoke
-  sh "sudo install -m 755 pf          /bin/pf"
-  sh "sudo install -m 755 lib/pf.4th  /etc/pf.4th"
+  sh "sudo install -m 755 pf          /usr/bin/pf"
+  sh "sudo install -m 755 lib/pf.4th  /usr/lib/pf.4th"
 end
 
 task :install => ['pf'] do
