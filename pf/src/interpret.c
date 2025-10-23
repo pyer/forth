@@ -523,8 +523,6 @@ FCode (pf_char)
 {
     const char *fn = pf_word (' ');
     char len = *fn++;
-//    p4char *p = pf_tick_nfa ();
-//    *DP=0; /* PARSE-WORD-NOHERE */
     if ( len==0 )
         p4_throw (P4_ON_INVALID_NAME);
     *--SP = (p4cell) *fn;
