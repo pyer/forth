@@ -1,0 +1,1075 @@
+PF
+                  Pyer's Forth
+
+MAN
+                  ( "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.
+                  Display the documentation of named word.
+
+!                              "store"
+                  ( x a-addr -- )
+                  Store x at a-addr.
+
+#                            "number-sign"
+                  ( ud1 -- ud2 )
+                  Divide ud1 by the number in BASE giving the quotient ud2 and the
+                  remainder n.  (n is the least-significant digit of ud1.)  Convert n to
+                  external form and add the resulting character to the beginning of the
+                  pictured numeric output string.  An ambiguous condition exists if #
+                  executes outside of a <# #> delimited number conversion.
+             See: #>, #S, <#.
+
+#>                       "number-sign-greater"
+                  ( xd -- c-addr u )
+                  Drop xd.  Make the pictured numeric output string available as a
+                  character string.  c-addr and u specify the resulting character string.
+                  A program may replace characters within the string.
+             See: #, #S, <#.
+
+#S                         "number-sign-s"
+                  ( ud1 -- ud2 )
+                  Convert one digit of ud1 according to the rule for #.  Continue
+                  conversion until the quotient is zero.  ud2 is zero.  An ambiguous
+                  condition exists if #S executes outside of a <# #> delimited number
+                  conversion.
+             See: #, #>, <#.
+
+'                              "tick"
+                  ( "<spaces>name" -- xt )
+                  Skip leading space delimiters.  Parse name delimited by a space.
+                  Find name and return xt, the execution token for name.  An ambiguous
+                  condition exists if name is not found.
+                  When interpreting, ' xyz EXECUTE is equivalent to xyz.
+
+(                               "paren"
+     Compilation: Perform the execution semantics given below.
+       Execution: ( "ccc<paren>" -- )
+                  Parse ccc delimited by ) (right parenthesis).  ( is an immediate word.
+                  The number of characters in ccc may be zero to the number of characters
+                  in the parse area.
+
+*                                 "star"
+                  ( n1|u1 n2|u2 -- n3|u3 )
+                  Multiply n1|u1 by n2|u2 giving the product n3|u3.
+
++                                 "plus"
+                  ( n1|u1 n2|u2 -- n3|u3 )
+                  Add n2|u2 to n1|u1, giving the sum n3|u3.
+
++!                              "plus-store"
+                  ( n|u a-addr -- )
+                  Add n|u to the single-cell number at a-addr.
+
++LOOP                            "plus-loop"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: do-sys -- )
+                  Append the run-time semantics given below to the current definition.
+                  Resolve the destination of all unresolved occurrences of LEAVE between
+                  the location given by do-sys and the next location for a transfer of
+                  control, to execute the words following +LOOP.
+        Run-time: ( n -- ) ( R: loop-sys1 -- | loop-sys2 )
+                  An ambiguous condition exists if the loop control parameters are
+                  unavailable.  Add n to the loop index.  If the loop index did not cross
+                  the boundary between the loop limit minus one and the loop limit,
+                  continue execution at the beginning of the loop.  Otherwise, discard the
+                  current loop control parameters and continue execution immediately
+                  following the loop.
+             See: DO, I, J, K, LEAVE, LOOP.
+
+,                                  "comma"
+                  ( x -- )
+                  Reserve one cell of data space and store x in the cell.  If the data-
+                  space pointer is aligned when , begins execution, it will remain aligned
+                  when , finishes execution.  An ambiguous condition exists if the data-
+                  space pointer is not aligned prior to execution of ,.
+
+-                                  "minus"
+                  ( n1|u1 n2|u2 -- n3|u3 )
+                  Subtract n2|u2 from n1|u1, giving the difference n3|u3.
+
+.                                   "dot"
+                  ( n -- )
+                  Display n in free field format.
+
+."                               "dot-quote"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "ccc<quote>" -- )
+                  Parse ccc delimited by " (double-quote).  Append the run-time semantics
+                  given below to the current definition.
+        Run-time: ( -- )
+                  Display ccc.
+             See: .(.
+
+.(                         "dot-paren" NOT IMPLEMENTED
+     Compilation: Perform the execution semantics given below.
+       Execution: ( "ccc<paren>" -- )
+                  Parse and display ccc delimited by ) (right parenthesis).
+                  .( is an immediate word.
+             See: .".
+
+.R                           "dot-r"
+                  ( n1 n2 -- )
+                  Display n1 right aligned in a field n2 characters wide.  If the number
+                  of characters required to display n1 is greater than n2, all digits are
+                  displayed with no leading spaces in a field as wide as necessary.
+
+/                                "slash"
+                  ( n1 n2 -- n3 )
+                  Divide n1 by n2, giving the single-cell quotient n3.  An ambiguous
+                  condition exists if n2 is zero.  If n1 and n2 differ in sign, the
+                  implementation-defined result returned will be the same as that returned
+                  by either the phrase >R S>D R> FM/MOD SWAP DROP or the phrase >R S>D R>
+                  SM/REM SWAP DROP.
+
+/MOD                            "slash-mod"
+                  ( n1 n2 -- n3 n4 )
+                  Divide n1 by n2, giving the single-cell remainder n3 and the single-cell
+                  quotient n4.  An ambiguous condition exists if n2 is zero. If n1 and n2
+                  differ in sign, the implementation-defined result returned will be the
+                  same as that returned by either the phrase >R S>D R> FM/MOD or the
+                  phrase >R S>D R> SM/REM.
+
+0<                              "zero-less"
+                  ( n -- flag )
+                  flag is true if and only if n is less than zero.
+
+0<>                        "zero-not-equals"
+                  ( x -- flag )
+                  flag is true if and only if x is not equal to zero.
+
+0=                             "zero-equals"
+                  ( x -- flag )
+                  flag is true if and only if x is equal to zero.
+
+0>                          "zero-greater"
+                  ( n -- flag )
+                  flag is true if and only if n is greater than zero.
+
+1+                               "one-plus"
+                  ( n1|u1 -- n2|u2 )
+                  Add one (1) to n1|u1 giving the sum n2|u2.
+
+1-                               "one-minus"
+                  ( n1|u1 -- n2|u2 )
+                  Subtract one (1) from n1|u1 giving the difference n2|u2.
+
+:                                  "colon"
+                  ( C: "<spaces>name" -- colon-sys )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Create
+                  a definition for name, called a "colon definition".  Enter compilation
+                  state and start the current definition, producing colon-sys.  Append the
+                  initiation semantics given below to the current definition.
+                  The execution semantics of name will be determined by the words compiled
+                  into the body of the definition.  The current definition shall not be
+                  findable in the dictionary until it is ended (or until the execution of
+                  DOES> in some systems).
+      Initiation: ( i*x -- i*x )  ( R:  -- nest-sys )
+                  Save implementation-dependent information nest-sys about the calling
+                  definition.  The stack effects i*x represent arguments to name.
+  name Execution: ( i*x -- j*x )
+                  Execute the definition name.  The stack effects i*x and j*x represent
+                  arguments to and results from name, respectively.
+             See: DOES>, [, ], ;CODE.
+
+;                                 "semicolon"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: colon-sys -- )
+                  Append the run-time semantics below to the current definition.  End the
+                  current definition, allow it to be found in the dictionary and enter
+                  interpretation state, consuming colon-sys.  If the data-space pointer is
+                  not aligned, reserve enough data space to align it.
+        Run-time: ( -- )  ( R:  nest-sys -- )
+                  Return to the calling definition specified by nest-sys.
+
+<                                 "less-than"
+                  ( n1 n2 -- flag )
+                  flag is true if and only if n1 is less than n2.
+             See: U<.
+
+<#                             "less-number-sign"
+                  ( -- )
+                  Initialize the pictured numeric output conversion process.
+             See: #, #>, #S.
+
+<>                               "not-equals"
+                  ( x1 x2 -- flag )
+                  flag is true if and only if x1 is not bit-for-bit the same as x2.
+
+=                                  "equals"
+                  ( x1 x2 -- flag )
+                  flag is true if and only if x1 is bit-for-bit the same as x2.
+
+>                               "greater-than"
+                  ( n1 n2 -- flag )
+                  flag is true if and only if n1 is greater than n2.
+             See: U>.
+
+>BODY                             "to-body"
+                  ( xt -- a-addr )
+                  a-addr is the data-field address corresponding to xt.  An ambiguous
+                  condition exists if xt is not for a word defined via CREATE.
+
+>IN                                "to-in"
+                  ( -- a-addr )
+                  a-addr is the address of a cell containing the offset in characters from
+                  the start of the input buffer to the start of the parse area.
+
+>NUMBER                          "to-number"
+                  ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 )
+                  ud2 is the unsigned result of converting the characters within the
+                  string specified by c-addr1 u1 into digits, using the number in BASE,
+                  and adding each into ud1 after multiplying ud1 by the number in BASE.
+                  Conversion continues left-to-right until a character that is not
+                  convertible, including any "+" or "-", is encountered or the string is
+                  entirely converted.  c-addr2 is the location of the first unconverted
+                  character or the first character past the end of the string if the
+                  string was entirely converted.  u2 is the number of unconverted
+                  characters in the string.  An ambiguous condition exists if ud2
+                  overflows during the conversion.
+
+>R                                 "to-r"
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( x -- )  ( R:  -- x )
+                  Move x to the return stack.
+             See: R>, R@.
+
+?DUP                           "question-dupe"
+                  ( x -- 0 | x x )
+                  Duplicate x if it is non-zero.
+
+@                                  "fetch"
+                  ( a-addr -- x )
+                  x is the value stored at a-addr.
+
+ABORT
+                  ( i*x -- ) ( R: j*x -- )
+                  Empty the data stack and perform the function of QUIT, which includes
+                  emptying the return stack, without displaying a message.
+
+ABORT"                          "abort-quote"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "ccc<quote>" -- )
+                  Parse ccc delimited by a " (double-quote).  Append the run-time
+                  semantics given below to the current definition.
+        Run-time: ( i*x x1 --  | i*x ) ( R: j*x --  | j*x )
+                  Remove x1 from the stack.  If any bit of x1 is not zero, display ccc and
+                  perform an implementation-defined abort sequence that includes the
+                  function of ABORT.
+
+ABS                                 "abs"
+                  ( n -- u )
+                  u is the absolute value of n.
+
+ACCEPT
+                  ( c-addr +n1 -- +n2 )
+                  Receive a string of at most +n1 characters.  An ambiguous condition
+                  exists if +n1 is zero or greater than 32,767.  Display graphic
+                  characters as they are received.  A program that depends on the presence
+                  or absence of non-graphic characters in the string has an environmental
+                  dependency.  The editing functions, if any, that the system performs in
+                  order to construct the string are implementation-defined.
+                  Input terminates when an implementation-defined line terminator is
+                  received.  When input terminates, nothing is appended to the
+                  string, and the display is maintained in an implementation-defined way.
+                  +n2 is the length of the string stored at c-addr.
+
+AGAIN
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: dest -- )
+                  Append the run-time semantics given below to the current definition,
+                  resolving the backward reference dest.
+        Run-time: ( -- )
+                  Continue execution at the location specified by dest.  If no other
+                  control flow words are used, any program code after AGAIN will not be
+                  executed.
+             See: BEGIN.
+
+ALIGN
+                  ( -- )
+                  If the data-space pointer is not aligned, reserve enough space to align
+                  it.
+
+ALIGNED
+                  ( addr -- a-addr )
+                  a-addr is the first aligned address greater than or equal to addr.
+
+ALLOT
+                  ( n -- )
+                  If n is greater than zero, reserve n address units of data space.  If n
+                  is less than zero, release |n| address units of data space.  If n is
+                  zero, leave the data-space pointer unchanged.
+                  If the data-space pointer is aligned and n is a multiple of the size of
+                  a cell when ALLOT begins execution, it will remain aligned when ALLOT
+                  finishes execution.
+                  If the data-space pointer is character aligned and n is a multiple of
+                  the size of a character when ALLOT begins execution, it will remain
+                  character aligned when ALLOT finishes execution.
+
+AND
+                  ( x1 x2 -- x3 )
+                  x3 is the bit-by-bit logical "and" of x1 with x2.
+
+BASE
+                  ( -- a-addr )
+                  a-addr is the address of a cell containing the current number-conversion
+                  radix {{2...36}}
+
+BEGIN
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: -- dest )
+                  Put the next location for a transfer of control, dest, onto the control
+                  flow stack.  Append the run-time semantics given below to the current
+                  definition.
+        Run-time: ( -- )
+                  Continue execution.
+             See: REPEAT, UNTIL, WHILE.
+
+C!                                "c-store"
+                  ( char c-addr -- )
+                  Store char at c-addr.  When character size is smaller than cell size,
+                  only the number of low-order bits corresponding to character size are
+                  transferred.
+
+C,                                "c-comma"
+                  ( char -- )
+                  Reserve space for one character in the data space and store char in the
+                  space.  If the data-space pointer is character aligned when C, begins
+                  execution, it will remain character aligned when C, finishes execution.
+                  An ambiguous condition exists if the data-space pointer is not
+                  character-aligned prior to execution of C,.
+
+C@                                "c-fetch"
+                  ( c-addr -- char )
+                  Fetch the character stored at c-addr.  When the cell size is greater
+                  than character size, the unused high-order bits are all zeroes.
+
+C"                               "c-quote"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "ccc<quote>" -- )
+                  Parse ccc delimited by " (double-quote) and append the run-time
+                  semantics given below to the current definition.
+        Run-time: ( -- c-addr )
+                  Return c-addr, a counted string consisting of the characters ccc.  A
+                  program shall not alter the returned string.
+             See: S".
+
+CASE
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: -- case-sys )
+                  Mark the start of the CASE ... OF ... ENDOF ... ENDCASE  structure.
+                  Append the run-time semantics given below to the current definition.
+        Run-time: ( -- )
+                  Continue execution.
+             See: ENDCASE, ENDOF, OF.
+
+CELL+                            "cell-plus"
+                  ( a-addr1 -- a-addr2 )
+                  Add the size in address units of a cell to a-addr1, giving a-addr2.
+
+CELLS
+                  ( n1 -- n2 )
+                  n2 is the size in address units of n1 cells.
+
+CHAR                               "char"
+                  ( "<spaces>name" -- char )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Put
+                  the value of its first character onto the stack.
+             See: [CHAR].
+
+CHAR+                            "char-plus"
+                  ( c-addr1 -- c-addr2 )
+                  Add the size in address units of a character to c-addr1, giving c-addr2.
+
+CHARS                             "chars"
+                  ( n1 -- n2 )
+                  n2 is the size in address units of n1 characters.
+
+COMPILE,                     "compile-comma"
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( xt -- )
+                  Append the execution semantics of the definition represented by xt to
+                  the execution semantics of the current definition.
+
+CONSTANT
+                  ( x "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Create
+                  a definition for name with the execution semantics defined below.
+                  name is referred to as a "constant".
+  name Execution: ( -- x )
+                  Place x on the stack.
+
+COUNT
+                  ( c-addr1 -- c-addr2 u )
+                  Return the character string specification for the counted string stored
+                  at c-addr1.  c-addr2 is the address of the first character after
+                  c-addr1.  u is the contents of the character at c-addr1, which is the
+                  length in characters of the string at c-addr2.
+
+CR                                   "c-r"
+                  ( -- )
+                  Cause subsequent output to appear at the beginning of the next line.
+
+CREATE
+                  ( "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Create
+                  a definition for name with the execution semantics defined below.  If
+                  the data-space pointer is not aligned, reserve enough data space to
+                  align it.  The new data-space pointer defines name's data field.  CREATE
+                  does not allocate data space in name's data field.
+  name Execution: ( -- a-addr )
+                  a-addr is the address of name's data field.  The execution semantics of
+                  name may be extended by using DOES>.
+        See: 3.3.3 Data space, DOES>.
+
+DECIMAL
+                  ( -- )
+                  Set the numeric conversion radix to ten (decimal).
+
+DEPTH
+                  ( -- +n )
+                  +n is the number of single-cell values contained in the data stack
+                  before +n was placed on the stack.
+
+DO
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: -- do-sys )
+                  Place do-sys onto the control-flow stack.  Append the run-time semantics
+                  given below to the current definition.  The semantics are incomplete
+                  until resolved by a consumer of do-sys such as LOOP.
+        Run-time: ( n1|u1 n2|u2 -- ) ( R: -- loop-sys )
+                  Set up loop control parameters with index n2|u2 and limit n1|u1. An
+                  ambiguous condition exists if n1|u1 and n2|u2 are not both the same
+                  type.  Anything already on the return stack becomes unavailable until
+                  the loop-control parameters are discarded.
+             See: +LOOP, LOOP.
+
+DOES>                              "does"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: colon-sys1 -- colon-sys2 )
+                  Append the run-time semantics below to the current definition.  Whether
+                  or not the current definition is rendered findable in the dictionary by
+                  the compilation of DOES> is implementation defined.  Consume colon-sys1
+                  and produce colon-sys2.  Append the initiation semantics given below to
+                  the current definition.
+        Run-time: ( -- ) ( R: nest-sys1 -- )
+                  Replace the execution semantics of the most recent definition, referred
+                  to as name, with the name execution semantics given below.  Return
+                  control to the calling definition specified by nest-sys1.  An ambiguous
+                  condition exists if name was not defined with CREATE or a user-defined
+                  word that calls CREATE.
+      Initiation: ( i*x -- i*x a-addr )  ( R:  -- nest-sys2 )
+                  Save implementation-dependent information nest-sys2 about the calling
+                  definition.  Place name's data field address on the stack.  The stack
+                  effects i*x represent arguments to name.
+  name Execution: ( i*x -- j*x )
+                  Execute the portion of the definition that begins with the initiation
+                  semantics appended by the DOES> which modified name.  The stack effects
+                  i*x and j*x represent arguments to and results from name, respectively.
+             See: CREATE.
+
+DROP
+                  ( x -- )
+                  Remove x from the stack.
+
+DUP                                   "dupe"
+                  ( x -- x x )
+                  Duplicate x.
+
+ELSE
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: orig1 -- orig2 )
+                  Put the location of a new unresolved forward reference orig2 onto the
+                  control flow stack.  Append the run-time semantics given below to the
+                  current definition.  The semantics will be incomplete until orig2 is
+                  resolved (e.g., by THEN).  Resolve the forward reference orig1 using the
+                  location following the appended  run-time semantics.
+        Run-time: ( -- )
+                  Continue execution at the location given by the resolution of orig2.
+             See: IF, THEN.
+
+ENDCASE                        "end-case"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: case-sys -- )
+                   Mark the end of the CASE ... OF ... ENDOF ... ENDCASE structure.  Use
+                   case-sys to resolve the entire structure.  Append the run-time
+                   semantics given below to the current definition.
+        Run-time: ( x -- )
+                  Discard the case selector x and continue execution.
+             See: CASE, ENDOF, OF.
+
+ENDOF                           "end-of"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: case-sys1 of-sys -- case-sys2 )
+                  Mark the end of the OF ... ENDOF part of the CASE structure.  The next
+                  location for a transfer of control resolves the reference given by
+                  of-sys.  Append the run-time semantics given below to the current
+                  definition.  Replace case-sys1 with case-sys2 on the control-flow stack,
+                  to be resolved by ENDCASE.
+        Run-time: ( -- )
+                  Continue execution at the location specified by the consumer of
+                  case-sys2.
+             See: CASE, ENDCASE, OF.
+
+EMIT
+                  ( x -- )
+                  If x is a graphic character in the implementation-defined character set,
+                  display x.  The effect of EMIT for all other values of x is
+                  implementation-defined.
+                  When passed a character whose character-defining bits have a value
+                  between hex 20 and 7E inclusive, the corresponding standard character,
+                  specified by 3.1.2.1 Graphic characters, is displayed.  Because
+                  different output devices can respond differently to control characters,
+                  programs that use control characters to perform specific functions have
+                  an environmental dependency.  Each EMIT deals with only one character.
+             See: TYPE.
+
+ERASE
+                  ( addr u -- )
+                  If u is greater than zero, clear all bits in each of u consecutive
+                  address units of memory beginning at addr .
+
+EXECUTE
+                  ( i*x xt -- j*x )
+                  Remove xt from the stack and perform the semantics identified by it.
+                  Other stack effects are due to the word EXECUTEd.
+             See: ', ['].
+
+EXIT
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- ) ( R: nest-sys -- )
+                  Return control to the calling definition specified by nest-sys.  Before
+                  executing EXIT within a do-loop, a program shall discard the loop-
+                  control parameters by executing UNLOOP.
+             See: UNLOOP.
+
+FALSE
+                  ( -- false )
+                  Return a false flag.
+
+FILL
+                  ( c-addr u char -- )
+                  If u is greater than zero, store char in each of u consecutive
+                  characters of memory beginning at c-addr.
+
+FIND
+                  ( c-addr -- c-addr 0  |  xt 1  |  xt -1 )
+                  Find the definition named in the counted string at c-addr.  If the
+                  definition is not found, return c-addr and zero.  If the definition is
+                  found, return its execution token xt.  If the definition is immediate,
+                  also return one (1), otherwise also return minus-one (-1).  For a given
+                  string, the values returned by FIND while compiling may differ from
+                  those returned while not compiling.
+             See: ', ['], POSTPONE.
+
+HERE
+                  ( -- addr )
+                  addr is the data-space pointer.
+
+HEX
+                  ( -- )
+                  Set contents of BASE to sixteen.
+
+HOLD
+                  ( char -- )
+                  Add char to the beginning of the pictured numeric output string.  An
+                  ambiguous condition exists if HOLD executes outside of a <# #> delimited
+                  number conversion.
+
+I
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- n|u )  ( R:  loop-sys -- loop-sys )
+                  n|u is a copy of the current (innermost) loop index.  An ambiguous
+                  condition exists if the loop control parameters are unavailable.
+
+IF
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: -- orig )
+                  Put the location of a new unresolved forward reference orig onto the
+                  control flow stack. Append the run-time semantics given below to the
+                  current definition.  The semantics are incomplete until orig is
+                  resolved, e.g., by THEN or ELSE.
+        Run-time: ( x -- )
+                  If all bits of x are zero, continue execution at the location specified
+                  by the resolution of orig.
+             See: ELSE, THEN.
+
+IMMEDIATE
+                  ( -- )
+                  Make the most recent definition an immediate word.  An ambiguous
+                  condition exists if the most recent definition does not have a name.
+
+INVERT
+                  ( x1 -- x2 )
+                  Invert all bits of x1, giving its logical inverse x2.
+             See: NEGATE, NOT, 0=.
+
+J
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- n|u ) ( R: loop-sys1 loop-sys2 -- loop-sys1 loop-sys2 )
+                  n|u is a copy of the next-outer loop index.  An ambiguous condition
+                  exists if the loop control parameters of the next-outer loop, loop-sys1,
+                  are unavailable.
+
+KEY
+                  ( -- char )
+                  Receive one character char, a member of the implementation-defined
+                  character set.  Keyboard events that do not correspond to such
+                  characters are discarded until a valid character is received, and those
+                  events are subsequently unavailable.
+                  All standard characters can be received.  Characters received by KEY are
+                  not displayed.
+                  Any standard character returned by KEY has the numeric value specified
+                  in 3.1.2.1 Graphic characters.  Programs that require the ability to
+                  receive control characters have an environmental dependency.
+             See: KEY?.
+
+LEAVE
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- )  ( R: loop-sys -- )
+                  Discard the current loop control parameters.  An ambiguous condition
+                  exists if they are unavailable.  Continue execution immediately
+                  following the innermost syntactically enclosing DO ... LOOP or
+                  DO ... +LOOP.
+             See: +LOOP, LOOP.
+
+LITERAL
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( x -- )
+                  Append the run-time semantics given below to the current definition.
+        Run-time: ( -- x )
+                  Place x on the stack.
+
+LOOP
+   Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: do-sys -- )
+                  Append the run-time semantics given below to the current definition.
+                  Resolve the destination of all unresolved occurrences of LEAVE between
+                  the location given by do-sys and the next location for a transfer of
+                  control, to execute the words following the LOOP.
+        Run-time: ( -- )  ( R:  loop-sys1 --  | loop-sys2 )
+                  An ambiguous condition exists if the loop control parameters are
+                  unavailable.  Add one to the loop index.  If the loop index is then
+                  equal to the loop limit, discard the loop parameters and continue
+                  execution immediately following the loop.  Otherwise continue execution
+                  at the beginning of the loop.
+             See: +LOOP, DO, I, LEAVE.
+
+LSHIFT                            "l-shift"
+                  ( x1 u -- x2 )
+                  Perform a logical left shift of u bit-places on x1, giving x2.  Put
+                  zeroes into the least significant bits vacated by the shift.  An
+                  ambiguous condition exists if u is greater than or equal to the number
+                  of bits in a cell.
+
+MAX
+                  ( n1 n2 -- n3 )
+                  n3 is the greater of n1 and n2.
+
+MIN
+                  ( n1 n2 -- n3 )
+                  n3 is the lesser of n1 and n2.
+
+MOD
+                  ( n1 n2 -- n3 )
+                  Divide n1 by n2, giving the single-cell remainder n3.  An ambiguous
+                  condition exists if n2 is zero.  If n1 and n2 differ in sign, the
+                  implementation-defined result returned will be the same as that
+                  returned by either the phrase >R S>D R> FM/MOD DROP or the phrase >R
+                  S>D R> SM/REM DROP.
+
+MOVE
+                  ( addr1 addr2 u -- )
+                  If u is greater than zero, copy the contents of u consecutive address
+                  units at addr1 to the u consecutive address units at addr2.  After MOVE
+                  completes, the u consecutive address units at addr2 contain exactly
+                  what the u consecutive address units at addr1 contained before the
+                  move.
+             See: CMOVE, CMOVE>.
+
+NEGATE
+                  ( n1 -- n2 )
+                  Negate n1, giving its arithmetic inverse n2.
+             See: INVERT, 0=.
+
+NIP
+                  ( x1 x2 -- x2 )
+                  Drop the first item below the top of stack.
+
+NOT
+                  ( x1 -- x2 )
+                  Invert all bits of x1, giving its logical inverse x2.
+             See: INVERT, NEGATE, 0=.
+
+OF
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: -- of-sys )
+                  Put of-sys onto the control flow stack.  Append the run-time semantics
+                  given below to the current definition.  The semantics are incomplete
+                  until resolved by a consumer of of-sys such as ENDOF.
+        Run-time: ( x1 x2 --   | x1 )
+                  If the two values on the stack are not equal, discard the top value and
+                  continue execution at the location specified by the consumer of of-sys,
+                  e.g., following the next ENDOF.  Otherwise, discard both values and
+                  continue execution in line.
+             See: CASE, ENDCASE, ENDOF.
+
+OR
+                  ( x1 x2 -- x3 )
+                  x3 is the bit-by-bit inclusive-or of x1 with x2.
+
+OVER
+                  ( x1 x2 -- x1 x2 x1 )
+                  Place a copy of x1 on top of the stack.
+
+PAD
+                  ( -- c-addr )
+                  c-addr is the address of a transient region that can be used to hold
+                  data for intermediate processing.
+
+PICK
+                  ( xu ... x1 x0 u -- xu ... x1 x0 xu )
+                  Remove u.  Copy the xu to the top of the stack.  An ambiguous condition
+                  exists if there are less than u+2 items on the stack before PICK is
+                  executed.
+
+POSTPONE
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Find
+                  name.  Append the compilation semantics of name to the current
+                  definition.  An ambiguous condition exists if name is not found.
+
+QUIT
+                  ( -- )  ( R:  i*x -- )
+                  Empty the return stack, store zero in SOURCE-ID if it is present, make
+                  the user input device the input source, and enter interpretation state.
+                  Do not display a message.  Repeat the following:
+                  -  Accept a line from the input source into the input buffer, set >IN
+                     to zero, and interpret.
+                  -  Display the implementation-defined system prompt if in
+                     interpretation state, all processing has been completed, and no
+                     ambiguous condition exists.
+
+R>                                "r-from"
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- x )  ( R:  x -- )
+                  Move x from the return stack to the data stack.
+             See: >R, R@.
+
+R@                                "r-fetch"
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- x )  ( R:  x -- x )
+                  Copy x from the return stack to the data stack.
+             See: >R, R>.
+
+RECURSE
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( -- )
+                  Append the execution semantics of the current definition to the current
+                  definition.  An ambiguous condition exists if RECURSE appears in a
+                  definition after DOES>.
+             See: DOES>, RECURSE.
+
+REPEAT
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: orig dest -- )
+                  Append the run-time semantics given below to the current definition,
+                  resolving the backward reference dest.  Resolve the forward reference
+                  orig using the location following the appended run-time semantics.
+        Run-time: ( -- )
+                  Continue execution at the location given by dest.
+        See: BEGIN, WHILE.
+
+ROLL
+                  ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
+                  Remove u.  Rotate u+1 items on the top of the stack.  An ambiguous
+                  condition exists if there are less than u+2 items on the stack before
+                  ROLL is executed.
+
+ROT                                 "rote"
+                  ( x1 x2 x3 -- x2 x3 x1 )
+                  Rotate the top three stack entries.
+
+RSHIFT                             "r-shift"
+                  ( x1 u -- x2 )
+                  Perform a logical right shift of u bit-places on x1, giving x2.  Put
+                  zeroes into the most significant bits vacated by the shift.  An
+                  ambiguous condition exists if u is greater than or equal to the number
+                  of bits in a cell.
+
+S"                                 "s-quote"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "ccc<quote>" -- )
+                  Parse ccc delimited by " (double-quote).  Append the run-time semantics
+                  given below to the current definition.
+        Run-time: ( -- c-addr u )
+                  Return c-addr and u describing a string consisting of the characters
+                  ccc.  A program shall not alter the returned string.
+             See: C".
+
+SIGN
+                  ( n -- )
+                  If n is negative, add a minus sign to the beginning of the pictured
+                  numeric output string.  An ambiguous condition exists if SIGN executes
+                  outside of a <# #> delimited number conversion.
+
+SOURCE
+                  ( -- c-addr u )
+                  c-addr is the address of, and u is the number of characters in, the
+                  input buffer.
+
+SPACE
+                  ( -- )
+                  Display one space.
+
+SPACES
+                  ( n -- )
+                  If n is greater than zero, display n spaces.
+
+STATE
+                  ( -- a-addr )
+                  a-addr is the address of a cell containing the compilation-state flag.
+                  STATE is true when in compilation state, false otherwise.  The true
+                  value in STATE is non-zero, but is otherwise implementation-defined.
+                  Only the following standard words alter the value in STATE: : (colon),
+                  ; (semicolon), ABORT, QUIT, :NONAME, [ (left-bracket), and ] (right-
+                  bracket).
+            Note: A program shall not directly alter the contents of STATE.
+
+SWAP
+                  ( x1 x2 -- x2 x1 )
+                  Exchange the top two stack items.
+
+THEN
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: orig -- )
+                  Append the run-time semantics given below to the current definition.
+                  Resolve the forward reference orig using the location of the appended
+                  run-time semantics.
+        Run-time: ( -- )
+                  Continue execution.
+             See: ELSE, IF.
+
+TO
+  Interpretation: ( x "<spaces>name" -- )
+                  Skip leading spaces and parse name delimited by a space.  Store x in
+                  name.  An ambiguous condition exists if name was not defined by VALUE.
+     Compilation: ( "<spaces>name" -- )
+                  Skip leading spaces and parse name delimited by a space.  Append the
+                  run-time semantics given below to the current definition.  An ambiguous
+                  condition exists if name was not defined by VALUE.
+        Run-time: ( x -- )
+                  Store x in name.
+            Note: An ambiguous condition exists if either POSTPONE or [COMPILE]
+                  is applied to TO.
+             See: VALUE.
+
+TRUE
+                  ( -- true )
+                  Return a true flag, a single-cell value with all bits set.
+
+TUCK
+                  ( x1 x2 -- x2 x1 x2 )
+                  Copy the first (top) stack item below the second stack item.
+
+TYPE
+                  ( c-addr u -- )
+                  If u is greater than zero, display the character string specified by c-
+                  addr and u.
+                  When passed a character in a character string whose character-defining
+                  bits have a value between hex 20 and 7E inclusive, the corresponding
+                  standard character, specified by 3.1.2.1 graphic characters, is
+                  displayed.  Because different output devices can respond differently to
+                  control characters, programs that use control characters to perform
+                  specific functions have an environmental dependency.
+             See: EMIT.
+
+UNLOOP
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- ) ( R: loop-sys -- )
+                  Discard the loop-control parameters for the current nesting level.  An
+                  UNLOOP is required for each nesting level before the definition may be
+                  EXITed.  An ambiguous condition exists if the loop-control parameters
+                  are unavailable.
+
+UNTIL
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: dest -- )
+                  Append the run-time semantics given below to the current definition,
+                  resolving the backward reference dest.
+        Run-time: ( x -- )
+                  If all bits of x are zero, continue execution at the location specified
+                  by dest.
+             See: BEGIN.
+
+VALUE
+                  ( x "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Create
+                  a definition for name with the execution semantics defined below, with
+                  an initial value equal to x.
+                  name is referred to as a "value".
+  name Execution: ( -- x )
+                  Place x on the stack.  The value of x is that given when name was
+                  created, until the phrase x TO name is executed, causing a new value of
+                  x to be associated with name.
+             See: TO.
+
+VARIABLE
+                  ( "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Create
+                  a definition for name with the execution semantics defined below.
+                  Reserve one cell of data space at an aligned address.
+                  name is referred to as a "variable"
+  name Execution: ( -- a-addr )
+                  a-addr is the address of the reserved cell.  A program is responsible or
+                  initializing the contents of the reserved cell.
+
+WITHIN
+                  ( n1|u1 n2|u2 n3|u3 -- flag )
+                  Perform a comparison of a test value n1|u1 with a lower limit n2|u2 and
+                  an upper limit n3|u3, returning true if either (n2|u2 < n3|u3 and (n2|u2
+                  <= n1|u1 and n1|u1 < n3|u3)) or (n2|u2 > n3|u3 and (n2|u2 <= n1|u1 or
+                  n1|u1 < n3|u3)) is true, returning false otherwise.  An ambiguous
+                  condition exists if n1|u1, n2|u2, and n3|u3 are not all the same type.
+
+WHILE
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( C: dest -- orig dest )
+                  Put the location of a new unresolved forward reference orig onto the
+                  control flow stack, under the existing dest.  Append the run-time
+                  semantics given below to the current definition.  The semantics are
+                  incomplete until orig and dest are resolved (e.g., by REPEAT).
+        Run-time: ( x -- )
+                  If all bits of x are zero, continue execution at the location specified
+                  by the resolution of orig.
+
+XOR                               "x-or"
+                  ( x1 x2 -- x3 )
+                  x3 is the bit-by-bit exclusive-or of x1 with x2.
+
+[                               "left-bracket"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: Perform the execution semantics given below.
+       Execution: ( -- )
+                  Enter interpretation state.  [ is an immediate word.
+             See: ].
+
+[']                         "bracket-tick"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Find
+                  name.  Append the run-time semantics given below to the current
+                  definition.
+                  An ambiguous condition exists if name is not found.
+        Run-time: ( -- xt )
+                  Place name's execution token xt on the stack.  The execution token
+                  returned by the compiled phrase "['] X " is the same value returned by
+                  "' X " outside of compilation state.
+             See: ', POSTPONE.
+
+[CHAR]                      "bracket-char"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Append
+                  the run-time semantics given below to the current definition.
+        Run-time: ( -- char )
+                  Place char, the value of the first character of name, on the stack.
+             See: CHAR.
+
+[COMPILE]                     "bracket-compile"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "<spaces>name" -- )
+                  Skip leading space delimiters.  Parse name delimited by a space.  Find
+                  name.  If name has other than default compilation semantics, append them
+                  to the current definition; otherwise append the execution semantics of
+                  name.  An ambiguous condition exists if name is not found.
+
+\                               "backslash"
+     Compilation: Perform the execution semantics given below.
+       Execution: ( "ccc<eol>"-- )
+                  Parse and discard the remainder of the parse area.
+                  \ is an immediate word.
+
+]                          "right-bracket"
+                  ( -- )
+                  Enter compilation state.
+             See: [.
+
+
+AT-XY             ( col line -- )
+                  Move the cursor to the specified position on the screen.
+                  This is usually done by sending a corresponding esc-sequence to the terminal. 
+
+COLS              ( -- n )
+                  n is the number of columns of the screen.
+
+EMITS             ( n char -- )
+                  Type a string of n chars by repeating a single character which is char.
+             See: SPACES, TYPE.
+
+MORE              ( -- )
+                  Initialize a more-like effect.
+             See: MORE?
+
+MORE?             ( -- flag )
+                  Like CR but stop after one screenful and return a flag when a key is pressed.
+             See: CR, MORE
+
+PAGE              ( -- )
+                  Move to another page for output.
+                  Actual function depends on the output device.
+                  On a terminal, PAGE clears the screen and resets the cursor position
+                  to the upper left corner.
+                  On a printer, PAGE performs a form feed.
+
+ROWS              ( -- n )
+                  n is the number of rows of the screen.
+
+
+MS                ( milliseconds# -- )
+                  Wait at least the specified milliseconds
+                  (suspend the forth tasklet)
+
+RANDOM            ( -- x )
+                  Generate a random number.
+             See: SEED.
+
+SEED              ( x -- )
+                  Initialize the random number generator.
+             See: RANDOM.
+
+NOW               ( -- sec# min# hrs# day# month# year# )
+                  Return the broken down current time.
+             See: .NOW.
+
+.NOW              ( sec# min# hrs# day# month# year# -- )
+                  Display date and time in ISO 8601 format without the time zone.
+             See: NOW.
+
+.S                ( -- )
+                  Copy and display the values currently on the data stack.
+                  The format of the display is implementation-dependent.
+
+.STATUS           ( -- )
+                  Display memory status and more.
+         Example: Dictionary space:     966144 Bytes, in use:    9320 Bytes
+                  Stack space:            4128 cells
+                  Return stack space:     2080 cells, (not the C call stack)
+                  Floating stack space:   4096 floats
+                  PRECISION:             6
+                  maximum number of open files:     16
+
+DUMP              ( addr n -- )
+                  Display n bytes starting at address addr in hex and ASCII format.
+
+WORDS             ( -- )
+                  List the definition names in the first word list of the search order.
+                  The format of the display is implementation-dependent.
+
+HISTORY           ( -- )
+                  List the last keyboard's entries.
+                  The format of the display is implementation-dependent.
+
+BYE               ( -- )
+                  Return control to the host operating system.
+
