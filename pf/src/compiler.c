@@ -541,6 +541,31 @@ FCode (pf_value)
 }
 P4RUNTIME1(pf_value, pf_value_RT);
 
+/** "((TO))" ( value -- ) [HIDDEN]
+ * execution compiled by => TO
+ */
+FCode_XE (pf_to_execution)
+{
+    *cfa_to_body ((p4xt)(*IP++)) = *SP++;
+}
+
+/** TO ( value 'name' -- ) [ANS]
+ * set the parameter field of name to the value, this is used
+ * to change the value of a => VALUE and it can be also used
+ * to change the value of => LOCALS|
+ */
+FCode (pf_to)
+{
+    // "TO" is always STATESMART
+    if (STATE) {
+        FX_COMPILE(pf_to);
+    } else {
+        p4xt xt = pf_tick_cfa();
+        *cfa_to_body(xt) = *SP++;
+    }
+}
+P4COMPILES (pf_to, pf_to_execution, P4_SKIPS_TO_TOKEN, P4_DEFAULT_STYLE);
+
 /** "((VAR))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => VARIABLE
  */
@@ -632,7 +657,7 @@ FCode (pf_bracket_tick)
 P4COMPILES (pf_bracket_tick, pf_literal_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
 
 /** [CHAR] ( [word] -- char# ) [ANS]
- * in compile-mode, get the (ascii-)value of the first charachter
+ * in compile-mode, get the (ascii-)value of the first character
  * in the following word and compile it as a literal so that it
  * will pop up on execution again. See => CHAR and forth-83 => ASCII
  */
@@ -1126,6 +1151,7 @@ P4_LISTWORDS (compiler) =
     P4_FXco ("ALLOT",        pf_allot),
     P4_RTco ("CONSTANT",     pf_constant),
     P4_RTco ("VALUE",        pf_value),
+    P4_SXco ("TO",           pf_to),
     P4_RTco ("VARIABLE",     pf_variable),
 
     P4_SXco ("LITERAL",      pf_literal),
