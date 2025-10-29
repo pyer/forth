@@ -846,17 +846,6 @@ FCode (pf_backslash)
 }
 
 /* -------------------------------------------------------------- */
-void pf_dot_name (const p4_namebuf_t *nfa)
-{
-    if (! nfa || ! (P4_NAMEFLAGS(nfa) & 0x80)) {
-        pf_outs ("<?""?""?> ");  /* avoid C preprocessor trigraph */
-    } else {
-        pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
-        FX (pf_space);
-    }
-}
-
-/* -------------------------------------------------------------- */
 /**
  * (DICTVAR) forth-thread variable runtime, => VARIABLE like
  */
@@ -906,43 +895,6 @@ FCode (pf_defer)
     FX_XCOMMA (0); /* <-- put XT here in fig-mode */
 }
 P4RUNTIME1(pf_defer, pf_defer_RT);
-
-/* -------------------------------------------------------------- */
-/* return the category of the word which nfa is p
- */
-#if defined PF_WITH_FLOATING
-FCode_RT (p4_f_variable_RT);
-FCode_RT (p4_f_constant_RT);
-#endif
-
-char pf_category (p4code p)
-{
-//printf(" [%lx] (var=%lx) ", p, P4CODE(pf_value_RT) );
-    //if (p == P4CODE(pf_colon_RT) || p == P4CODE(pf_debug_colon_RT))
-    if (p == P4CODE(pf_colon_RT))
-        return ':';
-    if (p == P4CODE(pf_variable_RT) || p == P4CODE(pf_dictvar_RT))
-        return 'V';
-    if (p == P4CODE(pf_value_RT) || p == P4CODE(pf_dictget_RT))
-        return 'v';
-    if (p == P4CODE(pf_constant_RT))
-        return 'C';
-#if defined PF_WITH_FLOATING
-    if (p == P4CODE(p4_f_variable_RT))
-        return 'F';
-    if (p == P4CODE(p4_f_constant_RT))
-        return 'K';
-#endif
-    if (p == P4CODE(pf_create_RT))
-        return 'c';
-    //if (p == P4CODE(pf_does_RT) || p == P4CODE(pf_debug_does_RT))
-    if (p == P4CODE(pf_does_RT))
-        return 'D';
-    if (p == P4CODE(pf_defer_RT))
-        return 'd'; 
-    /* must be primitive */
-    return 'p';
-}
 
 /* -------------------------------------------------------------- */
 /* >BODY is known to work on both DOES-style and VAR-style words

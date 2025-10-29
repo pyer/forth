@@ -59,4 +59,3 @@
 : led3_on  ( -- ) led3 led_on  ;
 : led3_off ( -- ) led3 led_off ;
 
-: hello ." Hello world !" cr ;

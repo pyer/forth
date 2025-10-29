@@ -1,4 +1,4 @@
-/** 
+/**
  * -- The Optional Programming-Tools Word Set
  *
  *  Copyright (C) Tektronix, Inc. 1998 - 2001.
@@ -11,13 +11,13 @@
  *
  *  @description
  *      The ANS Forth defines some "Programming Tools", words to
- *      inspect the stack (=>'.S'), memory (=>'DUMP'), 
+ *      inspect the stack (=>'.S'), memory (=>'DUMP'),
  *      compiled code (=>'SEE') and what words
  *      are defined (=>'WORDS').
  *
- *      There are also word that provide some precompiler support 
+ *      There are also word that provide some precompiler support
  *      and explicit acces to the =>'CS-STACK'.
- * 
+ *
  */
 
 #include <stdio.h>
@@ -27,10 +27,12 @@
 #include <setjmp.h>
 
 #include "config.h"
+#include "const.h"
 #include "types.h"
 #include "macro.h"
 #include "listwords.h"
 #include "thread.h"
+#include "compiler.h"
 #include "interpret.h"
 #include "terminal.h"
 #include "history.h"
@@ -72,7 +74,7 @@ static void pf_prCell (p4cell n)
  *     Confusing example? Remember that floating point input only works
  *     when the => BASE number is =>'DECIMAL'. The first number looks like
  *     a floating point but it is a goodhex double integer too - the number
- *     base is =>'HEX'. Thus it is accepted as a hex number. Second try 
+ *     base is =>'HEX'. Thus it is accepted as a hex number. Second try
  *      with a decimal base will input the floating point number.
  *
  *      If only the integer stack is empty, => .S shows two columns, but
@@ -82,7 +84,7 @@ static void pf_prCell (p4cell n)
 FCode (pf_dot_s)
 {
     int i;
-    
+
     int dd = S0 - SP;
 #if defined PF_WITH_FLOATING
     int fd = F0 - FP;
@@ -146,6 +148,81 @@ FCode (pf_dot_status)
 }
 
 /************************************************************************/
+void pf_dot_name (const p4_namebuf_t *nfa)
+{
+    if (nfa && (P4_NAMEFLAGS(nfa) & 0x80)) {
+        pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
+        FX (pf_space);
+    }
+}
+
+/************************************************************************/
+/** SEE ( "word" -- )
+ *  decompile word - tries to show it in re-compilable form.
+ *
+ *  => (SEE) tries to display the word as a reasonable indented
+ *  source text. If you defined your own control structures or
+ *  use extended control-flow patterns, the indentation may be
+ *  suboptimal.
+ simulate:
+   : SEE  [COMPILE] ' (SEE) ;
+ */
+
+FCode (pf_see)
+{
+    p4char* nfa = pf_tick_nfa();
+    p4xt    xt  = LINK_TO_CFA(name_to_link(nfa));
+    p4xt* rest = (p4xt*) P4_TO_BODY(xt);
+
+    FX (pf_cr);
+
+    if (*xt == P4CODE(pf_colon_RT)) {
+        pf_outs(": ");
+        pf_dot_name (nfa);
+        pf_outs("... ; ");
+        pf_outf ("%p ", rest);
+
+    } else if (*xt == P4CODE(pf_create_RT)) {
+        pf_outs("CREATE ");
+        pf_dot_name (nfa);
+    } else if (*xt == P4CODE(pf_builds_RT)) {
+        pf_outs("<BUILDS ");
+        pf_dot_name (nfa);
+    } else if (*xt == P4CODE(pf_does_RT)) {
+        pf_outs("<BUILDS ");
+        pf_dot_name (nfa);
+        pf_outs("DOES> ... does to do ");
+        pf_outs(";");
+    } else if (*xt == P4CODE(pf_constant_RT)) {
+        pf_outf("%d CONSTANT ", (p4cell)*rest);
+        pf_dot_name (nfa);
+    } else if (*xt == P4CODE(pf_value_RT)) {
+        pf_outs("VALUE ");
+        pf_dot_name (nfa);
+    } else if (*xt == P4CODE(pf_variable_RT)) {
+        pf_outs("VARIABLE ");
+        pf_dot_name (nfa);
+#if defined PF_WITH_FLOATING
+    } else if (*xt == P4CODE(p4_f_constant_RT)) {
+        double fval = *(double *)(rest);
+        pf_outf ("%.*f FCONSTANT ", (int) PRECISION, fval);
+        pf_dot_name (nfa);
+    } else if (*xt == P4CODE(p4_f_variable_RT)) {
+        pf_outs("FVARIABLE ");
+        pf_dot_name (nfa);
+#endif
+    } else {
+        pf_dot_name (nfa);
+        pf_outs("is a primitive. ");
+    }
+
+    if (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE)
+            pf_outs ("IMMEDIATE ");
+//    if (P4_NAMEFLAGS(nfa) & P4xISxRUNTIME)
+//            pf_outs ("RUNTIME ");
+}
+
+/************************************************************************/
 /** DUMP ( addr len -- )
  * show a hex-dump of the given area, if it's more than a screenful
  * it will ask using => ?CR
@@ -158,7 +235,7 @@ FCode (pf_dump)
     p4ucell i, j;
     p4ucell n = (p4ucell)*(SP++);
     p4char *p = (p4char*)(*(SP++));
-    
+
     FX (pf_more);
     FX (pf_cr);
     pf_outf ("%*s ", (int)HEXWIDTH, "");
@@ -174,7 +251,7 @@ FCode (pf_dump)
         for (j = 0; j < 16; j++)
             pf_outf ("%02X ", p [j]);
         for (j = 0; j < 16; j++)
-            pf_outf ("%c", (isspace (p [j]) ? ' ' : 
+            pf_outf ("%c", (isspace (p [j]) ? ' ' :
                 ! isascii (p [j]) ? '_' :
                 isprint (p [j]) ? p [j] : '.'));
     }
@@ -244,6 +321,7 @@ P4_LISTWORDS (tools) =
 {
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
+    P4_FXco ("SEE",          pf_see),
     P4_FXco ("DUMP",         pf_dump),
     P4_FXco ("WORDS",        pf_words),
     P4_FXco ("HISTORY",      pf_history),

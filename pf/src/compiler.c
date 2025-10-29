@@ -264,6 +264,26 @@ FCode (pf_create)
 }
 P4RUNTIME1(pf_create, pf_create_RT);
 
+/** "((<BUILDS))" ( -- pfa ) [HIDDEN]
+ */
+FCode (pf_builds_RT)
+{
+    *--SP = (p4cell)( WP_PFA + 1 );
+}
+
+/** <BUILDS ( 'name' -- )
+ * Synonym of CREATE
+ * Not ANSI
+ */
+FCode (pf_builds)
+{
+    p4_header_in();
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+    FX_RUNTIME1 (pf_builds);
+    FX_RCOMMA (0);
+}
+P4RUNTIME1(pf_builds, pf_builds_RT);
+
 /** "(DOES>)" ( -- pfa ) [HIDDEN]
  * execution compiled by => DOES>
  */
@@ -1139,6 +1159,7 @@ P4_LISTWORDS (compiler) =
     /* definition checks */
     P4_DVAR ("STATE",        state),
     P4_RTco ("CREATE",       pf_create),
+    P4_RTco ("<BUILDS",      pf_builds),
     P4_SXco ("DOES>",        pf_does),
     P4_RTco (":",            pf_colon),
     P4_SXco (";",            pf_semicolon),

@@ -89,6 +89,8 @@ FCode (pf_bracket_compile);
 
 FCode_RT (pf_create_RT);
 FCode  (pf_create);
+FCode_RT (pf_builds_RT);
+FCode  (pf_builds);
 FCode_RT (pf_does_RT);
 FCode  (pf_does);
 
@@ -104,5 +106,10 @@ FCode_RT (pf_variable_RT);
 FCode  (pf_variable);
 
 FCode_XE (pf_literal_execution);
+
+  #if defined PF_WITH_FLOATING
+    FCode_RT (p4_f_variable_RT);
+    FCode_RT (p4_f_constant_RT);
+  #endif
 
 #endif

@@ -27,6 +27,10 @@ task :x86 do
   sh "sudo install -m 755 lib/pf.4th  /usr/lib/pf.4th"
 end
 
+task :test do
+  sh "pf -f test/see.4th"
+end
+
 task :install => ['pf'] do
   puts "Architecture is #{ARCH}"
 end

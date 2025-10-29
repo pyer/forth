@@ -37,8 +37,6 @@ void pf_skip_spaces(void);
 void pf_parse_word( char delimiter );
 FCode (pf_parse_comma_quote);
 
-void pf_dot_name (const p4_namebuf_t *nfa);
-
 char* pf_word ( char );
 char* cap_word ( char );
 
