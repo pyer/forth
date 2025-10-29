@@ -136,7 +136,7 @@ FCode_XE (pf_to_r_execution)
 //    *P4_DEC (RP, p4cell) = *SP++;
     *(--(*(p4cell **)&(RP))) = *SP++;
 }
-P4COMPILES (pf_to_r, pf_to_r_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_to_r, pf_to_r_execution, P4_SKIPS_NOTHING);
 
 /** R> ( R: a -- a R: ) [ANS]
  * get back a value from the return-stack that had been saved
@@ -156,7 +156,7 @@ FCode_XE (pf_r_from_execution)
 {
     *--SP = (p4cell) *RP++;
 }
-P4COMPILES (pf_r_from, pf_r_from_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_r_from, pf_r_from_execution, P4_SKIPS_NOTHING);
 
 /** R@ ( R: a -- a R: a ) [ANS]
  * fetch the (upper-most) value from the return-stack that had
@@ -174,7 +174,7 @@ FCode_XE (pf_r_fetch_execution)
 {
     *--SP = *((p4cell*)RP);
 }
-P4COMPILES (pf_r_fetch, pf_r_fetch_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_r_fetch, pf_r_fetch_execution, P4_SKIPS_NOTHING);
 
 /* -------------------------------------------------------------- */
 /** <MARK ( -- DP-mark ) compile-only
@@ -323,7 +323,7 @@ FCode (pf_does)
         STATE = P4_TRUE;
     }
 }
-P4COMPILES (pf_does, pf_does_execution, P4_SKIPS_NOTHING, P4_DOES_STYLE);
+P4COMPILE (pf_does, pf_does_execution, P4_SKIPS_NOTHING);
 
 /** "((DOES>))" ( -- pfa ) [HIDDEN]
  * runtime compiled by DOES>
@@ -388,7 +388,7 @@ FCode (pf_semicolon)
     FX_COMPILE (pf_semicolon);
 }
 
-P4COMPILES (pf_semicolon, pf_semicolon_execution, P4_SKIPS_NOTHING, P4_SEMICOLON_STYLE);
+P4COMPILE (pf_semicolon, pf_semicolon_execution, P4_SKIPS_NOTHING);
 
 /** EXIT ( -- ) [ANS] [EXIT]
  * will unnest the current colon-word so it will actually
@@ -399,7 +399,7 @@ FCode (pf_exit)
 {
     FX_COMPILE (pf_exit);
 }
-P4COMPILES (pf_exit, pf_semicolon_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_exit, pf_semicolon_execution, P4_SKIPS_NOTHING);
 
 /** IMMEDIATE ( -- ) [ANS]
  * make the => LATEST word immediate, see also => CREATE
@@ -584,7 +584,7 @@ FCode (pf_to)
         *cfa_to_body(xt) = *SP++;
     }
 }
-P4COMPILES (pf_to, pf_to_execution, P4_SKIPS_TO_TOKEN, P4_DEFAULT_STYLE);
+P4COMPILE (pf_to, pf_to_execution, P4_SKIPS_TO_TOKEN);
 
 /** "((VAR))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => VARIABLE
@@ -636,7 +636,7 @@ FCode (pf_literal)
         FX_SCOMMA (*SP++);
     }
 }
-P4COMPILES (pf_literal, pf_literal_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+P4COMPILE (pf_literal, pf_literal_execution, P4_SKIPS_CELL);
 
 /* -------------------------------------------------------------- */
 /** [ ( -- ) [ANS]
@@ -674,7 +674,7 @@ FCode (pf_bracket_tick)
         FX (pf_comma);
     }
 }
-P4COMPILES (pf_bracket_tick, pf_literal_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_bracket_tick, pf_literal_execution, P4_SKIPS_NOTHING);
 
 /** [CHAR] ( [word] -- char# ) [ANS]
  * in compile-mode, get the (ascii-)value of the first character
@@ -690,7 +690,7 @@ FCode (pf_bracket_char)
         FX (pf_comma);
     }
 }
-P4COMPILES (pf_bracket_char, pf_literal_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+P4COMPILE (pf_bracket_char, pf_literal_execution, P4_SKIPS_CELL);
 
 /** ] ( -- ) [ANS]
  * enter compiling mode - often used inside of a colon-definition
@@ -762,7 +762,7 @@ FCode (pf_if)
     FX (pf_forward_mark);
     *--SP = (p4cell) P4_ORIG_MAGIC;
 }
-P4COMPILES (pf_if, pf_q_branch_execution, P4_SKIPS_OFFSET, P4_IF_STYLE);
+P4COMPILE (pf_if, pf_q_branch_execution, P4_SKIPS_OFFSET);
 
 /** ELSE ( -- )
  * will compile an => ((ELSE)) => BRANCH that performs an
@@ -778,7 +778,7 @@ FCode (pf_else)
     FX (p4_rot) ;
     FX (pf_forward_resolve) ;
 }
-P4COMPILES (pf_else, pf_branch_execution, P4_SKIPS_OFFSET, P4_ELSE_STYLE);
+P4COMPILE (pf_else, pf_branch_execution, P4_SKIPS_OFFSET);
 
 /** THEN ( -- ) [ANS]
  * does resolve a branch coming from either => IF or => ELSE
@@ -789,7 +789,7 @@ FCode (pf_then)
     pf_Q_pairs (P4_ORIG_MAGIC);
     FX (pf_forward_resolve);
 }
-P4COMPILES (pf_then, pf_noop, P4_SKIPS_NOTHING, P4_THEN_STYLE);
+P4COMPILE (pf_then, pf_noop, P4_SKIPS_NOTHING);
 
 /* -------------------------------------------------------------- */
 /** BEGIN ( -- ) [ANS] [LOOP]
@@ -801,7 +801,7 @@ FCode (pf_begin)
     FX (pf_backward_mark);
     *--SP = P4_DEST_MAGIC;
 }
-P4COMPILES (pf_begin, pf_noop, P4_SKIPS_NOTHING, P4_BEGIN_STYLE);
+P4COMPILE (pf_begin, pf_noop, P4_SKIPS_NOTHING);
 
 /** UNTIL ( test-flag -- ) [ANS] [REPEAT]
  * ends an control-loop, see => BEGIN and compare with => WHILE
@@ -812,7 +812,7 @@ FCode (pf_until)
     FX_COMPILE (pf_until);
     FX (pf_backward_resolve);
 }
-P4COMPILES (pf_until, pf_q_branch_execution, P4_SKIPS_OFFSET, P4_UNTIL_STYLE);
+P4COMPILE (pf_until, pf_q_branch_execution, P4_SKIPS_OFFSET);
 
 /** WHILE ( test-flag -- ) [ANS]
  * middle part of a => BEGIN .. => WHILE .. => REPEAT
@@ -844,7 +844,7 @@ FCode (pf_while)
     *--SP = (p4cell) P4_ORIG_MAGIC;
     FX (p4_two_swap);
 }
-P4COMPILES (pf_while, pf_q_branch_execution, P4_SKIPS_OFFSET, P4_WHILE_STYLE);
+P4COMPILE (pf_while, pf_q_branch_execution, P4_SKIPS_OFFSET);
 
 /** REPEAT ( -- ) [ANS] [REPEAT]
  * ends an unconditional loop, see => BEGIN
@@ -857,7 +857,7 @@ FCode (pf_repeat)
     pf_Q_pairs (P4_ORIG_MAGIC);
     FX (pf_forward_resolve);
 }
-P4COMPILES (pf_repeat, pf_branch_execution, P4_SKIPS_OFFSET, P4_REPEAT_STYLE);
+P4COMPILE (pf_repeat, pf_branch_execution, P4_SKIPS_OFFSET);
 
 /** AGAIN ( -- ) [ANS] [REPEAT]
  * ends an infinite loop, see => BEGIN and compare with
@@ -869,7 +869,7 @@ FCode (pf_again)
     FX_COMPILE (pf_again);
     FX (pf_backward_resolve);
 }
-P4COMPILES (pf_again, pf_branch_execution, P4_SKIPS_OFFSET, P4_AGAIN_STYLE);
+P4COMPILE (pf_again, pf_branch_execution, P4_SKIPS_OFFSET);
 
 
 /* implementation detail:
@@ -903,7 +903,7 @@ FCode (pf_do)
     FX (pf_forward_mark);
     *--SP = (p4cell) P4_LOOP_MAGIC;
 }
-P4COMPILES (pf_do, pf_do_execution, P4_SKIPS_OFFSET, P4_DO_STYLE);
+P4COMPILE (pf_do, pf_do_execution, P4_SKIPS_OFFSET);
 
 /** LEAVE ( R: some,loop -- R: some,loop ) [ANS]
  * quit the innermost => DO .. => LOOP  - it does even
@@ -922,7 +922,7 @@ FCode (pf_leave)
     FX_COMPILE (pf_leave);
 //    RP += 3;        /* terminate loop */
 }
-P4COMPILES (pf_leave, pf_leave_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_leave, pf_leave_execution, P4_SKIPS_NOTHING);
 /** "((LOOP))" ( -- ) [HIDDEN]
  * execution compiled by => LOOP
  */
@@ -949,7 +949,7 @@ FCode (pf_loop)
     FX_COMPILE (pf_loop);
     FX (pf_forward_resolve);
 }
-P4COMPILES (pf_loop, pf_loop_execution, P4_SKIPS_OFFSET, P4_LOOP_STYLE);
+P4COMPILE (pf_loop, pf_loop_execution, P4_SKIPS_OFFSET);
 
 /** "((+LOOP))" ( increment# -- ) [HIDDEN]
  * compiled by => +LOOP
@@ -978,7 +978,7 @@ FCode (pf_plus_loop)
     FX_COMPILE (pf_plus_loop);
     FX (pf_forward_resolve);
 }
-P4COMPILES (pf_plus_loop, pf_plus_loop_execution, P4_SKIPS_NOTHING, P4_LOOP_STYLE);
+P4COMPILE (pf_plus_loop, pf_plus_loop_execution, P4_SKIPS_NOTHING);
 
 /** UNLOOP ( R: some,loop -- ) [ANS]
  * drop the => DO .. => LOOP runtime variables from the return-stack,
@@ -994,7 +994,7 @@ FCode (pf_unloop)
 {
     FX_COMPILE (pf_unloop);
 }
-P4COMPILES (pf_unloop, pf_unloop_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_unloop, pf_unloop_execution, P4_SKIPS_NOTHING);
 
 /** I ( R: some,loop -- S: i# ) [ANS]
  * returns the index-value of the innermost => DO .. => LOOP
@@ -1008,7 +1008,7 @@ FCode (pf_i_execution)
 {
     *--SP = (p4cell)RP[0];
 }
-P4COMPILES (pf_i, pf_i_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_i, pf_i_execution, P4_SKIPS_NOTHING);
 
 /** J ( R: some,loop -- S: j# ) [ANS]
  * get the current => DO ... => LOOP index-value being
@@ -1025,7 +1025,7 @@ FCode (pf_j_execution)
 {
     *--SP = (p4cell)RP[3];
 }
-P4COMPILES (pf_j, pf_j_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_j, pf_j_execution, P4_SKIPS_NOTHING);
 
 FCode (pf_k)
 {
@@ -1036,7 +1036,7 @@ FCode (pf_k_execution)
 {
     *--SP = (p4cell)RP[6];
 }
-P4COMPILES (pf_k, pf_k_execution, P4_SKIPS_NOTHING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_k, pf_k_execution, P4_SKIPS_NOTHING);
 
 /*
    : X ( n -- )
@@ -1058,7 +1058,7 @@ FCode (pf_case)
     CSP = SP;
     *--SP = (p4cell) P4_CASE_MAGIC;
 }
-P4COMPILES (pf_case, pf_noop, P4_SKIPS_NOTHING, P4_CASE_STYLE);
+P4COMPILE (pf_case, pf_noop, P4_SKIPS_NOTHING);
 
 /** ENDCASE ( value -- ) [ANS]
  * ends a => CASE construct that may surround multiple sections of
@@ -1074,7 +1074,7 @@ FCode (pf_endcase)
         FX (pf_forward_resolve);
     CSP = (p4cell *) *SP++;
 }
-P4COMPILES (pf_endcase, p4_drop, P4_SKIPS_NOTHING, P4_ENDCASE_STYLE);
+P4COMPILE (pf_endcase, p4_drop, P4_SKIPS_NOTHING);
 
 /** "((OF))" ( check val -- check ) [HIDDEN]
  * execution compiled by => OF
@@ -1100,7 +1100,7 @@ FCode (pf_of)
     FX (pf_forward_mark);
     *--SP = (p4cell) P4_OF_MAGIC;
 }
-P4COMPILES (pf_of, pf_of_execution, P4_SKIPS_OFFSET, P4_OF_STYLE);
+P4COMPILE (pf_of, pf_of_execution, P4_SKIPS_OFFSET);
 
 /** ENDOF ( -- ) [ANS]
  * resolve the branch need at the previous => OF to mark
@@ -1116,7 +1116,7 @@ FCode (pf_endof)
     FX (pf_forward_resolve);
     *--SP = (p4cell) P4_CASE_MAGIC;
 }
-P4COMPILES (pf_endof, pf_branch_execution, P4_SKIPS_OFFSET, P4_ENDOF_STYLE);
+P4COMPILE (pf_endof, pf_branch_execution, P4_SKIPS_OFFSET);
 
 /* -------------------------------------------------------------- */
 /*

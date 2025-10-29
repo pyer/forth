@@ -1,8 +1,8 @@
 #ifndef __PF_COMPILER_H
 #define __PF_COMPILER_H
 
-extern p4cell *csp;		/* compiler security, saves sp here */
-#define CSP		(csp)
+extern p4cell *csp;        /* compiler security, saves sp here */
+#define CSP        (csp)
 
 #define FX_COMPILE_COMMA_XE(X) FX_ZCOMMA(X)
 #define FX_COMPILE_COMMA_RT(X) FX_ZCOMMA(X)
@@ -28,14 +28,14 @@ p4_Runtime2 P4RUNTIME_(C) =         \
 #define FX_RUNTIME1(X) do { extern     FX_DEF_RUNTIME1(X);  \
                             FX_RCOMMA (FX_GET_RUNTIME1(X)); } while(0)
 
-#define P4COMPILES(C,E,S,STYLE)			\
-p4_Semant P4SEMANTICS(C) =			\
-{						\
-  P4_SEMANT_MAGIC,				\
-  { S, STYLE },					\
-  NULL,						\
-  P4CODE (C),					\
-  { P4CODE (E) }				\
+#define P4COMPILE(C,E,S)            \
+p4_Semant P4SEMANTICS(C) =          \
+{                                   \
+  P4_SEMANT_MAGIC,                  \
+  S,                                \
+  NULL,                             \
+  P4CODE (C),                       \
+  { P4CODE (E) }                    \
 }
 
 /*

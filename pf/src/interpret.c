@@ -747,7 +747,7 @@ FCode (pf_dot_quote)
         pf_type ((const char *)word_ptr, word_len);
     }
 }
-P4COMPILES (pf_dot_quote, pf_dot_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_dot_quote, pf_dot_quote_execution, P4_SKIPS_STRING);
 
 /** '((C"))' ( -- string-bstr* ) [HIDDEN]
  * execution compiled by => C" string"
@@ -784,7 +784,7 @@ FCode (pf_c_quote)
         *--SP = (p4cell)PAD;
     }
 }
-P4COMPILES (pf_c_quote, pf_c_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_c_quote, pf_c_quote_execution, P4_SKIPS_STRING);
 
 /** '((S"))' ( -- string-ptr string-len ) [HIDDEN]
  * execution compiled by => S"
@@ -825,7 +825,7 @@ FCode (pf_s_quote)
         *--SP = n;
     }
 }
-P4COMPILES (pf_s_quote, pf_s_quote_execution, P4_SKIPS_STRING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_s_quote, pf_s_quote_execution, P4_SKIPS_STRING);
 
 /** "("  ( 'comment<closeparen>' -- ) [ANS]
  * eat everything up to the next closing paren - treat it

@@ -345,8 +345,7 @@ FCode (pf_abort_quote)
     FX_COMPILE (pf_abort_quote);
     FX (pf_parse_comma_quote);
 }
-P4COMPILES (pf_abort_quote, pf_abort_quote_execution,
-  P4_SKIPS_STRING, P4_DEFAULT_STYLE);
+P4COMPILE (pf_abort_quote, pf_abort_quote_execution, P4_SKIPS_STRING);
 
 /** BYE ( -- ) no-return
  * should quit the forth environment completly

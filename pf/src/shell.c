@@ -170,7 +170,7 @@ FCode (pf_remove)
     }
 }
 
-P4COMPILES (pf_remove, pf_remove_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+P4COMPILE (pf_remove, pf_remove_execution, P4_SKIPS_CELL);
 
 /* ----------------------------------------------------------------------- */
 static int touch (const char *s)
@@ -210,7 +210,7 @@ FCode (pf_touch)
     }
 }
 
-P4COMPILES (pf_touch, pf_touch_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+P4COMPILE (pf_touch, pf_touch_execution, P4_SKIPS_CELL);
 
 /* ----------------------------------------------------------------------- */
 FCode (pf_chdir_execution)
@@ -238,7 +238,7 @@ FCode (pf_chdir)
     }
 }
 
-P4COMPILES (pf_chdir, pf_chdir_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+P4COMPILE (pf_chdir, pf_chdir_execution, P4_SKIPS_CELL);
 
 /* ----------------------------------------------------------------------- */
 FCode (pf_mkdir_execution)
@@ -266,7 +266,7 @@ FCode (pf_mkdir)
     }
 }
 
-P4COMPILES (pf_mkdir, pf_mkdir_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+P4COMPILE (pf_mkdir, pf_mkdir_execution, P4_SKIPS_CELL);
 
 /* ----------------------------------------------------------------------- */
 static int ls (const char* p)
@@ -314,7 +314,7 @@ FCode (pf_ls)
     }
 }
 
-P4COMPILES (pf_ls, pf_ls_execution, P4_SKIPS_CELL, P4_DEFAULT_STYLE);
+P4COMPILE (pf_ls, pf_ls_execution, P4_SKIPS_CELL);
 
 /* ----------------------------------------------------------------------- */
 /**

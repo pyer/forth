@@ -243,7 +243,7 @@ FCode (p4_f_literal)
         FX_FCOMMA (*FP++);
     }
 }
-P4COMPILES (p4_f_literal, p4_f_literal_execution, p4_lit_float_SEE, P4_DEFAULT_STYLE);
+P4COMPILE (p4_f_literal, p4_f_literal_execution, p4_lit_float_SEE);
 
 FCode (p4_floor)
 {

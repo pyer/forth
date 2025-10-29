@@ -81,24 +81,13 @@ P4_CODE_SEE(p4_lit_2strings_SEE);
 /* .... P4_SKIPS_TO_TOKEN */
 P4_CODE_SEE(p4_lit_to_token_SEE);
 
-struct p4_Decomp		/* informations for the decompiler */
-{                               /* (skips is now basically enum'd, see above)*/
-    P4_CODE_SEE((*skips));      /* to decompile the data following xt */
-    unsigned space:3;		/* additional spaces past the word */
-    unsigned cr_bef:2;		/* carriage return before printing */
-    signed ind_bef:4;		/* changed indentation before print */
-    unsigned cr_aft:2;		/* carriage return after print */
-    signed ind_aft:4;		/* changed indentation after print */
-    unsigned unused:3;
-};
-
 struct p4_Semant		/* for words with different compilation */
-{				/* and execution semantics: */
+{				            /* and execution semantics: */
     long magic;			/* mark begin of structure */
-    p4_Decomp decomp;		/* decompiler aid */
+    P4_CODE_SEE((*skips));    /* to decompile the data following xt */
     p4_namebuf_t const *name;	/* compiled by */
-    p4code comp;		/* compilation/interpretation semantics */
-    p4code exec[1];		/* execution semantics */
+    p4code comp;		          /* compilation/interpretation semantics */
+    p4code exec[1];		        /* execution semantics */
 };
 
 struct p4_Runtime2              /* describes characteristics of CFA code */
