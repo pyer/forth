@@ -95,28 +95,16 @@ p4xt name_to_cfa (const p4_namebuf_t *p)
     return LINK_TO_CFA (name_to_link (p));
 }
 
-p4_Semant * p4_to_semant (p4xt xt)
-{
-   /* I don't like this either. :-) */
-# define TO_SEMANT(XT,ELEMENT) \
-    ((p4_Semant *)((char *)XT - OFFSET_OF (p4_Semant, ELEMENT)))
-    p4_Semant *s;
-
-    s = TO_SEMANT (xt, exec[0]);
-    if (s->magic == P4_SEMANT_MAGIC)
-        return s;
-    s = TO_SEMANT (xt, exec[1]);
-    if (s->magic == P4_SEMANT_MAGIC)
-        return s;
-    return NULL;
-# undef TO_SEMANT
-}
-
 p4char * cfa_to_name (p4xt xt)
 {
     /* cfa to lfa */
-    p4_Semant *s = p4_to_semant (xt);
-    p4_namebuf_t ** cfa = (s ? name_to_link (s->name) : (p4_namebuf_t**)( xt - 1 )); 
+    p4_namebuf_t ** cfa;
+    p4_Semant *s = (p4_Semant *)((char *)xt - OFFSET_OF (p4_Semant, exec[0]));
+    if (s->magic == P4_SEMANT_MAGIC)
+      cfa = name_to_link (s->name);
+    else
+      cfa = (p4_namebuf_t**)( xt - 1 );
+
     /* cfa to lfa
      * scan backward for count byte preceeding name of definition
      * returns pointer to count byte of name field or NULL
