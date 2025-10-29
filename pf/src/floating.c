@@ -234,17 +234,16 @@ FCode_XE (p4_f_literal_execution)
 
 FCode (p4_f_literal)
 {
-    if (STATE)
-    {
+    if (STATE) {
 # if SIZEOF_FCELL > SIZEOF_CELL
         if (P4_DFALIGNED (DP))
-            FX_COMPILE2 (p4_f_literal);
+            FX_COMPILE (p4_f_literal);
 #endif
-        FX_COMPILE1 (p4_f_literal);
+        FX_COMPILE (p4_f_literal);
         FX_FCOMMA (*FP++);
     }
 }
-P4COMPILES2 (p4_f_literal, p4_f_literal_execution, pf_noop, p4_lit_float_SEE, P4_DEFAULT_STYLE);
+P4COMPILES (p4_f_literal, p4_f_literal_execution, p4_lit_float_SEE, P4_DEFAULT_STYLE);
 
 FCode (p4_floor)
 {

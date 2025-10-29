@@ -22,13 +22,6 @@ p4_Runtime2 P4RUNTIME_(C) =         \
 }
 
 
-/* compile execution semantics from within C-code: */
-#define FX_DEF_COMPILE1(X) p4_Seman2  P4SEMANTICS(X)
-#define FX_DEF_COMPILE2(X) p4_Seman2  P4SEMANTICS(X)
-#define FX_DEF_COMPILES(X) p4_Semant  P4SEMANTICS(X)
-
-#define FX_GET_COMPILE1(X) (&P4SEMANTICS(X).exec[0])
-#define FX_GET_COMPILE2(X) (&P4SEMANTICS(X).exec[1])
 
 #define FX_DEF_RUNTIME1(X) p4_Runtime2 P4RUNTIME_(X)
 #define FX_GET_RUNTIME1(X) (P4RUNTIME_(X).exec[0])
@@ -45,23 +38,15 @@ p4_Semant P4SEMANTICS(C) =			\
   { P4CODE (E) }				\
 }
 
-#define P4COMPILES2(C,E1,E2,S,STYLE)		\
-p4_Seman2 P4SEMANTICS(C) =			\
-{						\
-  P4_SEMANT_MAGIC,				\
-  { S, STYLE },					\
-  NULL,						\
-  P4CODE (C),					\
-  { P4CODE (E1), P4CODE (E2) }			\
-}
-
+/*
+#define FX_DEF_COMPILES(X) p4_Semant  P4SEMANTICS(X)
+#define FX_GET_COMPILE1(X) (&P4SEMANTICS(X).exec[0])
 #define FX_COMPILE(X)  do { extern     FX_DEF_COMPILES(X);  \
                   FX_ZCOMMA (FX_GET_COMPILE1(X)); } while(0)
-#define FX_COMPILE1(X) do { extern     FX_DEF_COMPILE1(X);  \
-                  FX_ZCOMMA (FX_GET_COMPILE1(X)); } while(0)
-#define FX_COMPILE2(X) do { extern     FX_DEF_COMPILE2(X);  \
-                  FX_ZCOMMA (FX_GET_COMPILE2(X)); } while(0)
-
+*/
+/* compile execution semantics from within C-code: */
+#define FX_COMPILE(X)  do { extern  p4_Semant P4SEMANTICS(X);  \
+                  FX_ZCOMMA (&P4SEMANTICS(X).exec[0]); } while(0)
 
 /* 
  * -- compiler definitions 

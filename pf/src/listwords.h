@@ -59,7 +59,6 @@ typedef p4ucell (*p4ucell_p4code) (void); /* very useful sometimes */
 
 typedef struct p4_Decomp p4_Decomp; /* informations for the decompiler */
 typedef struct p4_Semant p4_Semant; /* pointer set for state smart words */
-typedef struct p4_Seman2 p4_Seman2; /* dito for even smarter words like TO */
 
 #define P4_CODE_SEE(func) p4xt* func (p4xt* ip, char* p, p4_Semant* s)
 #define P4_CODE_RUN(func) p4xt* func (char* p, p4xt xt, p4char* nfa)
@@ -101,15 +100,6 @@ struct p4_Semant		/* for words with different compilation */
     p4code comp;		/* compilation/interpretation semantics */
     p4code exec[1];		/* execution semantics */
 };
-
-struct p4_Seman2		/* for words with different compilation */
-{				/* and two different execution semantics: */
-    long magic;			/* mark begin of structure */
-    p4_Decomp decomp;		/* decompiler aid */
-    p4_namebuf_t const *name;	/* compiled by */
-    p4code comp;		/* compilation/interpretation semantics */
-    p4code exec[2];		/* two different execution semantics */
-};				/* for cases like TO (value/local variable) */
 
 struct p4_Runtime2              /* describes characteristics of CFA code */
 {
