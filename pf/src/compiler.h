@@ -5,13 +5,13 @@ extern p4cell *csp;        /* compiler security, saves sp here */
 #define CSP        (csp)
 
 #define P4RUNTIME1(C,E1)            \
-p4_Runtime2 C##Runtime =            \
+p4_Runtime2 C##_Runtime =            \
 { P4_RUNTIME_MAGIC, 0, 0,           \
   P4CODE(C), { P4CODE(E1), NULL },  \
 }
 
-#define FX_RUNTIME1(X) do { extern p4_Runtime2 X##Runtime;  \
-                            FX_RCOMMA (X##Runtime.exec[0]); } while(0)
+#define FX_RUNTIME1(X) do { extern p4_Runtime2 X##_Runtime;  \
+                            FX_RCOMMA (X##_Runtime.exec[0]); } while(0)
 
 #define P4COMPILE(C,E,S)            \
 p4_Semant C##_Semant =              \

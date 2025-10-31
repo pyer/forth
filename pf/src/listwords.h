@@ -150,7 +150,7 @@ typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
 #define P4_FXco( NM, PCODE)     { "p\237"NM, &P4CODE (PCODE) }
 #define P4_IXco( NM, PCODE)     { "P\377"NM, &P4CODE (PCODE) }
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&SEM##_Semant }
-#define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&RUN##Runtime }
+#define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&RUN##_Runtime }
 
 #define P4_OCON( NM, VAL)       { "c\237"NM, (p4code)(VAL) }
 
