@@ -474,42 +474,6 @@ FCode (pf_allot)
     DP += *SP++;
 }
 
-/** _._ ( i str* str# base -- str* )
- * This is for internal use only (SEE and debugger),
- * The real => . etc. words use => HOLD and the memory area below => PAD
- */
-char pf_number2digit(p4ucell n);
-
-char * p4_str_dot (p4cell n, char *p, int base)
-{
-    int sign = 0;
-    char *bl;
-    p4ucell u = (p4ucell)n;
-
-    *--p = '\0';
-    bl = p - 1;
-    if (n < 0) {
-        u = -n;
-        sign = 1;
-    }
-    *--p = '\0';
-
-    do {
-    //    *--p = p4_num2dig (p4_u_d_div ((p4udcell *) &d, base));
-        udiv_t res;
-        res.quot = u / BASE;
-        res.rem  = u % BASE;
-        u = res.quot;
-//    pf_hold (pf_number2digit(res.rem));
-        *--p = pf_number2digit(res.rem);
-    } while (u);
-
-    if (sign)
-       *--p = '-';
-    *bl = ' ';
-    return p;
-}
-
 /** "((CONSTANT))" ( -- ) [HIDDEN]
  * runtime compiled by => CONSTANT
  */
