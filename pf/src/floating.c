@@ -214,18 +214,6 @@ FCode (p4_f_dup)
     FP[0] = FP[1];
 }
 
-/* originally P4_SKIPS_FLOAT */
-p4xt* p4_lit_float_SEE (p4xt* ip, char* p, p4_Semant* s)
-{
-# if SIZEOF_FCELL > SIZEOF_CELL
-    if (!P4_DFALIGNED (ip))
-        ip++;
-# endif
-    sprintf (p, "%e ", *(double *) ip);
-    (*(double **)&(ip))++;
-    return ip;
-}
-
 FCode_XE (p4_f_literal_execution)
 {
     *--FP = *((*(double **)&(IP))++);
@@ -242,7 +230,7 @@ FCode (p4_f_literal)
         FX_FCOMMA (*FP++);
     }
 }
-P4COMPILE (p4_f_literal, p4_f_literal_execution, p4_lit_float_SEE);
+P4COMPILE (p4_f_literal, p4_f_literal_execution, P4_SKIPS_FLOAT);
 
 FCode (p4_floor)
 {
