@@ -4,20 +4,17 @@
 extern p4cell *csp;        /* compiler security, saves sp here */
 #define CSP        (csp)
 
-#define P4SEMANTICS(X) X##_Semant
-#define P4RUNTIME_(X)  X##Runtime
-
 #define P4RUNTIME1(C,E1)            \
-p4_Runtime2 P4RUNTIME_(C) =         \
+p4_Runtime2 C##Runtime =            \
 { P4_RUNTIME_MAGIC, 0, 0,           \
   P4CODE(C), { P4CODE(E1), NULL },  \
 }
 
-#define FX_RUNTIME1(X) do { extern p4_Runtime2 P4RUNTIME_(X);  \
-                            FX_RCOMMA (P4RUNTIME_(X).exec[0]); } while(0)
+#define FX_RUNTIME1(X) do { extern p4_Runtime2 X##Runtime;  \
+                            FX_RCOMMA (X##Runtime.exec[0]); } while(0)
 
 #define P4COMPILE(C,E,S)            \
-p4_Semant P4SEMANTICS(C) =          \
+p4_Semant C##_Semant =              \
 {                                   \
   P4_SEMANT_MAGIC,                  \
   S,                                \
@@ -27,8 +24,8 @@ p4_Semant P4SEMANTICS(C) =          \
 }
 
 /* compile execution semantics from within C-code: */
-#define FX_COMPILE(X)  do { extern  p4_Semant P4SEMANTICS(X);  \
-                  FX_ZCOMMA (&P4SEMANTICS(X).exec[0]); } while(0)
+#define FX_COMPILE(X)  do { extern  p4_Semant X##_Semant;  \
+                            FX_ZCOMMA (&X##_Semant.exec[0]); } while(0)
 
 /* 
  * -- compiler definitions 
