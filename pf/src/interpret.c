@@ -16,7 +16,6 @@
 #include "types.h"
 #include "const.h"
 #include "macro.h"
-#include "listwords.h"
 #include "thread.h"
 
 #include "compiler.h"
@@ -85,11 +84,20 @@ p4xt name_to_cfa (const p4char *p)
     return LINK_TO_CFA (name_to_link (p));
 }
 
+//#define OFFSET_OF(T,C)	((char *)&(((T *)0)->C) - (char *)0)
+//#define OFFSET_OF(T,C)	((char *)&(((p4_Semant *)0)->exec[0]) - (char *)0)
 p4char * cfa_to_name (p4xt xt)
 {
     /* cfa to lfa */
     p4char ** cfa;
-    p4_Semant *s = (p4_Semant *)((char *)xt - OFFSET_OF (p4_Semant, exec[0]));
+    //p4_Semant *s = (p4_Semant *)((char *)xt - OFFSET_OF (p4_Semant, exec[0]));
+    //p4_Semant *s = (p4_Semant *)((char *)xt - ((char *)&(s->magic), (char *)&(s->exec[0])));
+    p4_Semant *s = (p4_Semant *)xt;
+    int offset = (int)((void *)&(s->exec[0]) - (void *)&(s->magic));
+    pf_outf(" * %p %p %d %d %d * ", xt, CFA_TO_LINK(xt), OFFSET_OF (p4_Semant, exec[0]), offset, sizeof(p4_Semant));
+    pf_outf(" - %p %p - ", s, CFA_TO_LINK(xt));
+    pf_outf("\nmagic = %p, exec = %p \n", (char *)&(s->magic), (char *)&(s->exec[0]));
+
     if (s->magic == P4_SEMANT_MAGIC)
       cfa = name_to_link (s->name);
     else

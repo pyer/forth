@@ -29,10 +29,9 @@
 #include <errno.h>
 #include <locale.h>
 
-#include "macro.h"
 #include "types.h"
 #include "const.h"
-#include "listwords.h"
+#include "macro.h"
 #include "thread.h"
 
 #include "compiler.h"

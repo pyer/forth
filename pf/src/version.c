@@ -18,7 +18,7 @@
 
 #include "config.h"
 #include "types.h"
-#include "listwords.h"
+#include "macro.h"
 #include "terminal.h"
 
 #define MAKETIME __TIME__

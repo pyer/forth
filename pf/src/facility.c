@@ -20,7 +20,6 @@
 #include "config.h"
 #include "types.h"
 #include "macro.h"
-#include "listwords.h"
 #include "thread.h"
 
 /* -------------------------------------------------------------- */

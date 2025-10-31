@@ -4,6 +4,17 @@
 extern p4cell *csp;        /* compiler security, saves sp here */
 #define CSP        (csp)
 
+struct p4_Runtime2              /* describes characteristics of CFA code */
+{
+    long magic;                 /* mark begin of structure */
+    p4cell flag;                /* the call-threading flags for the exec[]s */
+    char const *name;           /* the header name for it */
+    p4code comp;             /* the word that will CREATE new headers */
+    p4code exec[2];          /* and the values contained in created CFAs */
+};
+
+typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
+
 #define P4RUNTIME1(C,E1)            \
 p4_Runtime2 C##_Runtime =            \
 { P4_RUNTIME_MAGIC, 0, 0,           \
@@ -13,6 +24,40 @@ p4_Runtime2 C##_Runtime =            \
 #define FX_RUNTIME1(X) do { extern p4_Runtime2 X##_Runtime;  \
                             FX_RCOMMA (X##_Runtime.exec[0]); } while(0)
 
+struct p4_Semant		/* for words with different compilation */
+{				            /* and execution semantics: */
+    long magic;			/* mark begin of structure */
+//    P4_CODE_SEE((*skips));    /* to decompile the data following xt */
+    p4char const *name;	      /* compiled by */
+    p4code comp;		          /* compilation/interpretation semantics */
+    p4code exec[1];		        /* execution semantics */
+};
+
+typedef struct p4_Semant p4_Semant; /* pointer set for state smart words */
+
+/*
+#define P4_CODE_SEE(func) p4xt* func (p4xt* ip, char* p, p4_Semant* s)
+
+*/
+
+#define  P4_SKIPS_NOTHING           0
+#define  P4_SKIPS_OFFSET            1
+#define  P4_SKIPS_CELL              2
+#define  P4_SKIPS_DCELL             3
+#define  P4_SKIPS_STRING            5
+#define  P4_SKIPS_2STRINGS          6
+#define  P4_SKIPS_TO_TOKEN          7
+
+#define P4COMPILE(C,E,S)            \
+p4_Semant C##_Semant =              \
+{                                   \
+  P4_SEMANT_MAGIC,                  \
+  NULL,                             \
+  P4CODE (C),                       \
+  { P4CODE (E) }                    \
+}
+
+/*
 #define P4COMPILE(C,E,S)            \
 p4_Semant C##_Semant =              \
 {                                   \
@@ -22,6 +67,7 @@ p4_Semant C##_Semant =              \
   P4CODE (C),                       \
   { P4CODE (E) }                    \
 }
+*/
 
 /* compile execution semantics from within C-code: */
 #define FX_COMPILE(X)  do { extern  p4_Semant X##_Semant;  \

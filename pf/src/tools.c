@@ -30,7 +30,6 @@
 #include "const.h"
 #include "types.h"
 #include "macro.h"
-#include "listwords.h"
 #include "thread.h"
 #include "compiler.h"
 #include "interpret.h"
@@ -148,13 +147,92 @@ FCode (pf_dot_status)
 }
 
 /************************************************************************/
-void pf_dot_name (const p4_namebuf_t *nfa)
+void pf_dot_name (const p4char *nfa)
 {
     if (nfa && (P4_NAMEFLAGS(nfa) & 0x80)) {
         pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
         FX (pf_space);
     }
 }
+
+//p4char * cfa_to_name (p4xt xt)
+
+void pf_decompile_rest (p4char* nfa, p4xt *ip)
+{
+    pf_dot_name (nfa);
+    /* p4_Seman2 *seman; // unused ? */
+    //p4_Decomp decomp;
+/*    
+    while (*ip) {
+
+        ip = p4_decompile_word (ip, buf, &decomp);
+
+        p4_outs (buf);
+    }
+*/
+//void *(void)sem = P4CODE(pf_semicolon_execution);
+ 
+    while (**ip != P4CODE(pf_semicolon_execution)) {
+
+        //pf_outf ("%p = %p %p / ", ip, *ip, **ip);
+        p4char *name = cfa_to_name(*ip);
+
+        pf_dot_name(name);
+        ip++;
+    }
+}
+/*
+static p4xcode *
+p4_decompile_word (p4xcode* ip, char *p, p4_Decomp *d)
+{
+    / assert SKIPS_NOTHING == 0 /
+    register p4xcode xt = *ip++;
+    register p4_Semant *s;
+
+    s = (p4_Semant*) p4_to_semant (xt);
+    p4_memcpy (d, ((s) ? (& s->decomp) : (& default_style)), sizeof(*d));
+
+    / some tokens are (still) compiled without a semant-definition /
+    if (*xt == PFX (p4_literal_execution))
+        return p4_literal_SEE (ip, p, s);
+    if (*xt == PFX (p4_locals_bar_execution))
+        return p4_locals_bar_SEE (ip, p, s);
+    if (*xt == PFX (p4_local_execution))
+        return p4_local_SEE (ip, p, s);
+
+    if (d->skips == P4_SKIPS_CELL 
+      || d->skips == P4_SKIPS_OFFSET)
+    {
+        P4_INC (ip, p4cell); 
+        sprintf (p, "%.*s ", NAMELEN(s->name), NAMEPTR(s->name));
+        return ip;
+    }
+
+    if (d->skips == P4_SKIPS_DCELL)
+        return p4_lit_dcell_SEE (ip, p, s);
+    if (d->skips == P4_SKIPS_STRING)
+        return p4_lit_string_SEE (ip, p, s);
+    if (d->skips == P4_SKIPS_2STRINGS)
+        return p4_lit_2strings_SEE (ip, p, s);
+    if (d->skips == P4_SKIPS_TO_TOKEN)
+        return p4_lit_to_token_SEE (ip, p, s);
+
+    / per default, just call the skips-decomp routine /
+    if (d->skips) / SKIPS_NOTHING would be NULL /
+        return (*d->skips)(ip, p, s);
+
+    if (s != NULL)
+    {
+        sprintf (p, "%.*s ", NAMELEN(s->name), NAMEPTR(s->name));
+        return ip;
+    }else{
+        register p4char* nfa = p4_to_name (xt);
+        sprintf (p, P4_NFA_xIMMEDIATE(nfa) ? "POSTPONE %.*s " : "%.*s ",
+                 NAMELEN(nfa), NAMEPTR(nfa));
+        return ip;
+    }
+}
+*/
 
 /************************************************************************/
 /** SEE ( "word" -- )
@@ -178,10 +256,8 @@ FCode (pf_see)
 
     if (*xt == P4CODE(pf_colon_RT)) {
         pf_outs(": ");
-        pf_dot_name (nfa);
-        pf_outs("... ; ");
-        pf_outf ("%p ", rest);
-
+        pf_decompile_rest(nfa, rest);
+        pf_outs("; ");
     } else if (*xt == P4CODE(pf_create_RT)) {
         pf_outs("CREATE ");
         pf_dot_name (nfa);
@@ -264,7 +340,7 @@ FCode (pf_dump)
  */
 FCode (pf_words)
 {
-    p4_namebuf_t *nfa = LATEST;        /* NFA of most recently CREATEd header */
+    p4char *nfa = LATEST;        /* NFA of most recently CREATEd header */
 //# define WILD_TAB 26 /* traditional would be 20 (26*4=80), now 26*3=78 */
 //# define WILD_TAB 20 /* traditional would be 20 (26*4=80), now 26*3=78 */
 /*

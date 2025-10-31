@@ -30,7 +30,6 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 #include "types.h"
 #include "const.h"
 #include "macro.h"
-#include "listwords.h"
 #include "thread.h"
 
 #include "terminal.h"
