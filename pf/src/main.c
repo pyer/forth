@@ -56,7 +56,7 @@ char* dict;
 char* dictlimit;
 
 /* NFA of most recently CREATEd header */
-p4_namebuf_t *LATEST;
+p4char *LATEST;
 /************************************************************************/
 /**
  * helper routine to allocate a portion of the dictionary

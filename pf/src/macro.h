@@ -24,8 +24,8 @@
 #   define NAME_SIZE_MAX     31                  /* used for buffer-sizes */
 # endif
 
-#   define NAMEPTR(X)   (((p4_namebuf_t*)(X))+1)
-#   define NAMELEN(X)   P4_NAME_MASK_LEN(*(p4_namebuf_t*)X)
+#   define NAMEPTR(X)   (((p4char*)(X))+1)
+#   define NAMELEN(X)   P4_NAME_MASK_LEN(*(p4char*)X)
 
 /* useful shortcuts */
 # define WP_PFA		((p4cell *)&PFE.wp [1]) 

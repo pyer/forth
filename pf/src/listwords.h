@@ -46,12 +46,6 @@ p4Words;
 /* some constants needed here, they are dependent of options */
 #define P4_THREADS (1<<P4_THREADS_SHIFT)
 
-
-typedef p4char p4_namechar_t;      /* word list name char */
-typedef p4char p4_namebuf_t;       /* start of counted string with namechars */
-typedef p4char p4_charbuf_t;       /* start of counted string with i/o chars */
-/*   */        /* char */          /* i/o char of Standard C/C++ (compiler) */
-
 typedef p4cell  (*p4cell_p4code) (void); /* very useful sometimes */
 typedef p4ucell (*p4ucell_p4code) (void); /* very useful sometimes */
 
@@ -85,7 +79,7 @@ struct p4_Semant		/* for words with different compilation */
 {				            /* and execution semantics: */
     long magic;			/* mark begin of structure */
     P4_CODE_SEE((*skips));    /* to decompile the data following xt */
-    p4_namebuf_t const *name;	/* compiled by */
+    p4char const *name;	      /* compiled by */
     p4code comp;		          /* compilation/interpretation semantics */
     p4code exec[1];		        /* execution semantics */
 };

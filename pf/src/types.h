@@ -45,8 +45,6 @@ typedef unsigned TYPEOF_CELL	p4ucell; /* dito unsigned */
 typedef struct { p4ucell quot, rem; } udiv_t;
 typedef struct { p4cell  quot, rem; } fdiv_t;
 
-typedef p4char p4_byte_t;          /* adressing element */
-typedef p4char p4_char_t;          /* i/o char element */
 typedef p4cell p4_cell_t;          /* computational element */
 typedef p4cell p4_bool_t;          /* and as boolean flag */
 

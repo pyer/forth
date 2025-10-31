@@ -49,7 +49,6 @@ FCode (pf_clear_screen);
  * call _expect_noecho when running in a pipe or just _expect_ if no
  * real terminal attached.
  */
-//int pf_accept (p4_char_t *tib, int n) ; /*{*/
 int pf_accept (char *tib, int len);
 
 FCode (pf_more);
