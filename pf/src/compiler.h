@@ -4,14 +4,6 @@
 extern p4cell *csp;        /* compiler security, saves sp here */
 #define CSP        (csp)
 
-#define FX_COMPILE_COMMA_XE(X) FX_ZCOMMA(X)
-#define FX_COMPILE_COMMA_RT(X) FX_ZCOMMA(X)
-
-#define FX_RUNTIME1_RT(X) FX_XCOMMA(X##_RT_) /* a simply comma */
-
-#define P4_XT_VALUE(__xt) (*(__xt))
-#define FX_GET_RT(__rt)   __rt##_RT_
-
 #define P4SEMANTICS(X) X##_Semant
 #define P4RUNTIME_(X)  X##Runtime
 
@@ -20,7 +12,6 @@ p4_Runtime2 P4RUNTIME_(C) =         \
 { P4_RUNTIME_MAGIC, 0, 0,           \
   P4CODE(C), { P4CODE(E1), NULL },  \
 }
-
 
 
 #define FX_DEF_RUNTIME1(X) p4_Runtime2 P4RUNTIME_(X)

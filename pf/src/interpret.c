@@ -29,24 +29,14 @@
 #define ___ {
 #define ____ }
 
-#define PAD	(DP + MIN_HOLD)
-#define HLD	hold
-
-/* -------------------------------------------------------------- */
-FCode_RT (pf_defer_RT);
-
-/*
-FCode (pf_debug_colon_RT);
-FCode (pf_debug_colon);
-FCode (pf_debug_does_RT);
-FCode (pf_debug_does);
-*/
+#define PAD    (DP + MIN_HOLD)
+#define HLD    hold
 
 /* -------------------------------------------------------------- */
 // display a message when a word is redefined
 int redefined_msg = 0;
 /* -------------------------------------------------------------- */
-p4_char_t *hold;		/* auxiliary pointer for number output */
+p4_char_t *hold;        /* auxiliary pointer for number output */
 /* -------------------------------------------------------------- */
 // input buffer
 char* source;
@@ -79,7 +69,7 @@ FCode (pf_source)
 /** LATEST ( -- nfa )
  * return the NFA of the latest created word
  */
-FCode (pf_latest)			
+FCode (pf_latest)            
 {
     *--SP = (p4cell) LATEST;
 }
@@ -170,7 +160,7 @@ void pf_call_loop (p4xt xt)
     /* next_loop */
     for (;;)
     {
-	/* ip and WP are same: register or not */
+    /* ip and WP are same: register or not */
         WP = *IP++, (*WP) (); // next
     }
 }
@@ -224,11 +214,11 @@ int pf_digit2number (p4_char_t c, p4ucell *n, p4ucell base)
         if (c <= 'Z')
             c -= 'A' - ('9' - '0' + 1);
         else
-	{
+    {
             if (c < 'a')
                 return P4_FALSE;
             c -= 'a' - ('9' - '0' + 1);
-	}
+    }
     }
     if (c >= base)
         return P4_FALSE;
@@ -265,7 +255,7 @@ p4char* pf_find (const p4_char_t *nm, int l)
     upper[n] = 0; // zero-terminated string
         /* this thread does contain some upper-case defs 
            AND lower-case input shall match those definitions */
-        p4_namebuf_t *nfa = LATEST;		/* NFA of most recently CREATEd header */
+        p4_namebuf_t *nfa = LATEST;        /* NFA of most recently CREATEd header */
         while (nfa) {
             if (! (P4_NAMEFLAGS(nfa) & P4xSMUDGED) && NAMELEN(nfa) == l) {
                 if (!memcmp (nm, NAMEPTR(nfa), l))  break;
@@ -559,10 +549,10 @@ int pf_find_word(void)
     xt = name_to_cfa (nfa);
     if (! STATE || (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE))
     {
-	pf_call (xt);           /* execute it now */
-	FX (pf_Q_stack);        /* check stack */
+    pf_call (xt);           /* execute it now */
+    FX (pf_Q_stack);        /* check stack */
     }else{
-	FX_XCOMMA (xt);  /* comma token */
+    FX_XCOMMA (xt);  /* comma token */
     }
     return 1;
 }
@@ -629,10 +619,10 @@ int pf_convert_number(void)
 
     if (STATE)
     {
-	FX_COMPILE (pf_literal);
+    FX_COMPILE (pf_literal);
         FX_SCOMMA(value);
     }else{
-	*--SP = value;
+    *--SP = value;
     }
     return 1;
 }
@@ -727,10 +717,10 @@ FCode (pf_dot_quote)
     if (STATE)
     {
         FX_COMPILE (pf_dot_quote);
-	FX (pf_parse_comma_quote);
+    FX (pf_parse_comma_quote);
     }else{
 //        pf_skip_spaces();
-//        to_in++;	// skip only one space
+//        to_in++;    // skip only one space
         pf_parse_word('"');
         pf_type ((const char *)word_ptr, word_len);
     }
@@ -758,15 +748,15 @@ FCode (pf_c_quote)
     if (STATE)
     {
         FX_COMPILE (pf_c_quote);
-	FX (pf_parse_comma_quote);
+    FX (pf_parse_comma_quote);
     }else{
         register char *p;
         register p4ucell n;
 //        pf_skip_spaces();
-//        to_in++;	// skip only one space
+//        to_in++;    // skip only one space
         pf_parse_word('"');
         p = PAD;
-	n = word_len;
+    n = word_len;
         *p++ = n;
         memcpy (p, word_ptr, n);
         *--SP = (p4cell)PAD;
@@ -798,15 +788,15 @@ FCode (pf_s_quote)
     if (STATE)
     {
         FX_COMPILE (pf_s_quote);
-	FX (pf_parse_comma_quote);
+    FX (pf_parse_comma_quote);
     }else{
         register char *p;
         register p4ucell n;
 //        pf_skip_spaces();
-//        to_in++;	// skip only one space
+//        to_in++;    // skip only one space
         pf_parse_word('"');
         p = PAD;
-	n = word_len;
+    n = word_len;
         *p++ = n;
         memcpy (p, word_ptr, n);
         *--SP = (p4cell)p;
@@ -893,16 +883,17 @@ p4cell * cfa_to_body (p4xt xt)
 {
     if (! xt) return P4_TO_BODY (xt);
 
-    if (P4_XT_VALUE(xt) == FX_GET_RT (pf_dictvar) || 
-	P4_XT_VALUE(xt) == FX_GET_RT (pf_dictget)) 
+    if (*xt == pf_dictvar_RT_ ||
+        *xt == pf_dictget_RT_) {
         return ((p4cell*)( (char*)p4TH + P4_TO_BODY(xt)[0] ));
-    else if (P4_XT_VALUE(xt) == FX_GET_RT (pf_create) ||
-             P4_XT_VALUE(xt) == FX_GET_RT (pf_does) || 
-             P4_XT_VALUE(xt) == FX_GET_RT (pf_defer))
+    } else if (*xt == pf_create_RT_ ||
+             *xt == pf_does_RT_ || 
+             *xt == pf_defer_RT_) {
         return P4_TO_DOES_BODY(xt); 
-    else /* it's not particularly right to let primitives return a body... */
-        /* but otherwise we would have to if-check all known var-RTs ... */
+    } else { /* it's not particularly right to let primitives return a body... */
+             /* but otherwise we would have to if-check all known var-RTs ... */
         return P4_TO_BODY(xt);
+    }
 }
 
 /** >BODY ( some-xt* -- some-body* ) [ANS]
@@ -921,87 +912,88 @@ FCode (pf_to_body)
 /* -------------------------------------------------------------- */
 void pf_load_words (const p4Words* ws)
 {
-    int k = ws->n;
-    const p4Word* w = ws->w;
+  int k = ws->n;
+  const p4Word* w = ws->w;
 
-    for ( ; --k >= 0; w++)
-    {
+  for ( ; --k >= 0; w++) {
         if (! w) continue;
-	/* the C-name is really type-byte + count-byte away */
-	___ char type = *w->name;
+    /* the C-name is really type-byte + count-byte away */
+    char type = *w->name;
 
-	word_ptr = ((p4_char_t*)(w->name+2));
-	word_len = -1;
+    word_ptr = ((p4_char_t*)(w->name+2));
+    word_len = -1;
 //        *--SP = (p4cell)(w->ptr);
-	
-	switch (type)
-	{
-	case p4_SXCO:
-	    //___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
-	    ___ p4_Semant* semant = (p4_Semant*)(void*)(w->ptr);
-	    p4_header_in();
-	    FX_COMMA ( semant->comp );
-	    if (! (semant ->name))
-		semant ->name = (p4_namebuf_t*)( word_ptr-1 ); 
-	    /* discard const */
-	    /* BEWARE: the arg' name must come from a wordset entry to
-	       be both static and have a byte in front that could be 
-	       a maxlen
-	    */
-	    break; ____;
-	case p4_RTCO:
-	    //___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
-	    ___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
-	    p4_header_in();
-	    FX_COMMA ( runtime->comp );
-	    break; ____;
-	case p4_IXCO:         /* these are real primitives which do */
-	case p4_FXCO:         /* not reference an info-block but just */
-            *--SP = (p4cell)(w->ptr);
-	    p4_header_in();   /* the p4code directly */
-	    FX_COMMA ( *SP ); 
-            ((*(p4cell **)&(SP))++);
-	    break;
-	case p4_DCON:
-	case p4_DVAL:
-            p4_header_in();
-            P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-	    FX_RUNTIME1_RT (pf_dictget);
-	    //FX_COMMA (*SP++);
-	    FX_COMMA (w->ptr);
-	    break;
-	case p4_DVAR:
-            p4_header_in();
-            P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-	    FX_RUNTIME1_RT (pf_dictvar);
-	    //FX_COMMA (*SP++);
-	    FX_COMMA (w->ptr);
-	    break;
-	case p4_OCON:
-            *--SP = (p4cell)(w->ptr);
-	    FX (pf_constant);
-	    break;
+    
+    switch (type) {
+    case p4_SXCO:
+        //___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
+        p4_Semant* semant = (p4_Semant*)(void*)(w->ptr);
+        p4_header_in();
+        FX_COMMA ( semant->comp );
+        if (! (semant ->name))
+        semant ->name = (p4_namebuf_t*)( word_ptr-1 ); 
+        /* discard const */
+        /* BEWARE: the arg' name must come from a wordset entry to
+           be both static and have a byte in front that could be 
+           a maxlen
+        */
+        break;
+    case p4_RTCO:
+        //___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
+        p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
+        p4_header_in();
+        FX_COMMA ( runtime->comp );
+        break;
+    case p4_IXCO:         /* these are real primitives which do */
+    case p4_FXCO:         /* not reference an info-block but just */
+        *--SP = (p4cell)(w->ptr);
+        p4_header_in();   /* the p4code directly */
+        FX_COMMA ( *SP ); 
+        ((*(p4cell **)&(SP))++);
+        break;
+    case p4_DCON:
+    case p4_DVAL:
+        p4_header_in();
+        P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+        FX_XCOMMA(pf_dictget_RT_); /* a simply comma */
+
+        //FX_RUNTIME1_RT (pf_dictget);
+//#define FX_RUNTIME1_RT(X) FX_XCOMMA(X##_RT_) /* a simply comma */
+        //FX_COMMA (*SP++);
+        FX_COMMA (w->ptr);
+        break;
+    case p4_DVAR:
+        p4_header_in();
+        P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+        FX_XCOMMA(pf_dictvar_RT_); /* a simply comma */
+        //FX_RUNTIME1_RT (pf_dictvar);
+        //FX_COMMA (*SP++);
+        FX_COMMA (w->ptr);
+        break;
+    case p4_OCON:
+        *--SP = (p4cell)(w->ptr);
+        FX (pf_constant);
+        break;
 /*
-	case p4_OVAL:
+    case p4_OVAL:
             *--SP = (p4cell)(w->ptr);
-	    FX (pf_value);
-	    break;
-	case p4_OVAR:
+        FX (pf_value);
+        break;
+    case p4_OVAR:
             *--SP = (p4cell)(w->ptr);
-	    FX (pf_variable);
-	    break;
+        FX (pf_variable);
+        break;
 */
-	default:
-	    pf_outf("\nERROR: unknown typecode for loadlist entry "
-		      "0x%x -> \"%s\"", 
-		      type, word_ptr);
-	} /*switch*/
-	
-	/* implicit IMMEDIATE still around: */
-	if ('A' <= type && type <= 'Z')
+    default:
+        pf_outf("\nERROR: unknown typecode for loadlist entry "
+              "0x%x -> \"%s\"", 
+              type, word_ptr);
+    } /*switch*/
+    
+    /* implicit IMMEDIATE still around: */
+    if ('A' <= type && type <= 'Z')
             P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
-	____;
-    } /* for w in ws->w */
+  } /* for w in ws->w */
 
 }
 
@@ -1039,8 +1031,8 @@ p4char* p4_header_comma (const p4char *name, int len)
 #   define CHAR_SIZE_MAX      ((1 << CHAR_BIT)-1)
     if (len > NAME_SIZE_MAX || len > CHAR_SIZE_MAX)
     {
-	    pf_outf("\nERROR: name too long '%.*s'", len, name);
-	    p4_throw (P4_ON_NAME_TOO_LONG);
+        pf_outf("\nERROR: name too long '%.*s'", len, name);
+        p4_throw (P4_ON_NAME_TOO_LONG);
     }
 
     if (redefined_msg && pf_find(name, len))
@@ -1157,10 +1149,10 @@ void pf_convert_string(void)
 {
     if (STATE)
     {
-	FX (pf_parse_comma_quote);
-	FX (pf_count);
+    FX (pf_parse_comma_quote);
+    FX (pf_count);
     }else{
-	char *cs = pf_string();
+    char *cs = pf_string();
         *--SP = (p4cell)NAMEPTR(cs);
         *--SP = (p4cell)NAMELEN(cs);
     }
@@ -1197,10 +1189,10 @@ void pf_interpret(char *buf, int len, int n)
     length = len;
     to_in = 0;
     while( to_in < length ) {
-	/* the parsed string is in word_ptr / word_len,
-	 * and by setting the HERE-string to length null, THROW
-	 * will not try to report it but instead it prints PFE.word.
-	 */
+    /* the parsed string is in word_ptr / word_len,
+     * and by setting the HERE-string to length null, THROW
+     * will not try to report it but instead it prints PFE.word.
+     */
         pf_skip_spaces();
         if ( *(source + to_in) == '"' ) {
             to_in++;
@@ -1209,20 +1201,20 @@ void pf_interpret(char *buf, int len, int n)
             continue;
         }
         pf_parse_word(' ');
-	*DP = 0; /* PARSE-WORD-NOHERE */
-	if (word_len>0) {
-	    if (pf_find_word())
-		   continue;
-	    if (pf_convert_number())
+    *DP = 0; /* PARSE-WORD-NOHERE */
+    if (word_len>0) {
+        if (pf_find_word())
+           continue;
+        if (pf_convert_number())
                    continue;
 #if defined PF_WITH_FLOATING
-	    if (pf_convert_float())
+        if (pf_convert_float())
                    continue;
 #endif
             if (n>0)
                 printf( "\nLine %d: %s", n, buf );
             p4_throw (P4_ON_UNDEFINED);
-	}
+    }
     }
 }
 
@@ -1259,8 +1251,8 @@ FCode (pf_include)
  */
 FCode (pf_included)
 {
-    const char *fn = (const char *) SP[1];	/* c-addr, name */
-    int  len = SP[0];		/* length of name */
+    const char *fn = (const char *) SP[1];    /* c-addr, name */
+    int  len = SP[0];        /* length of name */
     SP += 2;
     pf_include( fn, len );
 }
@@ -1289,8 +1281,8 @@ ABORT QUIT
 
 Forth200x
 This standard removes six words that were marked 'obsolescent' in the ANS Forth '94 document. These are:
-6.2.0060	#TIB		6.2.1390	EXPECT		6.2.2240	SPAN
-6.2.0970	CONVERT		6.2.2040	QUERY		6.2.2290	TIB
+6.2.0060    #TIB        6.2.1390    EXPECT        6.2.2240    SPAN
+6.2.0970    CONVERT        6.2.2040    QUERY        6.2.2290    TIB
 
 Words affected:
 #TIB, CONVERT, EXPECT, QUERY, SPAN, TIB, WORD.
@@ -1336,7 +1328,7 @@ P4_LISTWORDS (interpret) =
     P4_SXco ("S\"",          pf_s_quote),
     P4_IXco ("(",            pf_paren),
     P4_IXco ("\\",           pf_backslash),
-    P4_FXco ("INCLUDE",	     pf_include),
+    P4_FXco ("INCLUDE",         pf_include),
     P4_FXco ("INCLUDED",     pf_included),
 };
 P4_COUNTWORDS (interpret, "Interpreter words");

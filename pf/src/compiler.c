@@ -291,7 +291,7 @@ FCode_XE (pf_does_execution)
 {
     p4xt xt;
     xt = name_to_cfa (LATEST);
-    P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
+    *xt = pf_does_RT_;
     *P4_TO_DOES_CODE(xt) = IP; /* into CFA[1] */
     FX (pf_semicolon_execution);   /* double-EXIT */
 }
@@ -305,17 +305,16 @@ FCode_XE (pf_does_execution)
  */
 FCode (pf_does)
 {
-    if (STATE)
-    {
+    if (STATE) {
         FX (pf_Q_csp);
         FX_COMPILE (pf_does);
-    }else{
+    } else {
         /* NOTE: some details depend on pf_does_execution above */
         p4xt xt;
         FX (pf_align);
 
         xt = name_to_cfa (LATEST);
-        P4_XT_VALUE(xt) = FX_GET_RT (pf_does);
+        *xt = pf_does_RT_;
         *P4_TO_DOES_CODE(xt) = (p4xt*) DP; /* into CFA[1] */
 
         /* now, see pf_colon */
