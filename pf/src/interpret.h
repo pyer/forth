@@ -25,7 +25,7 @@ void pf_load_words (const p4Words* ws);
 p4char* p4_header_comma (const p4char *name, int len);
 p4char* p4_header_in (void);
 
-char pf_category (p4code p);
+char pf_number2digit(p4ucell n);
 
 void pf_call (p4xt xt);
 void pf_normal_execute (p4xt xt);

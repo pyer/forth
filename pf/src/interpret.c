@@ -839,40 +839,6 @@ FCode_RT (pf_dictget_RT)
     *--SP = *(p4cell *) ((char *) p4TH + (WP_PFA)[0]);
 }
 
-/** ((DEFER)) ( -- )
- * runtime of => DEFER words
- */
-FCode_RT (pf_defer_RT)
-{
-    register p4xt xt;
-    xt = * (p4xt*) P4_TO_DOES_BODY(P4_BODY_FROM((WP_PFA))); /* check IS-field */
-    if (xt) {
-        PFE.execute (xt);
-    }
-}
-
-/** DEFER ( 'word' -- )
- * create a new word with ((DEFER))-semantics
- simulate:
-   : DEFER  CREATE 0, DOES> ( the ((DEFER)) runtime ) 
-      @ ?DUP IF EXECUTE THEN ;
-   : DEFER  DEFER-RT HEADER 0 , ;
- *
- * declare as <c>"DEFER deferword"</c>  <br>
- * and set as <c>"['] executionword IS deferword"</c>
- * (in pfe, you can also use <c>TO deferword</c> to set the execution)
- */
-FCode (pf_defer)
-{
-//    FX_RUNTIME_HEADER;
-    p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    FX_RUNTIME1 (pf_defer);
-    FX_XCOMMA (0); /* <-- leave it blank (may become chain-link later) */
-    FX_XCOMMA (0); /* <-- put XT here in fig-mode */
-}
-P4RUNTIME1(pf_defer, pf_defer_RT);
-
 /* -------------------------------------------------------------- */
 /* >BODY is known to work on both DOES-style and VAR-style words
  * and it will even return the thread-local address of remote-style words
@@ -955,18 +921,12 @@ void pf_load_words (const p4Words* ws)
         p4_header_in();
         P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
         FX_XCOMMA(pf_dictget_RT_); /* a simply comma */
-
-        //FX_RUNTIME1_RT (pf_dictget);
-//#define FX_RUNTIME1_RT(X) FX_XCOMMA(X##_RT_) /* a simply comma */
-        //FX_COMMA (*SP++);
         FX_COMMA (w->ptr);
         break;
     case p4_DVAR:
         p4_header_in();
         P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
         FX_XCOMMA(pf_dictvar_RT_); /* a simply comma */
-        //FX_RUNTIME1_RT (pf_dictvar);
-        //FX_COMMA (*SP++);
         FX_COMMA (w->ptr);
         break;
     case p4_OCON:
@@ -1280,8 +1240,8 @@ ABORT QUIT
 
 Forth200x
 This standard removes six words that were marked 'obsolescent' in the ANS Forth '94 document. These are:
-6.2.0060    #TIB        6.2.1390    EXPECT        6.2.2240    SPAN
-6.2.0970    CONVERT        6.2.2040    QUERY        6.2.2290    TIB
+6.2.0060    #TIB        6.2.1390    EXPECT       6.2.2240    SPAN
+6.2.0970    CONVERT     6.2.2040    QUERY        6.2.2290    TIB
 
 Words affected:
 #TIB, CONVERT, EXPECT, QUERY, SPAN, TIB, WORD.
@@ -1327,7 +1287,7 @@ P4_LISTWORDS (interpret) =
     P4_SXco ("S\"",          pf_s_quote),
     P4_IXco ("(",            pf_paren),
     P4_IXco ("\\",           pf_backslash),
-    P4_FXco ("INCLUDE",         pf_include),
+    P4_FXco ("INCLUDE",      pf_include),
     P4_FXco ("INCLUDED",     pf_included),
 };
 P4_COUNTWORDS (interpret, "Interpreter words");

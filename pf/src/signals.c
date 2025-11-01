@@ -79,9 +79,6 @@
 #include "interpret.h"
 #include "terminal.h"
 
-#define ___ {
-#define ____ }
-
 /* -------------------------------------------------------------- */
 typedef void (*SigHdl) (int);	/* signal handler function type */
 
@@ -367,14 +364,13 @@ static void sig_handler (int sig)		/* Signal handler for all signals */
     {
         s = &siginfo[getinfo (sig)];
         if (s->hdl) {
-	    puts("forth-signal callback does not work!"); /* FIXME: */
-	    /* assume that s->hdl is a colon word */
+	          puts("forth-signal callback does not work!"); /* FIXME: */
+	          /* assume that s->hdl is a colon word */
             (*--RP) = IP;
-	    IP = (p4xt *) P4_TO_BODY (s->hdl);
+	          IP = (p4xt *) P4_TO_BODY (s->hdl);
         } else {
-	    ___
             const char* msg = s->msg;
-	    /* P4_warn1 ("throw signal '%s'", msg); */
+	          /* P4_warn1 ("throw signal '%s'", msg); */
             switch (s->cLass)
             {
              default:		  /* an ANSI-Forth defined condition */
@@ -387,7 +383,6 @@ static void sig_handler (int sig)		/* Signal handler for all signals */
                  printf("Received signal %s, %s\n", s->name, msg);
                  pf_longjmp_exit ();
             }
-	    ____;
         }
     }
 }
@@ -489,7 +484,7 @@ FCode (pf_load_signals)
     for (s = siginfo; s < siginfo + DIM (siginfo); s++)
     {
         p4_header_comma ((const p4char*) s->name, strlen (s->name));
-	FX_RUNTIME1(pf_constant);
+        FX_RUNTIME1(pf_constant);
         FX_UCOMMA (s->sig);
     }
 }

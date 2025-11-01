@@ -283,6 +283,41 @@ FCode (pf_builds)
 }
 P4RUNTIME1(pf_builds, pf_builds_RT);
 
+/** ((DEFER)) ( -- )
+ * runtime of => DEFER words
+ */
+FCode_RT (pf_defer_RT)
+{
+    register p4xt xt;
+    xt = * (p4xt*) P4_TO_DOES_BODY(P4_BODY_FROM((WP_PFA))); /* check IS-field */
+    if (xt) {
+        PFE.execute (xt);
+    }
+}
+
+/** DEFER ( 'word' -- )
+ * create a new word with ((DEFER))-semantics
+ simulate:
+   : DEFER  CREATE 0, DOES> ( the ((DEFER)) runtime ) 
+      @ ?DUP IF EXECUTE THEN ;
+   : DEFER  DEFER-RT HEADER 0 , ;
+ *
+ * declare as <c>"DEFER deferword"</c>  <br>
+ * and set as <c>"['] executionword IS deferword"</c>
+ * (in pfe, you can also use <c>TO deferword</c> to set the execution)
+ */
+FCode (pf_defer)
+{
+//    FX_RUNTIME_HEADER;
+    p4_header_in();
+    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
+    FX_RUNTIME1 (pf_defer);
+    FX_XCOMMA (0); /* <-- leave it blank (may become chain-link later) */
+    FX_XCOMMA (0); /* <-- put XT here in fig-mode */
+}
+P4RUNTIME1(pf_defer, pf_defer_RT);
+
+/* -------------------------------------------------------------- */
 /** "(DOES>)" ( -- pfa ) [HIDDEN]
  * execution compiled by => DOES>
  */
@@ -332,7 +367,6 @@ FCode_RT (pf_does_RT)
     *--RP = IP; IP = *P4_TO_DOES_CODE(WP); /* from CFA[1] */
 }
 P4RUNTIME1(pf_does, pf_does_RT);
-
 
 /* -------------------------------------------------------------- */
 /** "(NEST)" ( -- ) [HIDDEN]

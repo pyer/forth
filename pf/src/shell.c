@@ -157,8 +157,7 @@ FCode (pf_remove)
 {
     if (STATE)
     {
-        p4_Semant pf_remove_Semant;
-        FX_ZCOMMA(&pf_remove_Semant.exec[0]);
+        FX_COMPILE(pf_remove);
         pf_word_comma ();
     }
     else
@@ -197,8 +196,7 @@ FCode (pf_touch)
 {
     if (STATE)
     {
-        p4_Semant pf_touch_Semant;
-        FX_ZCOMMA(&pf_touch_Semant.exec[0]);
+        FX_COMPILE(pf_touch);
         pf_word_comma ();
     }
     else
@@ -225,8 +223,7 @@ FCode (pf_chdir)
 {
     if (STATE)
     {
-        p4_Semant pf_chdir_Semant;
-        FX_ZCOMMA(&pf_chdir_Semant.exec[0]);
+        FX_COMPILE(pf_chdir);
         pf_word_comma ();
     }
     else
@@ -253,8 +250,7 @@ FCode (pf_mkdir)
 {
     if (STATE)
     {
-        p4_Semant pf_mkdir_Semant;
-        FX_ZCOMMA(&pf_mkdir_Semant.exec[0]);
+        FX_COMPILE(pf_mkdir);
         pf_word_comma ();
     }
     else
@@ -301,8 +297,7 @@ FCode (pf_ls)
 {
     if (STATE)
     {
-        p4_Semant pf_ls_Semant;
-        FX_ZCOMMA(&pf_ls_Semant.exec[0]);
+        FX_COMPILE(pf_ls);
         pf_word_comma ();
     }
     else

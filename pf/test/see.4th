@@ -1,16 +1,13 @@
 ." Testing SEE ..."
 CR
 
-: HELLO ." Hello world !" cr ;
-see HELLO
-
 CREATE new-word
 see NEW-WORD
 
 <BUILDS new-builds
 see NEW-BUILDS
 
-: def1 create  42 , does>	@ . ;
+: def1 create  42 , does> @ . ;
 def1 word1
 see WORD1
 
@@ -32,5 +29,14 @@ see PI
 
 fvariable FVAR
 see FVAR
+
+: HELLO ." Hello world !" cr ;
+see HELLO
+
+: answer [ 42 ] literal . ;
+see answer
+
+: pi? [ 3.14 ] fliteral f. ;
+see pi?
 
 bye

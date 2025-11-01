@@ -42,7 +42,7 @@
 /* ----------------------------------------------------------------------- */
 static void pf_prCell (p4cell n)
 {
-    pf_outf ("\n%*ld [%0*lX] ",
+    pf_outf ("\n%*ld [0x%0*lX] ",
       (int) DECWIDTH, (p4cell)n,
       (int) HEXWIDTH, (unsigned long)n);
 }
@@ -155,84 +155,83 @@ void pf_dot_name (const p4char *nfa)
     }
 }
 
-//p4char * cfa_to_name (p4xt xt)
+void pf_dot_number(p4ucell u)
+{
+    char sign=' ';
+    char *hold = DP + MIN_HOLD;
+    *hold-- = '\0';
+    *hold-- = ' ';
+
+    if (u < 0) {
+        sign = '-';
+        u = -u;
+    }
+
+    do {
+      udiv_t res;
+      res.quot = u / BASE;
+      res.rem  = u % BASE;
+      u = res.quot;
+      *hold-- = pf_number2digit(res.rem);
+    } while (u);
+
+    if (sign == '-' )
+      *hold = sign;
+    else
+      hold++;
+    pf_outs(hold);
+}
 
 void pf_decompile_rest (p4char* nfa, p4xt *ip)
 {
     pf_dot_name (nfa);
-    /* p4_Seman2 *seman; // unused ? */
-    //p4_Decomp decomp;
-/*    
-    while (*ip) {
-
-        ip = p4_decompile_word (ip, buf, &decomp);
-
-        p4_outs (buf);
-    }
-*/
-//void *(void)sem = P4CODE(pf_semicolon_execution);
- 
     while (**ip != P4CODE(pf_semicolon_execution)) {
-
-        //pf_outf ("%p = %p %p / ", ip, *ip, **ip);
         p4char *name = cfa_to_name(*ip);
-
         pf_dot_name(name);
-        ip++;
+        p4_Semant *s = ((p4_Semant *)((char *)(*ip) - OFFSET_OF (p4_Semant, exec[0])));
+        //pf_outf ("\nip = %p *ip = %p  s = %p  ", ip, *ip, s);
+        if (s->magic == P4_SEMANT_MAGIC) {
+          ip++;
+          //pf_outf ("\nSEMANT_MAGIC %ld skips = %d ", s->magic, s->skips);
+          switch (s->skips) {
+            case P4_SKIPS_OFFSET:
+              break;
+            case P4_SKIPS_CELL:
+              p4cell n = *(p4cell *)ip;
+              pf_dot_number(n);
+              ip++;
+              break;
+            case P4_SKIPS_STRING:
+              p4char *str = (p4char *)ip;
+              pf_outs(".\" ");
+              pf_type ((const char *)NAMEPTR(str), NAMELEN(str));
+              pf_outs("\" ");
+              ip = (p4xt *)(str + pf_aligned(*str));
+              break;
+            case P4_SKIPS_TO_TOKEN:
+              break;
+#if defined PF_WITH_FLOATING
+            case P4_SKIPS_FLOAT:
+              TYPEOF_FCELL *f = (TYPEOF_FCELL *)ip;
+              pf_outf ("%.*f ", (int) PRECISION, *f);
+              f++;
+              ip = (p4xt *)f;
+              break;
+#endif
+            case P4_SKIPS_NOTHING:
+            default:
+              ip++;
+              break;
+          }
+        } else {
+          ip++;
+        }
+        if (**ip == P4CODE(pf_does_execution)) {
+          pf_outs("DOES> ");
+          ip++;
+        }
     }
 }
-/*
-static p4xcode *
-p4_decompile_word (p4xcode* ip, char *p, p4_Decomp *d)
-{
-    / assert SKIPS_NOTHING == 0 /
-    register p4xcode xt = *ip++;
-    register p4_Semant *s;
-
-    s = (p4_Semant*) p4_to_semant (xt);
-    p4_memcpy (d, ((s) ? (& s->decomp) : (& default_style)), sizeof(*d));
-
-    / some tokens are (still) compiled without a semant-definition /
-    if (*xt == PFX (p4_literal_execution))
-        return p4_literal_SEE (ip, p, s);
-    if (*xt == PFX (p4_locals_bar_execution))
-        return p4_locals_bar_SEE (ip, p, s);
-    if (*xt == PFX (p4_local_execution))
-        return p4_local_SEE (ip, p, s);
-
-    if (d->skips == P4_SKIPS_CELL 
-      || d->skips == P4_SKIPS_OFFSET)
-    {
-        P4_INC (ip, p4cell); 
-        sprintf (p, "%.*s ", NAMELEN(s->name), NAMEPTR(s->name));
-        return ip;
-    }
-
-    if (d->skips == P4_SKIPS_DCELL)
-        return p4_lit_dcell_SEE (ip, p, s);
-    if (d->skips == P4_SKIPS_STRING)
-        return p4_lit_string_SEE (ip, p, s);
-    if (d->skips == P4_SKIPS_2STRINGS)
-        return p4_lit_2strings_SEE (ip, p, s);
-    if (d->skips == P4_SKIPS_TO_TOKEN)
-        return p4_lit_to_token_SEE (ip, p, s);
-
-    / per default, just call the skips-decomp routine /
-    if (d->skips) / SKIPS_NOTHING would be NULL /
-        return (*d->skips)(ip, p, s);
-
-    if (s != NULL)
-    {
-        sprintf (p, "%.*s ", NAMELEN(s->name), NAMEPTR(s->name));
-        return ip;
-    }else{
-        register p4char* nfa = p4_to_name (xt);
-        sprintf (p, P4_NFA_xIMMEDIATE(nfa) ? "POSTPONE %.*s " : "%.*s ",
-                 NAMELEN(nfa), NAMEPTR(nfa));
-        return ip;
-    }
-}
-*/
 
 /************************************************************************/
 /** SEE ( "word" -- )
@@ -267,7 +266,9 @@ FCode (pf_see)
     } else if (*xt == P4CODE(pf_does_RT)) {
         pf_outs("<BUILDS ");
         pf_dot_name (nfa);
-        pf_outs("DOES> ... does to do ");
+        pf_outs("DOES> ??? ");
+        pf_outf("DOES> %p ", xt);
+        //pf_decompile_rest(NULL, rest);
         pf_outs(";");
     } else if (*xt == P4CODE(pf_constant_RT)) {
         pf_outf("%d CONSTANT ", (p4cell)*rest);
@@ -341,35 +342,13 @@ FCode (pf_dump)
 FCode (pf_words)
 {
     p4char *nfa = LATEST;        /* NFA of most recently CREATEd header */
-//# define WILD_TAB 26 /* traditional would be 20 (26*4=80), now 26*3=78 */
-//# define WILD_TAB 20 /* traditional would be 20 (26*4=80), now 26*3=78 */
-/*
-    FX (pf_more);
     FX (pf_cr);
     while (nfa) {
-    char c = pf_category (*name_to_cfa(nfa));
-        pf_outc(c); pf_outc(' ');
-        pf_dot_name(nfa);
-        pf_emits (WILD_TAB - get_outs() % WILD_TAB, ' ');
-        if (get_outs()+WILD_TAB > get_cols()) {
-            if (pf_more_Q())
-                break;
-        }
-        nfa = *name_to_link (nfa);
-    }
-    FX (pf_cr);
-*/
-
-    FX (pf_cr);
-    while (nfa) {
-        //char c = pf_category (*name_to_cfa(nfa));
-        // pf_outc(c); pf_outc(' ');
         pf_dot_name(nfa);
         nfa = *name_to_link (nfa);
         if (pf_more_Q())
             break;
     }
-
 }
 
 /* ----------------------------------------------------------------------- */

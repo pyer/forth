@@ -28,16 +28,15 @@
 #   define NAMELEN(X)   P4_NAME_MASK_LEN(*(p4char*)X)
 
 /* useful shortcuts */
-# define WP_PFA		((p4cell *)&PFE.wp [1]) 
+# define WP_PFA  ((p4cell *)&PFE.wp [1]) 
 
 #define FX_SKIP_STRING  (*(char **)&(IP) += (pf_aligned (*(p4char*)IP + 1)))
 
 /* P:dictpointer X:value Y:hintchar T:typedef */
-#define	P4_COMMA_(P,X,Y,T) (*(T *)(P) = (T)(X), ((*(T **)&(P))++))
+#define P4_COMMA_(P,X,Y,T) (*(T *)(P) = (T)(X), ((*(T **)&(P))++))
 
-#define	FX_COMMA(X)	 P4_COMMA_(DP,(X),0,p4cell)
-
-#define FX_FCOMMA(X)	 P4_COMMA_(DP,(X),'F',double)
+#define FX_COMMA(X)      P4_COMMA_(DP,(X), 0 ,p4cell)
+#define FX_FCOMMA(X)     P4_COMMA_(DP,(X),'F',double)
 #define FX_XCOMMA(X)     P4_COMMA_(DP,(X),'X',p4xt)
 #define FX_ZCOMMA(X)     P4_COMMA_(DP,(X),'Z',p4xt)
 #define FX_RCOMMA(X)     P4_COMMA_(DP,(X),'R',p4code)
@@ -93,7 +92,7 @@
 #define p4_DVAR 'w'     /* DV */ /* dict variable (threaded) */
 
 /* return the byte offset of a given component to beginning of structure: */
-#define OFFSET_OF(T,C)	((char *)&(((T *)0)->C) - (char *)0)
+#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
 
 /* macros to build entries in the wordlists: 
  * until all sematic-words have a proper name along, we need to help
@@ -120,8 +119,8 @@
 #define P4_THREADS_SHIFT 5
 #endif
 
-#ifndef P4_MAX_FILES	/* maximum number of open files */
-#define P4_MAX_FILES	0x10
+#ifndef P4_MAX_FILES /* maximum number of open files */
+#define P4_MAX_FILES 0x10
 #endif
 
 /* some constants needed here, they are dependent of options */

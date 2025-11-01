@@ -38,10 +38,8 @@ typedef struct p4_Semant p4_Semant; /* pointer set for state smart words */
 #define  P4_SKIPS_NOTHING           0
 #define  P4_SKIPS_OFFSET            1
 #define  P4_SKIPS_CELL              2
-#define  P4_SKIPS_DCELL             3
-#define  P4_SKIPS_STRING            5
-#define  P4_SKIPS_2STRINGS          6
-#define  P4_SKIPS_TO_TOKEN          7
+#define  P4_SKIPS_STRING            3
+#define  P4_SKIPS_TO_TOKEN          4
 #define  P4_SKIPS_FLOAT             8
 
 #define P4COMPILE(C,E,S)            \
@@ -98,12 +96,17 @@ FCode_RT (pf_create_RT);
 FCode  (pf_create);
 FCode_RT (pf_builds_RT);
 FCode  (pf_builds);
+FCode_RT (pf_defer_RT);
+FCode  (pf_defer);
 FCode_RT (pf_does_RT);
 FCode  (pf_does);
 
 FCode_RT (pf_colon_RT);
 FCode  (pf_colon);
-FCode  (pf_semicolon_execution);
+
+//FCode  (pf_semicolon_execution);
+FCode_XE (pf_semicolon_execution);
+FCode_XE (pf_does_execution);
 
 FCode_RT (pf_constant_RT);
 FCode  (pf_constant);
