@@ -45,9 +45,6 @@ typedef unsigned TYPEOF_CELL	p4ucell; /* dito unsigned */
 typedef struct { p4ucell quot, rem; } udiv_t;
 typedef struct { p4cell  quot, rem; } fdiv_t;
 
-typedef p4cell p4_cell_t;          /* computational element */
-typedef p4cell p4_bool_t;          /* and as boolean flag */
-
 typedef void (*p4code) (void);		/* pointer to executable code */
 typedef p4code *p4xt;			/* type of the "execution token" */
 

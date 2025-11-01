@@ -23,7 +23,7 @@
 
 #define MIN_UNUSED 256
 /* ---------------------------------------------------------------------- */
-#define	P4_FALSE	((p4_bool_t)0) /* false is null */
+#define	P4_FALSE	((p4cell)0) /* false is null */
 #define	P4_TRUE	        (~P4_FALSE)    /* true is not-null, forth83 uses -1 */
 #define	P4_FLAG(X)	((X) ? P4_TRUE : P4_FALSE)
 
