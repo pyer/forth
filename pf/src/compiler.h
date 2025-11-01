@@ -104,7 +104,6 @@ FCode  (pf_does);
 FCode_RT (pf_colon_RT);
 FCode  (pf_colon);
 
-//FCode  (pf_semicolon_execution);
 FCode_XE (pf_semicolon_execution);
 FCode_XE (pf_does_execution);
 

@@ -197,7 +197,6 @@ void pf_init_system (p4_Thread* th) /* main_init */
     pf_load_words (&P4WORDS (signals));
     pf_load_words (&P4WORDS (tools));
     pf_load_words (&P4WORDS (facility));
-//    pf_load_words (&P4WORDS (debug));
     pf_load_words (&P4WORDS (version));
 }
 

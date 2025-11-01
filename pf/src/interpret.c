@@ -933,16 +933,14 @@ void pf_load_words (const p4Words* ws)
         *--SP = (p4cell)(w->ptr);
         FX (pf_constant);
         break;
-/*
     case p4_OVAL:
-            *--SP = (p4cell)(w->ptr);
+        *--SP = (p4cell)(w->ptr);
         FX (pf_value);
         break;
     case p4_OVAR:
-            *--SP = (p4cell)(w->ptr);
+        *--SP = (p4cell)(w->ptr);
         FX (pf_variable);
         break;
-*/
     default:
         pf_outf("\nERROR: unknown typecode for loadlist entry "
               "0x%x -> \"%s\"", 
