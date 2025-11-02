@@ -5,6 +5,7 @@
 #define PF_VERSION  "2.2b"
 
 #define PF_BOOT_FILE "/usr/lib/pf.4th"
+#define PF_HELP_FILE "/usr/share/man/pf.txt"
 
 #if defined ARM
 /* ARM processor options */

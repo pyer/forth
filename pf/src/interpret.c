@@ -1188,7 +1188,7 @@ void pf_include(const char *name, int len)
         }
         fclose( fh );
     } else {
-        printf( "File %s not found.\n", name );
+        printf( "ERROR: file %s not found.\n", name );
     }
 }
 

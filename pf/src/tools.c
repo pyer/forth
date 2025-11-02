@@ -300,6 +300,34 @@ FCode (pf_see)
 }
 
 /************************************************************************/
+/** MAN ( "word" -- )
+ *  show the reference manual of word.
+ */
+FCode (pf_man)
+{
+    char buffer[256];
+    p4char* nfa = pf_tick_nfa();
+    char *name = NAMEPTR(nfa);
+    int  len   = NAMELEN(nfa);
+    FX (pf_cr);
+    FILE *fh = fopen( PF_HELP_FILE, "r" );
+    if( fh != NULL ) {
+        while( fgets( buffer, 255, fh ) != NULL ) {
+            if (strncmp(buffer, name, len) == 0 && (buffer[len] == '\n' || buffer[len] == ' ')) {
+              pf_outs(buffer);
+              while( fgets( buffer, 255, fh ) != NULL && strlen(buffer)>1 ) {
+                pf_outs(buffer);
+              }
+              break;
+            }
+        }
+        fclose( fh );
+    } else {
+        printf( "ERROR: file %s not found.\n", name );
+    }
+}
+
+/************************************************************************/
 /** DUMP ( addr len -- )
  * show a hex-dump of the given area, if it's more than a screenful
  * it will ask using => ?CR
@@ -377,6 +405,7 @@ P4_LISTWORDS (tools) =
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco ("SEE",          pf_see),
+    P4_FXco ("MAN",          pf_man),
     P4_FXco ("DUMP",         pf_dump),
     P4_FXco ("WORDS",        pf_words),
     P4_FXco ("HISTORY",      pf_history),

@@ -69,7 +69,7 @@ static void show_error (const char* str)
 {
     if (! str) str = "";
     int len = strlen(str);
-    pf_outf ("\nError: %.*s ", len, str);
+    pf_outf ("\nERROR: %.*s ", len, str);
     pf_outc('\'');
     show_word();
     pf_outc('\'');

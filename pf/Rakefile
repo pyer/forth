@@ -11,6 +11,12 @@ task :help do
   puts "before compiling ARM architecture, set up environment: source /usr/local/angstrom/arm/environment-setup"
 end
 
+task :man do
+  sh "sudo install -m 644 doc/pf.txt /usr/share/man/pf.txt"
+  sh "sudo install -m 644 doc/pf.1   /usr/share/man/man1/pf.1"
+  sh "sudo gzip -f /usr/share/man/man1/pf.1"
+end
+
 task :arm do
   ARCH='ARM'
 # before compiling, set up environment:
