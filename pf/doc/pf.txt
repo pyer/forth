@@ -1,8 +1,6 @@
-PF
-                  Pyer's Forth
+PF                Pyer's Forth
 
-MAN
-                  ( "<spaces>name" -- )
+MAN               ( "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.
                   Display the documentation of named word.
 
@@ -186,6 +184,10 @@ MAN
                   flag is true if and only if n1 is less than n2.
              See: U<.
 
+<=                                "less-or-equal"
+                  ( n1 n2 -- flag )
+                  flag is true if and only if n1 is less than n2 or equal to n2.
+
 <#                             "less-number-sign"
                   ( -- )
                   Initialize the pictured numeric output conversion process.
@@ -204,12 +206,16 @@ MAN
                   flag is true if and only if n1 is greater than n2.
              See: U>.
 
+>=                              "greater-or-equal"
+                  ( n1 n2 -- flag )
+                  flag is true if and only if n1 is greater than n2 or equal to n2.
+
 >BODY                             "to-body"
                   ( xt -- a-addr )
                   a-addr is the data-field address corresponding to xt.  An ambiguous
                   condition exists if xt is not for a word defined via CREATE.
 
->IN                                "to-in"
+>IN                                "to-in" NOT IMPLEMENTED
                   ( -- a-addr )
                   a-addr is the address of a cell containing the offset in characters from
                   the start of the input buffer to the start of the parse area.
@@ -233,6 +239,11 @@ MAN
                   Move x to the return stack.
              See: R>, R@.
 
+?                 ( a-addr -- )
+                  Display the value stored at a-addr.
+                  ? may be implemented using pictured numeric output words.  Consequently,
+                  its use may corrupt the transient region identified by #>.
+
 ?DUP                           "question-dupe"
                   ( x -- 0 | x x )
                   Duplicate x if it is non-zero.
@@ -241,8 +252,7 @@ MAN
                   ( a-addr -- x )
                   x is the value stored at a-addr.
 
-ABORT
-                  ( i*x -- ) ( R: j*x -- )
+ABORT             ( i*x -- ) ( R: j*x -- )
                   Empty the data stack and perform the function of QUIT, which includes
                   emptying the return stack, without displaying a message.
 
@@ -256,12 +266,10 @@ ABORT"                          "abort-quote"
                   perform an implementation-defined abort sequence that includes the
                   function of ABORT.
 
-ABS                                 "abs"
-                  ( n -- u )
+ABS               ( n -- u )
                   u is the absolute value of n.
 
-ACCEPT
-                  ( c-addr +n1 -- +n2 )
+ACCEPT            ( c-addr +n1 -- +n2 )
                   Receive a string of at most +n1 characters.  An ambiguous condition
                   exists if +n1 is zero or greater than 32,767.  Display graphic
                   characters as they are received.  A program that depends on the presence
@@ -284,17 +292,14 @@ AGAIN
                   executed.
              See: BEGIN.
 
-ALIGN
-                  ( -- )
+ALIGN             ( -- )
                   If the data-space pointer is not aligned, reserve enough space to align
                   it.
 
-ALIGNED
-                  ( addr -- a-addr )
+ALIGNED           ( addr -- a-addr )
                   a-addr is the first aligned address greater than or equal to addr.
 
-ALLOT
-                  ( n -- )
+ALLOT             ( n -- )
                   If n is greater than zero, reserve n address units of data space.  If n
                   is less than zero, release |n| address units of data space.  If n is
                   zero, leave the data-space pointer unchanged.
@@ -305,12 +310,10 @@ ALLOT
                   the size of a character when ALLOT begins execution, it will remain
                   character aligned when ALLOT finishes execution.
 
-AND
-                  ( x1 x2 -- x3 )
+AND               ( x1 x2 -- x3 )
                   x3 is the bit-by-bit logical "and" of x1 with x2.
 
-BASE
-                  ( -- a-addr )
+BASE              ( -- a-addr )
                   a-addr is the address of a cell containing the current number-conversion
                   radix {{2...36}}
 
@@ -323,6 +326,12 @@ BEGIN
         Run-time: ( -- )
                   Continue execution.
              See: REPEAT, UNTIL, WHILE.
+
+BL                ( -- char )
+                  char is the character value for a space.
+
+BLANK             ( c-addr u -- )
+                  If u is greater than zero, store the character value for space in u
 
 C!                                "c-store"
                   ( char c-addr -- )
@@ -362,55 +371,61 @@ CASE
                   Continue execution.
              See: ENDCASE, ENDOF, OF.
 
-CELL+                            "cell-plus"
-                  ( a-addr1 -- a-addr2 )
+CELL+             ( a-addr1 -- a-addr2 )
                   Add the size in address units of a cell to a-addr1, giving a-addr2.
 
-CELLS
-                  ( n1 -- n2 )
+CELLS             ( n1 -- n2 )
                   n2 is the size in address units of n1 cells.
 
-CHAR                               "char"
-                  ( "<spaces>name" -- char )
+CHAR              ( "<spaces>name" -- char )
                   Skip leading space delimiters.  Parse name delimited by a space.  Put
                   the value of its first character onto the stack.
              See: [CHAR].
 
-CHAR+                            "char-plus"
-                  ( c-addr1 -- c-addr2 )
+CHAR+             ( c-addr1 -- c-addr2 )
                   Add the size in address units of a character to c-addr1, giving c-addr2.
 
-CHARS                             "chars"
-                  ( n1 -- n2 )
+CHARS             ( n1 -- n2 )
                   n2 is the size in address units of n1 characters.
 
-COMPILE,                     "compile-comma"
+CMOVE                       "c-move"
+                  ( c-addr1 c-addr2 u -- )
+                  If u is greater than zero, copy u consecutive characters from the data
+                  space starting at c-addr1 to that starting at c-addr2, proceeding
+                  character-by-character from lower addresses to higher addresses.
+             See: CMOVE>.
+
+CMOVE>                      "c-move-up"
+                  ( c-addr1 c-addr2 u -- )
+                  If u is greater than zero, copy u consecutive characters from the data
+                  space starting at c-addr1 to that starting at c-addr2, proceeding
+                  character-by-character from higher addresses to lower addresses.
+             See: CMOVE.
+
+COMPILE,                    "compile-comma"
   Interpretation: Interpretation semantics for this word are undefined.
        Execution: ( xt -- )
                   Append the execution semantics of the definition represented by xt to
                   the execution semantics of the current definition.
 
-CONSTANT
-                  ( x "<spaces>name" -- )
+CONSTANT          ( x "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.  Create
                   a definition for name with the execution semantics defined below.
                   name is referred to as a "constant".
   name Execution: ( -- x )
                   Place x on the stack.
 
-COUNT
-                  ( c-addr1 -- c-addr2 u )
+COUNT             ( c-addr1 -- c-addr2 u )
                   Return the character string specification for the counted string stored
                   at c-addr1.  c-addr2 is the address of the first character after
                   c-addr1.  u is the contents of the character at c-addr1, which is the
                   length in characters of the string at c-addr2.
 
-CR                                   "c-r"
+CR                          "c-r"
                   ( -- )
                   Cause subsequent output to appear at the beginning of the next line.
 
-CREATE
-                  ( "<spaces>name" -- )
+CREATE            ( "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.  Create
                   a definition for name with the execution semantics defined below.  If
                   the data-space pointer is not aligned, reserve enough data space to
@@ -421,12 +436,10 @@ CREATE
                   name may be extended by using DOES>.
         See: <BUILDS, DOES>.
 
-DECIMAL
-                  ( -- )
+DECIMAL           ( -- )
                   Set the numeric conversion radix to ten (decimal).
 
-DEPTH
-                  ( -- +n )
+DEPTH             ( -- +n )
                   +n is the number of single-cell values contained in the data stack
                   before +n was placed on the stack.
 
@@ -443,8 +456,7 @@ DO
                   the loop-control parameters are discarded.
              See: +LOOP, LOOP.
 
-<BUILDS
-                  ( "<spaces>name" -- )
+<BUILDS           ( "<spaces>name" -- )
                   Synonym of CREATE.
                   Skip leading space delimiters.  Parse name delimited by a space.
                   Create a definition for name with the execution semantics defined below.
@@ -481,12 +493,10 @@ DOES>                              "does"
                   i*x and j*x represent arguments to and results from name, respectively.
              See: CREATE, <BUILDS.
 
-DROP
-                  ( x -- )
+DROP              ( x -- )
                   Remove x from the stack.
 
-DUP                                   "dupe"
-                  ( x -- x x )
+DUP               ( x -- x x )
                   Duplicate x.
 
 ELSE
@@ -524,8 +534,7 @@ ENDOF                           "end-of"
                   case-sys2.
              See: CASE, ENDCASE, OF.
 
-EMIT
-                  ( x -- )
+EMIT              ( x -- )
                   If x is a graphic character in the implementation-defined character set,
                   display x.  The effect of EMIT for all other values of x is
                   implementation-defined.
@@ -537,13 +546,11 @@ EMIT
                   an environmental dependency.  Each EMIT deals with only one character.
              See: TYPE.
 
-ERASE
-                  ( addr u -- )
+ERASE             ( addr u -- )
                   If u is greater than zero, clear all bits in each of u consecutive
                   address units of memory beginning at addr .
 
-EXECUTE
-                  ( i*x xt -- j*x )
+EXECUTE           ( i*x xt -- j*x )
                   Remove xt from the stack and perform the semantics identified by it.
                   Other stack effects are due to the word EXECUTEd.
              See: ', ['].
@@ -556,17 +563,14 @@ EXIT
                   control parameters by executing UNLOOP.
              See: UNLOOP.
 
-FALSE
-                  ( -- false )
+FALSE             ( -- false )
                   Return a false flag.
 
-FILL
-                  ( c-addr u char -- )
+FILL              ( c-addr u char -- )
                   If u is greater than zero, store char in each of u consecutive
                   characters of memory beginning at c-addr.
 
-FIND
-                  ( c-addr -- c-addr 0  |  xt 1  |  xt -1 )
+FIND              ( c-addr -- c-addr 0  |  xt 1  |  xt -1 )
                   Find the definition named in the counted string at c-addr.  If the
                   definition is not found, return c-addr and zero.  If the definition is
                   found, return its execution token xt.  If the definition is immediate,
@@ -575,16 +579,13 @@ FIND
                   those returned while not compiling.
              See: ', ['], POSTPONE.
 
-HERE
-                  ( -- addr )
+HERE              ( -- addr )
                   addr is the data-space pointer.
 
-HEX
-                  ( -- )
+HEX               ( -- )
                   Set contents of BASE to sixteen.
 
-HOLD
-                  ( char -- )
+HOLD              ( char -- )
                   Add char to the beginning of the pictured numeric output string.  An
                   ambiguous condition exists if HOLD executes outside of a <# #> delimited
                   number conversion.
@@ -607,13 +608,11 @@ IF
                   by the resolution of orig.
              See: ELSE, THEN.
 
-IMMEDIATE
-                  ( -- )
+IMMEDIATE         ( -- )
                   Make the most recent definition an immediate word.  An ambiguous
                   condition exists if the most recent definition does not have a name.
 
-INVERT
-                  ( x1 -- x2 )
+INVERT            ( x1 -- x2 )
                   Invert all bits of x1, giving its logical inverse x2.
              See: NEGATE, NOT, 0=.
 
@@ -624,8 +623,7 @@ J
                   exists if the loop control parameters of the next-outer loop, loop-sys1,
                   are unavailable.
 
-KEY
-                  ( -- char )
+KEY               ( -- char )
                   Receive one character char, a member of the implementation-defined
                   character set.  Keyboard events that do not correspond to such
                   characters are discarded until a valid character is received, and those
@@ -668,31 +666,26 @@ LOOP
                   at the beginning of the loop.
              See: +LOOP, DO, I, LEAVE.
 
-LSHIFT                            "l-shift"
-                  ( x1 u -- x2 )
+LSHIFT            ( x1 u -- x2 ) NOT IMPLEMENTED
                   Perform a logical left shift of u bit-places on x1, giving x2.  Put
                   zeroes into the least significant bits vacated by the shift.  An
                   ambiguous condition exists if u is greater than or equal to the number
                   of bits in a cell.
 
-MAX
-                  ( n1 n2 -- n3 )
+MAX               ( n1 n2 -- n3 )
                   n3 is the greater of n1 and n2.
 
-MIN
-                  ( n1 n2 -- n3 )
+MIN               ( n1 n2 -- n3 )
                   n3 is the lesser of n1 and n2.
 
-MOD
-                  ( n1 n2 -- n3 )
+MOD               ( n1 n2 -- n3 )
                   Divide n1 by n2, giving the single-cell remainder n3.  An ambiguous
                   condition exists if n2 is zero.  If n1 and n2 differ in sign, the
                   implementation-defined result returned will be the same as that
                   returned by either the phrase >R S>D R> FM/MOD DROP or the phrase >R
                   S>D R> SM/REM DROP.
 
-MOVE
-                  ( addr1 addr2 u -- )
+MOVE              ( addr1 addr2 u -- )
                   If u is greater than zero, copy the contents of u consecutive address
                   units at addr1 to the u consecutive address units at addr2.  After MOVE
                   completes, the u consecutive address units at addr2 contain exactly
@@ -700,17 +693,14 @@ MOVE
                   move.
              See: CMOVE, CMOVE>.
 
-NEGATE
-                  ( n1 -- n2 )
+NEGATE            ( n1 -- n2 )
                   Negate n1, giving its arithmetic inverse n2.
              See: INVERT, 0=.
 
-NIP
-                  ( x1 x2 -- x2 )
+NIP               ( x1 x2 -- x2 )
                   Drop the first item below the top of stack.
 
-NOT
-                  ( x1 -- x2 )
+NOT               ( x1 -- x2 )
                   Invert all bits of x1, giving its logical inverse x2.
              See: INVERT, NEGATE, 0=.
 
@@ -727,34 +717,29 @@ OF
                   continue execution in line.
              See: CASE, ENDCASE, ENDOF.
 
-OR
-                  ( x1 x2 -- x3 )
+OR                ( x1 x2 -- x3 )
                   x3 is the bit-by-bit inclusive-or of x1 with x2.
 
-OVER
-                  ( x1 x2 -- x1 x2 x1 )
+OVER              ( x1 x2 -- x1 x2 x1 )
                   Place a copy of x1 on top of the stack.
 
-PAD
-                  ( -- c-addr )
+PAD               ( -- c-addr )
                   c-addr is the address of a transient region that can be used to hold
                   data for intermediate processing.
 
-PICK
-                  ( xu ... x1 x0 u -- xu ... x1 x0 xu )
+PICK              ( xu ... x1 x0 u -- xu ... x1 x0 xu )
                   Remove u.  Copy the xu to the top of the stack.  An ambiguous condition
                   exists if there are less than u+2 items on the stack before PICK is
                   executed.
 
-POSTPONE
+POSTPONE          NOT IMPLEMENTED
   Interpretation: Interpretation semantics for this word are undefined.
      Compilation: ( "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.  Find
                   name.  Append the compilation semantics of name to the current
                   definition.  An ambiguous condition exists if name is not found.
 
-QUIT
-                  ( -- )  ( R:  i*x -- )
+QUIT              ( -- )  ( R:  i*x -- ) NOT IMPLEMENTED
                   Empty the return stack, store zero in SOURCE-ID if it is present, make
                   the user input device the input source, and enter interpretation state.
                   Do not display a message.  Repeat the following:
@@ -776,7 +761,7 @@ R@                                "r-fetch"
                   Copy x from the return stack to the data stack.
              See: >R, R>.
 
-RECURSE
+RECURSE           NOT IMPLEMENTED
   Interpretation: Interpretation semantics for this word are undefined.
      Compilation: ( -- )
                   Append the execution semantics of the current definition to the current
@@ -794,18 +779,15 @@ REPEAT
                   Continue execution at the location given by dest.
         See: BEGIN, WHILE.
 
-ROLL
-                  ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
+ROLL              ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
                   Remove u.  Rotate u+1 items on the top of the stack.  An ambiguous
                   condition exists if there are less than u+2 items on the stack before
                   ROLL is executed.
 
-ROT                                 "rote"
-                  ( x1 x2 x3 -- x2 x3 x1 )
+ROT               ( x1 x2 x3 -- x2 x3 x1 )
                   Rotate the top three stack entries.
 
-RSHIFT                             "r-shift"
-                  ( x1 u -- x2 )
+RSHIFT            ( x1 u -- x2 ) NOT IMPLEMENTED
                   Perform a logical right shift of u bit-places on x1, giving x2.  Put
                   zeroes into the most significant bits vacated by the shift.  An
                   ambiguous condition exists if u is greater than or equal to the number
@@ -821,27 +803,22 @@ S"                                 "s-quote"
                   ccc.  A program shall not alter the returned string.
              See: C".
 
-SIGN
-                  ( n -- )
+SIGN              ( n -- )
                   If n is negative, add a minus sign to the beginning of the pictured
                   numeric output string.  An ambiguous condition exists if SIGN executes
                   outside of a <# #> delimited number conversion.
 
-SOURCE
-                  ( -- c-addr u )
+SOURCE            ( -- c-addr u )
                   c-addr is the address of, and u is the number of characters in, the
                   input buffer.
 
-SPACE
-                  ( -- )
+SPACE             ( -- )
                   Display one space.
 
-SPACES
-                  ( n -- )
+SPACES            ( n -- )
                   If n is greater than zero, display n spaces.
 
-STATE
-                  ( -- a-addr )
+STATE             ( -- a-addr )
                   a-addr is the address of a cell containing the compilation-state flag.
                   STATE is true when in compilation state, false otherwise.  The true
                   value in STATE is non-zero, but is otherwise implementation-defined.
@@ -850,8 +827,7 @@ STATE
                   bracket).
             Note: A program shall not directly alter the contents of STATE.
 
-SWAP
-                  ( x1 x2 -- x2 x1 )
+SWAP              ( x1 x2 -- x2 x1 )
                   Exchange the top two stack items.
 
 THEN
@@ -878,16 +854,13 @@ TO
                   is applied to TO.
              See: VALUE.
 
-TRUE
-                  ( -- true )
+TRUE              ( -- true )
                   Return a true flag, a single-cell value with all bits set.
 
-TUCK
-                  ( x1 x2 -- x2 x1 x2 )
+TUCK              ( x1 x2 -- x2 x1 x2 )
                   Copy the first (top) stack item below the second stack item.
 
-TYPE
-                  ( c-addr u -- )
+TYPE              ( c-addr u -- )
                   If u is greater than zero, display the character string specified by c-
                   addr and u.
                   When passed a character in a character string whose character-defining
@@ -916,8 +889,7 @@ UNTIL
                   by dest.
              See: BEGIN.
 
-VALUE
-                  ( x "<spaces>name" -- )
+VALUE             ( x "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.  Create
                   a definition for name with the execution semantics defined below, with
                   an initial value equal to x.
@@ -928,8 +900,7 @@ VALUE
                   x to be associated with name.
              See: TO.
 
-VARIABLE
-                  ( "<spaces>name" -- )
+VARIABLE          ( "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.  Create
                   a definition for name with the execution semantics defined below.
                   Reserve one cell of data space at an aligned address.
@@ -938,8 +909,7 @@ VARIABLE
                   a-addr is the address of the reserved cell.  A program is responsible or
                   initializing the contents of the reserved cell.
 
-WITHIN
-                  ( n1|u1 n2|u2 n3|u3 -- flag )
+WITHIN            ( n1|u1 n2|u2 n3|u3 -- flag )
                   Perform a comparison of a test value n1|u1 with a lower limit n2|u2 and
                   an upper limit n3|u3, returning true if either (n2|u2 < n3|u3 and (n2|u2
                   <= n1|u1 and n1|u1 < n3|u3)) or (n2|u2 > n3|u3 and (n2|u2 <= n1|u1 or
@@ -957,11 +927,10 @@ WHILE
                   If all bits of x are zero, continue execution at the location specified
                   by the resolution of orig.
 
-XOR                               "x-or"
-                  ( x1 x2 -- x3 )
+XOR               ( x1 x2 -- x3 )
                   x3 is the bit-by-bit exclusive-or of x1 with x2.
 
-[                               "left-bracket"
+[                           "left-bracket"
   Interpretation: Interpretation semantics for this word are undefined.
      Compilation: Perform the execution semantics given below.
        Execution: ( -- )
@@ -990,7 +959,7 @@ XOR                               "x-or"
                   Place char, the value of the first character of name, on the stack.
              See: CHAR.
 
-[COMPILE]                     "bracket-compile"
+[COMPILE]                   "bracket-compile"
   Interpretation: Interpretation semantics for this word are undefined.
      Compilation: ( "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.  Find
@@ -998,13 +967,13 @@ XOR                               "x-or"
                   to the current definition; otherwise append the execution semantics of
                   name.  An ambiguous condition exists if name is not found.
 
-\                               "backslash"
+\                           "backslash"
      Compilation: Perform the execution semantics given below.
        Execution: ( "ccc<eol>"-- )
                   Parse and discard the remainder of the parse area.
                   \ is an immediate word.
 
-]                          "right-bracket"
+]                           "right-bracket"
                   ( -- )
                   Enter compilation state.
              See: [.
@@ -1052,6 +1021,14 @@ SEED              ( x -- )
                   Initialize the random number generator.
              See: RANDOM.
 
+.DATE             ( day# month# year# -- )
+                  Display the date in ISO 8601 format without the time.
+             See: .TIME, .NOW.
+
+.TIME             ( sec# min# hrs# -- )
+                  Display the time in ISO 8601 format without the date.
+             See: .DATE, .NOW.
+
 NOW               ( -- sec# min# hrs# day# month# year# )
                   Return the broken down current time.
              See: .NOW.
@@ -1072,6 +1049,14 @@ NOW               ( -- sec# min# hrs# day# month# year# )
                   Floating stack space:   4096 floats
                   PRECISION:             6
                   maximum number of open files:     16
+
+SEE               ( "<spaces>name" -- )
+                  Display a human-readable representation of the named word's definition.
+                  The source of the representation (object-code decompilation, source
+                  block, etc.) and the particular form of the display is implementation
+                  defined.
+                  SEE may be implemented using pictured numeric output words.
+                  Consequently, its use may corrupt the transient region identified by #>.
 
 DUMP              ( addr n -- )
                   Display n bytes starting at address addr in hex and ASCII format.
