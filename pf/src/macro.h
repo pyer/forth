@@ -111,20 +111,9 @@
 #define P4_DVAL( NM, VAL)       { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 #define P4_DVAR( NM, VAL)       { "w\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 
-/* options section */
-#define THREADS_SHIFT 5
-#define THREADS (1<<THREADS_SHIFT)
-
-#ifndef P4_THREADS_SHIFT /* 2^n number of threads in a word list */
-#define P4_THREADS_SHIFT 5
-#endif
-
 #ifndef P4_MAX_FILES /* maximum number of open files */
 #define P4_MAX_FILES 0x10
 #endif
-
-/* some constants needed here, they are dependent of options */
-#define P4_THREADS (1<<P4_THREADS_SHIFT)
 
 /*
  *         here are the macros that are used to build the various
