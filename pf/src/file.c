@@ -40,7 +40,7 @@
 #include "interpret.h"
 #include "terminal.h"
 
-# define PFE_DIR_DELIMITER	'/'
+# define PFE_DIR_DELIMITER '/'
 
 #define CHECKFILE " (did some FILE-OPEN fail?)"
 
@@ -55,9 +55,9 @@ enum
 /* ================================================================= */
 
 long
-p4_file_size (FILE * f)		/* Result: file length, -1 on error */
+p4_file_size (FILE * f)  /* Result: file length, -1 on error */
 {
-    struct stat st;		/* version using fstat() */
+    struct stat st;  /* version using fstat() */
     int fh = fileno (f);
     if (fh < 0 || fstat (fh, &st) < 0)
         return -1;
@@ -65,7 +65,7 @@ p4_file_size (FILE * f)		/* Result: file length, -1 on error */
 }
 
 static long
-file_size (const char *fn)		/* Result: file length, -1 on error */
+file_size (const char *fn)  /* Result: file length, -1 on error */
 {
     struct stat st;
 
@@ -201,28 +201,28 @@ char* pf_store_filename (const char* str, int n)
     *dst = '\0';
     if (n && max > n && *src == PFE_HOMEDIR_CHAR)
     {
-	s = d = 1;
-	while (s < n && d < max && src[s] && src[s] != PFE_DIR_DELIMITER)
-	{ dst[d++] = src[s++]; }
-	dst[d] = '\0';
+ s = d = 1;
+ while (s < n && d < max && src[s] && src[s] != PFE_DIR_DELIMITER)
+ { dst[d++] = src[s++]; }
+ dst[d] = '\0';
 
-	if (s == 1)
-	{
-	    p = getenv("HOME");
-	    if (p && max > strlen(p)) { strcpy (dst, p); }
-	    /* else *dst = '\0'; */
-	}
-	*dst = PFE_DIR_DELIMITER; /* /user/restofpath */
+ if (s == 1)
+ {
+     p = getenv("HOME");
+     if (p && max > strlen(p)) { strcpy (dst, p); }
+     /* else *dst = '\0'; */
+ }
+ *dst = PFE_DIR_DELIMITER; /* /user/restofpath */
     }
     d = strlen (dst);
 
     while (d < max && s < n && src[s])
     {
-	if (src[s] != PFE_ANTI_DELIMITER)
-	    dst[d++] = src[s];
-	else
-	    dst[d++] = PFE_DIR_DELIMITER;
-	s++;
+ if (src[s] != PFE_ANTI_DELIMITER)
+     dst[d++] = src[s];
+ else
+     dst[d++] = PFE_DIR_DELIMITER;
+ s++;
     }
     dst[d] = '\0';
     return dst;
@@ -246,10 +246,10 @@ int p4_file_access (const p4char *fn, int len)
     return 0;
 }
 
-static char open_mode[][4] =	/* mode strings for fopen() */
+static char open_mode[][4] = /* mode strings for fopen() */
 {
-    "r", "r+", "r+",		/* R/O W/O R/W */
-    "rb", "r+b", "r+b",		/* after application of BIN */
+    "r", "r+", "r+",     /* R/O W/O R/W */
+    "rb", "r+b", "r+b",  /* after application of BIN */
 };
 
 /**
@@ -410,7 +410,7 @@ FCode (p4_close_file)
 FCode (p4_create_file)
 {
     register p4char *fn = (p4char *) SP[2]; /* c-addr, name */
-    register p4ucell u = SP[1];	                  /* length of name */
+    register p4ucell u = SP[1];                   /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
     FILE *fid = p4_create_file (fn, u, fam);
     
@@ -425,7 +425,7 @@ FCode (p4_create_file)
 FCode (p4_delete_file)
 {
     register char* filename = 
-	pf_store_filename ((char*)SP[1], SP[0]) ; /* as asciiz */
+ pf_store_filename ((char*)SP[1], SP[0]) ; /* as asciiz */
     SP += 1;
     SP[0] = remove (filename) ? errno : 0;
 }
@@ -436,23 +436,23 @@ FCode (p4_delete_file)
  */
 FCode (p4_file_position)
 {
-    register FILE *fid = (FILE *) SP[0];	/* file-id */
+    register FILE *fid = (FILE *) SP[0]; /* file-id */
     register long pos;
 
     SP -= 2;
     pos = ftell (fid);
     if (pos != -1)
     {
-	SP[2] = (p4ucell)(pos);
-	if (sizeof (*SP) >= sizeof(pos)) /* compile-time decision !*/
-	    SP[1] = 0;
-	else                            /* assume: 1x or 2x sizeof(*SP) */
-	    SP[1] = (p4ucell)(pos >> 8*(sizeof(pos)-sizeof(*SP)));
-        SP[0] = 0;		/* ior */
+ SP[2] = (p4ucell)(pos);
+ if (sizeof (*SP) >= sizeof(pos)) /* compile-time decision !*/
+     SP[1] = 0;
+ else                            /* assume: 1x or 2x sizeof(*SP) */
+     SP[1] = (p4ucell)(pos >> 8*(sizeof(pos)-sizeof(*SP)));
+        SP[0] = 0;  /* ior */
     }else{
-	SP[2] = (p4ucell)-1;      /* set to -1 */
-	SP[1] = (p4ucell)-1;
-        SP[0] = errno;	/* ior */
+ SP[2] = (p4ucell)-1;      /* set to -1 */
+ SP[1] = (p4ucell)-1;
+        SP[0] = errno; /* ior */
     }
 }
 
@@ -462,23 +462,23 @@ FCode (p4_file_position)
  */
 FCode (p4_file_size)
 {
-    FILE *fid = (FILE *) SP[0];	/* fileid */
+    FILE *fid = (FILE *) SP[0]; /* fileid */
     long size;
 
     size = p4_file_size (fid);
     SP -= 2;
     if (size != -1)
     {
-	SP[2] = (p4ucell)(size);
-	if (sizeof (*SP) >= sizeof(size)) /* compile-time decision !*/
-	    SP[1] = 0;
-	else                            /* assume: 1x or 2x sizeof(*SP) */
-	    SP[1] = (p4ucell)(size >> 8*(sizeof(size)-sizeof(*SP)));
-        SP[0] = 0;		/* ior */
+ SP[2] = (p4ucell)(size);
+ if (sizeof (*SP) >= sizeof(size)) /* compile-time decision !*/
+     SP[1] = 0;
+ else                            /* assume: 1x or 2x sizeof(*SP) */
+     SP[1] = (p4ucell)(size >> 8*(sizeof(size)-sizeof(*SP)));
+        SP[0] = 0;  /* ior */
     }else{
-	SP[2] = (p4ucell)-1;      /* set to -1 */
-	SP[1] = (p4ucell)-1;
-        SP[0] = errno;	/* ior */
+ SP[2] = (p4ucell)-1;      /* set to -1 */
+ SP[1] = (p4ucell)-1;
+        SP[0] = errno; /* ior */
     }
 }
 
@@ -491,7 +491,7 @@ FCode (p4_file_size)
 FCode (p4_open_file)
 {
     register p4char *fn = (p4char *) SP[2]; /* c-addr, name */
-    register p4ucell u = SP[1];	                  /* length of name */
+    register p4ucell u = SP[1];                   /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
     register FILE *fid = p4_open_file (fn, u, fam);
 
@@ -545,12 +545,12 @@ FCode (p4_reposition_file)
     register long pos;
     if (sizeof (*SP) >= sizeof(pos))  /* compile-time decision !*/
     {
-	pos = SP[2];
+ pos = SP[2];
     } else
     {
-	pos = (p4ucell) SP[1];
-	pos <<= 8*(sizeof(pos)-sizeof(*SP)); /* assume: 1x or 2x sizeof(*SP) */
-	pos |=  (p4ucell)(SP[2]);
+ pos = (p4ucell) SP[1];
+ pos <<= 8*(sizeof(pos)-sizeof(*SP)); /* assume: 1x or 2x sizeof(*SP) */
+ pos |=  (p4ucell)(SP[2]);
     }
 
     SP += 2;
@@ -566,12 +566,12 @@ FCode (p4_resize_file)
     register long size;
     if (sizeof (*SP) >= sizeof(size))  /* compile-time decision !*/
     {
-	size = SP[2];
+ size = SP[2];
     } else
     {
-	size = (p4ucell) SP[1];
-	size <<= 8*(sizeof(size)-sizeof(*SP)); /* assume: 1x or 2x size(*SP) */
-	size |=  (p4ucell)(SP[2]);
+ size = (p4ucell) SP[1];
+ size <<= 8*(sizeof(size)-sizeof(*SP)); /* assume: 1x or 2x size(*SP) */
+ size |=  (p4ucell)(SP[2]);
     }
 
     SP += 2;
@@ -640,9 +640,9 @@ FCode (p4_flush_file)
     register FILE *fid = (FILE *) SP[0];
 
     if (fflush (fid))
-	SP[0] = errno;
+ SP[0] = errno;
     else
-	SP[0] = 0;
+ SP[0] = 0;
 }
 
 /** RENAME-FILE ( oldname-ptr oldname-len newname-ptr newname-len -- newname-errno# ) [ANS]
@@ -790,33 +790,33 @@ FCode (pf_errno)
  */
 P4_LISTWORDS (file) =
 {
-    P4_FXco ("BIN",		 p4_bin),
-    P4_FXco ("CLOSE-FILE",	 p4_close_file),
-    P4_FXco ("CREATE-FILE",	 p4_create_file),
-    P4_FXco ("DELETE-FILE",	 p4_delete_file),
-    P4_FXco ("FILE-POSITION",	 p4_file_position),
-    P4_FXco ("FILE-SIZE",	 p4_file_size),
-    P4_FXco ("OPEN-FILE",	 p4_open_file),
-    P4_OCON ("R/O",		 FMODE_RO),
-    P4_OCON ("R/W",		 FMODE_RW),
-    P4_FXco ("READ-FILE",	 p4_read_file),
-    P4_FXco ("READ-LINE",	 p4_read_line),
-    P4_FXco ("REPOSITION-FILE",	 p4_reposition_file),
-    P4_FXco ("RESIZE-FILE",	 p4_resize_file),
-    P4_OCON ("W/O",		 FMODE_WO),
-    P4_FXco ("WRITE-FILE",	 p4_write_file),
-    P4_FXco ("WRITE-LINE",	 p4_write_line),
-    P4_FXco ("FILE-STATUS",	 p4_file_status),
-    P4_FXco ("FLUSH-FILE",	 p4_flush_file),
-//    P4_FXco ("RENAME-FILE",	 p4_rename_file),
+    P4_FXco ("BIN",           p4_bin),
+    P4_FXco ("CLOSE-FILE",    p4_close_file),
+    P4_FXco ("CREATE-FILE",   p4_create_file),
+    P4_FXco ("DELETE-FILE",   p4_delete_file),
+    P4_FXco ("FILE-POSITION", p4_file_position),
+    P4_FXco ("FILE-SIZE",     p4_file_size),
+    P4_FXco ("OPEN-FILE",     p4_open_file),
+    P4_OCON ("R/O",   FMODE_RO),
+    P4_OCON ("R/W",   FMODE_RW),
+    P4_FXco ("READ-FILE",     p4_read_file),
+    P4_FXco ("READ-LINE",     p4_read_line),
+    P4_FXco ("REPOSITION-FILE", p4_reposition_file),
+    P4_FXco ("RESIZE-FILE",   p4_resize_file),
+    P4_OCON ("W/O",   FMODE_WO),
+    P4_FXco ("WRITE-FILE",    p4_write_file),
+    P4_FXco ("WRITE-LINE",    p4_write_line),
+    P4_FXco ("FILE-STATUS",   p4_file_status),
+    P4_FXco ("FLUSH-FILE",    p4_flush_file),
+//    P4_FXco ("RENAME-FILE",  p4_rename_file),
 //  my file wordset
-    P4_FXco ("FOPEN",		 pf_fopen),
-    P4_FXco ("FGETC",		 pf_fgetc),
-    P4_FXco ("FGETS",		 pf_fgets),
-    P4_FXco ("FPUTC",		 pf_fputc),
-    P4_FXco ("FPUTS",		 pf_fputs),
-    P4_FXco ("FCLOSE",		 pf_fclose),
-    P4_FXco ("ERRNO",		 pf_errno),
+    P4_FXco ("FOPEN",   pf_fopen),
+    P4_FXco ("FGETC",   pf_fgetc),
+    P4_FXco ("FGETS",   pf_fgets),
+    P4_FXco ("FPUTC",   pf_fputc),
+    P4_FXco ("FPUTS",   pf_fputs),
+    P4_FXco ("FCLOSE",  pf_fclose),
+    P4_FXco ("ERRNO",   pf_errno),
 };
 P4_COUNTWORDS (file, "File-access + extensions");
 
