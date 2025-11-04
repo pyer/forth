@@ -635,6 +635,9 @@ KEY               ( -- char )
                   receive control characters have an environmental dependency.
              See: KEY?.
 
+LATEST            ( -- nfa )
+                  NFA of the last created name.
+
 LEAVE
   Interpretation: Interpretation semantics for this word are undefined.
        Execution: ( -- )  ( R: loop-sys -- )
