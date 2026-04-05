@@ -1,13 +1,18 @@
 \ PF unit tests
 
-CR ." Running Pier's Forth tests" CR
+CR ." Running Pyer's Forth tests" CR
 
 : check ( flag -- )
    ( depth @ 1 = and )
    if ." ok" else ." FAILED" then
    cr ;
 
+: check_?dup ( -- flag )
+  1 ?dup 1 = swap 1 = and
+  0 ?dup 0 = and ;
+
 ." Core words" CR
+." check stack      " depth 0= check
 ." check 0          " 0 0= check
 ." check 1          " 1 1- 0= check
 ." check 2          " 2 1- 1 = check
@@ -37,8 +42,8 @@ false tmp !
 ." chech =          "  0 0 =  check
 ." chech <>         "  1 0 <> check
 ." chech >          "  1 0 >  check
-." chech >R         "  0 check
-." chech ?DUP       "  0 check
+." chech >R         "  0  check
+." chech ?DUP       " check_?dup check
 false tmp !
 ." check @          " true tmp ! tmp @ check
 ." chech ABS        " -1 abs 1 = check
@@ -68,3 +73,5 @@ false tmp !
 ." check ROT        " 3 2 1 rot 3 = tmp ! drop drop tmp @ check
 ." check SWAP       " 0 1 swap 0= swap drop check
 ." check XOR        " 0x55 0xAA xor 0xFF = check
+." check stack      " depth 0= check
+bye
