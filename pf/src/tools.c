@@ -130,6 +130,7 @@ FCode (pf_dot_s)
 #endif
 }
 
+/* ----------------------------------------------------------------------- */
 /** .STATUS ( -- ) [FTH]
  * display internal variables and memory status
  */
@@ -146,7 +147,28 @@ FCode (pf_dot_status)
     FX (pf_cr);
 }
 
-/************************************************************************/
+/* ----------------------------------------------------------------------- */
+#define MAKETIME __TIME__
+#define MAKEDATE __DATE__
+
+const char* pf_version_string(void)
+{
+    return
+        "\nPyer's Forth "PF_VERSION
+        "\n(" MAKEDATE " " MAKETIME ")"
+        "\n";
+}
+
+/** .VERSION ( -- )
+ * show the version of the current PF system
+ : .VERSION [ ENVIRONMENT ] FORTH-NAME TYPE FORTH-VERSION TYPE ;
+ */
+FCode (pf_dot_version)
+{
+    pf_outs (pf_version_string ());
+}
+
+/* ----------------------------------------------------------------------- */
 void pf_dot_name (const p4char *nfa)
 {
     if (nfa && (P4_NAMEFLAGS(nfa) & 0x80)) {
@@ -233,7 +255,7 @@ void pf_decompile_rest (p4char* nfa, p4xt *ip)
     }
 }
 
-/************************************************************************/
+/* ----------------------------------------------------------------------- */
 /** SEE ( "word" -- )
  *  decompile word - tries to show it in re-compilable form.
  *
@@ -299,7 +321,7 @@ FCode (pf_see)
 //            pf_outs ("RUNTIME ");
 }
 
-/************************************************************************/
+/* ----------------------------------------------------------------------- */
 /** MAN ( "word" -- )
  *  show the reference manual of word.
  */
@@ -327,7 +349,7 @@ FCode (pf_man)
     }
 }
 
-/************************************************************************/
+/* ----------------------------------------------------------------------- */
 /** DUMP ( addr len -- )
  * show a hex-dump of the given area, if it's more than a screenful
  * it will ask using => ?CR
@@ -404,6 +426,7 @@ P4_LISTWORDS (tools) =
 {
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
+    P4_FXco (".VERSION",     pf_dot_version),
     P4_FXco ("SEE",          pf_see),
     P4_FXco ("MAN",          pf_man),
     P4_FXco ("DUMP",         pf_dump),

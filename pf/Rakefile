@@ -5,12 +5,17 @@
 #
 require 'rake/clean'
 
+desc "Install pf"
 task :default => [:x86]
+
+desc "Install pf and man page"
+task :all => [:x86, :man]
 
 task :help do
   puts "before compiling ARM architecture, set up environment: source /usr/local/angstrom/arm/environment-setup"
 end
 
+desc "Install man page"
 task :man do
   sh "sudo install -m 644 doc/pf.txt /usr/share/man/pf.txt"
   sh "sudo install -m 644 doc/pf.1   /usr/share/man/man1/pf.1"
@@ -33,8 +38,10 @@ task :x86 do
   sh "sudo install -m 755 lib/pf.4th  /usr/lib/pf.4th"
 end
 
+desc "Run tests"
 task :test do
   sh "pf -f test/see.4th"
+  sh "pf -f test/test.4th"
 end
 
 task :install => ['pf'] do
@@ -46,8 +53,8 @@ CLEAN.include('pf')
 
 directory 'target'
 
-file 'pf' => ['target','target/main.o','target/compiler.o','target/core.o','target/exception.o','target/facility.o','target/interpret.o','target/file.o','target/floating.o','target/history.o','target/terminal.o','target/shell.o','target/signals.o','target/tools.o','target/version.o' ] do
-  sh "gcc -D#{ARCH} -g -Wall -Wstrict-prototypes -fcommon -funsigned-char -fPIC -rdynamic -o pf target/main.o target/compiler.o target/core.o target/exception.o target/facility.o target/interpret.o target/file.o target/floating.o target/history.o target/terminal.o target/shell.o target/signals.o target/tools.o target/version.o -lm"
+file 'pf' => ['target','target/main.o','target/compiler.o','target/core.o','target/exception.o','target/facility.o','target/interpret.o','target/file.o','target/floating.o','target/history.o','target/terminal.o','target/shell.o','target/signals.o','target/tools.o' ] do
+  sh "gcc -D#{ARCH} -g -Wall -Wstrict-prototypes -fcommon -funsigned-char -fPIC -rdynamic -o pf target/main.o target/compiler.o target/core.o target/exception.o target/facility.o target/interpret.o target/file.o target/floating.o target/history.o target/terminal.o target/shell.o target/signals.o target/tools.o -lm"
 end
 
 rule /target\/.*\.o/ => proc {|t| t.pathmap('src/%n.c')} do |t|
