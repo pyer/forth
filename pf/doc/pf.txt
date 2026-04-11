@@ -843,20 +843,6 @@ THEN
                   Continue execution.
              See: ELSE, IF.
 
-TO
-  Interpretation: ( x "<spaces>name" -- )
-                  Skip leading spaces and parse name delimited by a space.  Store x in
-                  name.  An ambiguous condition exists if name was not defined by VALUE.
-     Compilation: ( "<spaces>name" -- )
-                  Skip leading spaces and parse name delimited by a space.  Append the
-                  run-time semantics given below to the current definition.  An ambiguous
-                  condition exists if name was not defined by VALUE.
-        Run-time: ( x -- )
-                  Store x in name.
-            Note: An ambiguous condition exists if either POSTPONE or [COMPILE]
-                  is applied to TO.
-             See: VALUE.
-
 TRUE              ( -- true )
                   Return a true flag, a single-cell value with all bits set.
 
@@ -891,17 +877,6 @@ UNTIL
                   If all bits of x are zero, continue execution at the location specified
                   by dest.
              See: BEGIN.
-
-VALUE             ( x "<spaces>name" -- )
-                  Skip leading space delimiters.  Parse name delimited by a space.  Create
-                  a definition for name with the execution semantics defined below, with
-                  an initial value equal to x.
-                  name is referred to as a "value".
-  name Execution: ( -- x )
-                  Place x on the stack.  The value of x is that given when name was
-                  created, until the phrase x TO name is executed, causing a new value of
-                  x to be associated with name.
-             See: TO.
 
 VARIABLE          ( "<spaces>name" -- )
                   Skip leading space delimiters.  Parse name delimited by a space.  Create

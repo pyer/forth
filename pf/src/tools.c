@@ -295,9 +295,6 @@ FCode (pf_see)
     } else if (*xt == P4CODE(pf_constant_RT)) {
         pf_outf("%d CONSTANT ", (p4cell)*rest);
         pf_dot_name (nfa);
-    } else if (*xt == P4CODE(pf_value_RT)) {
-        pf_outs("VALUE ");
-        pf_dot_name (nfa);
     } else if (*xt == P4CODE(pf_variable_RT)) {
         pf_outs("VARIABLE ");
         pf_dot_name (nfa);

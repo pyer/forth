@@ -497,7 +497,7 @@ FCode (pf_aligned)
 
 /** ALLOT ( allot-count -- ) [ANS]
  * make room in the dictionary - usually called after
- * a => CREATE word like => VARIABLE or => VALUE
+ * a => CREATE word like => VARIABLE
  * to make for an array of variables. Does not
  * initialize the space allocated from the dictionary-heap.
  * The count is in bytes - use => CELLS ALLOT to allocate
@@ -519,11 +519,7 @@ FCode_RT (pf_constant_RT)
 /** CONSTANT ( value 'name' -- ) [ANS] [DOES: -- value ]
  * => CREATE a new word with runtime => ((CONSTANT))
  * so that the value placed here is returned everytime
- * the constant's name is used in code. See => VALUE
- * for constant-like names that are expected to change
- * during execution of the program. In a ROM-able
- * forth the CONSTANT-value may get into a shared
- * ROM-area and is never copied to a RAM-address.
+ * the constant's name is used in code.
  */
 FCode (pf_constant)
 {
@@ -533,54 +529,6 @@ FCode (pf_constant)
     FX_VCOMMA (*SP++);
 }
 P4RUNTIME1(pf_constant, pf_constant_RT);
-
-/** "((VALUE))" ( -- value ) [HIDDEN]
- * runtime compiled by => VALUE
- */
-FCode_RT (pf_value_RT)
-{
-    *--SP = (p4cell) WP_PFA[0];
-}
-
-/** VALUE ( value 'name' -- ) [HIDDEN] [DOES: -- value ]
- * => CREATE a word and initialize it with value. Using it
- * later will push the value back onto the stack. Compare with
- * => VARIABLE and => CONSTANT - look also for => LOCALS| and
- * => VAR
- */
-FCode (pf_value)
-{
-    p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    FX_RUNTIME1 (pf_value);
-    FX_VCOMMA (*SP++);
-}
-P4RUNTIME1(pf_value, pf_value_RT);
-
-/** "((TO))" ( value -- ) [HIDDEN]
- * execution compiled by => TO
- */
-FCode_XE (pf_to_execution)
-{
-    *cfa_to_body ((p4xt)(*IP++)) = *SP++;
-}
-
-/** TO ( value 'name' -- ) [ANS]
- * set the parameter field of name to the value, this is used
- * to change the value of a => VALUE and it can be also used
- * to change the value of => LOCALS|
- */
-FCode (pf_to)
-{
-    // "TO" is always STATESMART
-    if (STATE) {
-        FX_COMPILE(pf_to);
-    } else {
-        p4xt xt = pf_tick_cfa();
-        *cfa_to_body(xt) = *SP++;
-    }
-}
-P4COMPILE (pf_to, pf_to_execution, P4_SKIPS_TO_TOKEN);
 
 /** "((VAR))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => VARIABLE
@@ -1167,8 +1115,6 @@ P4_LISTWORDS (compiler) =
     P4_FXco ("ALIGNED",      pf_aligned),
     P4_FXco ("ALLOT",        pf_allot),
     P4_RTco ("CONSTANT",     pf_constant),
-    P4_RTco ("VALUE",        pf_value),
-    P4_SXco ("TO",           pf_to),
     P4_RTco ("VARIABLE",     pf_variable),
 
     P4_SXco ("LITERAL",      pf_literal),

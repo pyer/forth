@@ -832,7 +832,7 @@ FCode_RT (pf_dictvar_RT)
 }
 
 /**
- * (DICTGET) forth-thread constget runtime, => VALUE like
+ * (DICTGET) forth-thread constget runtime, => CONSTANT like
  */
 FCode_RT (pf_dictget_RT)
 {
@@ -917,7 +917,6 @@ void pf_load_words (const p4Words* ws)
         ((*(p4cell **)&(SP))++);
         break;
     case p4_DCON:
-    case p4_DVAL:
         p4_header_in();
         P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
         FX_XCOMMA(pf_dictget_RT_); /* a simply comma */
@@ -933,9 +932,6 @@ void pf_load_words (const p4Words* ws)
         *--SP = (p4cell)(w->ptr);
         FX (pf_constant);
         break;
-    case p4_OVAL:
-        *--SP = (p4cell)(w->ptr);
-        FX (pf_value);
         break;
     case p4_OVAR:
         *--SP = (p4cell)(w->ptr);

@@ -46,10 +46,6 @@
 /* ------------------------------------------------------------------ */
 #define P4_DFALIGNED(P)	(((size_t)(P) & (SIZEOF_FCELL - 1)) == 0)
 /* ------------------------------------------------------------------ */
-FCode (pf_set_precision)
-{
-    PRECISION = *SP++;
-}
 
 /**
  * return double float-aligned address
@@ -442,8 +438,7 @@ FCode (p4_f_tanh)	{ *FP = tanh (*FP); }
 
 P4_LISTWORDS (floating) =
 {
-    P4_DVAL ("PRECISION",	 precision),
-    P4_FXco ("SET-PRECISION",	 pf_set_precision),
+    P4_DVAR ("PRECISION",	 precision),
     P4_FXco ("FALIGN",		 p4_d_f_align),
     P4_FXco ("FALIGNED",	 p4_d_f_aligned),
     P4_FXco (">FLOAT",		 pf_to_float),

@@ -84,11 +84,9 @@
 #define p4_RTCO 'r'     /* RT */ /* creates a word with special runtime */
  
 #define p4_OCON 'c'     /* OC */ /* ordinary constant */
-#define p4_OVAL 'l'     /* OL */ /* ordinary value */
 #define p4_OVAR 'v'     /* OV */ /* ordinary variable */
 
 #define p4_DCON 'd'     /* DV */ /* dict constant (threaded) */
-#define p4_DVAL 'm'     /* DV */ /* dict value (idem constant) */
 #define p4_DVAR 'w'     /* DV */ /* dict variable (threaded) */
 
 /* return the byte offset of a given component to beginning of structure: */
@@ -108,7 +106,6 @@
 #define P4_OCON( NM, VAL)       { "c\237"NM, (p4code)(VAL) }
 
 #define P4_DCON( NM, VAL)       { "d\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
-#define P4_DVAL( NM, VAL)       { "m\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 #define P4_DVAR( NM, VAL)       { "w\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 
 #ifndef P4_MAX_FILES /* maximum number of open files */

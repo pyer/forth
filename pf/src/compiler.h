@@ -106,19 +106,16 @@ FCode  (pf_colon);
 
 FCode_XE (pf_semicolon_execution);
 FCode_XE (pf_does_execution);
+FCode_XE (pf_literal_execution);
 
 FCode_RT (pf_constant_RT);
 FCode  (pf_constant);
-FCode_RT (pf_value_RT);
-FCode  (pf_value);
 FCode_RT (pf_variable_RT);
 FCode  (pf_variable);
 
-FCode_XE (pf_literal_execution);
-
   #if defined PF_WITH_FLOATING
-    FCode_RT (p4_f_variable_RT);
     FCode_RT (p4_f_constant_RT);
+    FCode_RT (p4_f_variable_RT);
   #endif
 
 #endif
