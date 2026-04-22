@@ -18,9 +18,6 @@ see WORD2
 42 constant LEVEL
 see LEVEL
 
-69 value VAL
-see VAL
-
 variable VAR
 see VAR
 

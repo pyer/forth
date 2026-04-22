@@ -722,10 +722,10 @@ P4_LISTWORDS (core) =
 {
 //    P4_INTO ("FORTH", 0),
     /** quick constants - implemented as code */
-    P4_OCON ("0",		0),
-    P4_OCON ("1",		1),
-    P4_OCON ("2",		2),
-    P4_OCON ("3",		3),
+    P4_CONSTANT ("0",		0),
+    P4_CONSTANT ("1",		1),
+    P4_CONSTANT ("2",		2),
+    P4_CONSTANT ("3",		3),
     /* core words */
     P4_FXco ("!",            p4_store),
     P4_FXco ("*",            p4_star),
@@ -783,8 +783,8 @@ P4_LISTWORDS (core) =
     /* core extension words */
     P4_FXco ("BLANK",        p4_blank),
     P4_FXco ("ERASE",        p4_erase),
-    P4_OCON ("FALSE",        P4_FALSE),
-    P4_OCON ("TRUE",         P4_TRUE),
+    P4_CONSTANT ("FALSE",    P4_FALSE),
+    P4_CONSTANT ("TRUE",     P4_TRUE),
     P4_FXco ("NIP",          p4_nip),
     P4_FXco ("TUCK",         p4_tuck),
     P4_FXco ("WITHIN",       p4_within),

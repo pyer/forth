@@ -90,7 +90,7 @@ void pf_Q_pairs (p4cell n)
 
 FCode (pf_Q_pairs)
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     pf_Q_pairs (*SP++);
 }
 
@@ -123,7 +123,7 @@ FCode (pf_Q_stack)
  */
 FCode (pf_to_r)
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     FX_COMPILE (pf_to_r);
 }
 
@@ -147,7 +147,7 @@ P4COMPILE (pf_to_r, pf_to_r_execution, P4_SKIPS_NOTHING);
  */
 FCode (pf_r_from)
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     FX_COMPILE (pf_r_from);
 }
 
@@ -166,7 +166,7 @@ P4COMPILE (pf_r_from, pf_r_from_execution, P4_SKIPS_NOTHING);
  */
 FCode (pf_r_fetch)
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     FX_COMPILE (pf_r_fetch);
 }
 FCode_XE (pf_r_fetch_execution)
@@ -185,7 +185,7 @@ P4COMPILE (pf_r_fetch, pf_r_fetch_execution, P4_SKIPS_NOTHING);
  */
 FCode (pf_backward_mark)	
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     *--SP = (p4cell) DP;
 }
 
@@ -199,7 +199,7 @@ FCode (pf_backward_mark)
  */
 FCode (pf_backward_resolve)		
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     FX_QCOMMA (*SP++);
 }
 
@@ -214,7 +214,7 @@ FCode (pf_backward_resolve)
  */
 FCode (pf_forward_mark)	
 {
-    FX (pf_backward_mark);
+    pf_backward_mark_();
     FX_QCOMMA(0);
 }
 
@@ -226,7 +226,7 @@ FCode (pf_forward_mark)
  */
 FCode (pf_forward_resolve)
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     *(p4char **) *SP++ = DP;
 }
 
@@ -327,7 +327,7 @@ FCode_XE (pf_does_execution)
     xt = name_to_cfa (LATEST);
     *xt = pf_does_RT_;
     *P4_TO_DOES_CODE(xt) = IP; /* into CFA[1] */
-    FX (pf_semicolon_execution);   /* double-EXIT */
+    pf_semicolon_execution_();   /* double-EXIT */
 }
 
 /** "DOES>" ( -- does* ) [ANS] [END] [NEW]
@@ -340,12 +340,12 @@ FCode_XE (pf_does_execution)
 FCode (pf_does)
 {
     if (STATE) {
-        FX (pf_Q_csp);
+        pf_Q_csp_();
         FX_COMPILE (pf_does);
     } else {
         /* NOTE: some details depend on pf_does_execution above */
         p4xt xt;
-        FX (pf_align);
+        pf_align_();
 
         xt = name_to_cfa (LATEST);
         *xt = pf_does_RT_;
@@ -387,7 +387,7 @@ FCode_RT (pf_colon_RT)
  */
 FCode (pf_colon)
 {
-    FX (pf_Q_exec);
+    pf_Q_exec_();
     p4_header_in();
     P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     P4_NAMEFLAGS(LATEST) |= P4xSMUDGED;
@@ -414,7 +414,7 @@ FCode_XE (pf_semicolon_execution)
  */
 FCode (pf_semicolon)
 {
-    FX (pf_Q_csp);
+    pf_Q_csp_();
     STATE = P4_FALSE;
     P4_NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
     FX_COMPILE (pf_semicolon);
@@ -591,7 +591,7 @@ P4COMPILE (pf_literal, pf_literal_execution, P4_SKIPS_CELL);
  */
 FCode (pf_left_bracket)
 {
-    FX (pf_Q_comp);
+    pf_Q_comp_();
     STATE = P4_FALSE;
 }
 
@@ -611,11 +611,11 @@ FCode (pf_right_bracket)
  */
 FCode (pf_bracket_tick)
 {
-    FX (pf_tick);
+    pf_tick_();
     if (STATE)
     {
         FX_COMPILE (pf_bracket_tick);
-        FX (pf_comma);
+        pf_comma_();
     }
 }
 P4COMPILE (pf_bracket_tick, pf_literal_execution, P4_SKIPS_NOTHING);
@@ -627,11 +627,11 @@ P4COMPILE (pf_bracket_tick, pf_literal_execution, P4_SKIPS_NOTHING);
  */
 FCode (pf_bracket_char)
 {
-    FX (pf_char);
+    pf_char_();
     if (STATE)
     {
         FX_COMPILE (pf_bracket_char);
-        FX (pf_comma);
+        pf_comma_();
     }
 }
 P4COMPILE (pf_bracket_char, pf_literal_execution, P4_SKIPS_CELL);
@@ -666,9 +666,9 @@ FCode (pf_compile_comma)
  */
 FCode (pf_bracket_compile)
 {
-    FX (pf_Q_comp);
-    FX (pf_tick);
-    FX (pf_compile_comma);
+    pf_Q_comp_();
+    pf_tick_();
+    pf_compile_comma_();
 }
 
 /* -------------------------------------------------------------- */
@@ -703,7 +703,7 @@ FCode_XE (pf_branch_execution)
 FCode (pf_if)
 {
     FX_COMPILE (pf_if);
-    FX (pf_forward_mark);
+    pf_forward_mark_();
     *--SP = (p4cell) P4_ORIG_MAGIC;
 }
 P4COMPILE (pf_if, pf_q_branch_execution, P4_SKIPS_OFFSET);
@@ -717,10 +717,10 @@ FCode (pf_else)
 {
     pf_Q_pairs (P4_ORIG_MAGIC);
     FX_COMPILE (pf_else);
-    FX (pf_forward_mark);
+    pf_forward_mark_();
     *--SP = (p4cell) P4_ORIG_MAGIC;
-    FX (p4_rot) ;
-    FX (pf_forward_resolve) ;
+    p4_rot_() ;
+    pf_forward_resolve_() ;
 }
 P4COMPILE (pf_else, pf_branch_execution, P4_SKIPS_OFFSET);
 
@@ -731,7 +731,7 @@ FCode (pf_then)
 {
     FX_COMPILE (pf_then);
     pf_Q_pairs (P4_ORIG_MAGIC);
-    FX (pf_forward_resolve);
+    pf_forward_resolve_();
 }
 P4COMPILE (pf_then, pf_noop, P4_SKIPS_NOTHING);
 
@@ -742,7 +742,7 @@ P4COMPILE (pf_then, pf_noop, P4_SKIPS_NOTHING);
 FCode (pf_begin)
 {
     FX_COMPILE (pf_begin);
-    FX (pf_backward_mark);
+    pf_backward_mark_();
     *--SP = P4_DEST_MAGIC;
 }
 P4COMPILE (pf_begin, pf_noop, P4_SKIPS_NOTHING);
@@ -754,7 +754,7 @@ FCode (pf_until)
 {
     pf_Q_pairs (P4_DEST_MAGIC);
     FX_COMPILE (pf_until);
-    FX (pf_backward_resolve);
+    pf_backward_resolve_();
 }
 P4COMPILE (pf_until, pf_q_branch_execution, P4_SKIPS_OFFSET);
 
@@ -784,9 +784,9 @@ FCode (pf_while)
     pf_Q_pairs (P4_DEST_MAGIC);
     *--SP = P4_DEST_MAGIC;
     FX_COMPILE (pf_while);
-    FX (pf_forward_mark);
+    pf_forward_mark_();
     *--SP = (p4cell) P4_ORIG_MAGIC;
-    FX (p4_two_swap);
+    p4_two_swap_();
 }
 P4COMPILE (pf_while, pf_q_branch_execution, P4_SKIPS_OFFSET);
 
@@ -797,9 +797,9 @@ FCode (pf_repeat)
 {
     pf_Q_pairs (P4_DEST_MAGIC);
     FX_COMPILE (pf_repeat);
-    FX (pf_backward_resolve);
+    pf_backward_resolve_();
     pf_Q_pairs (P4_ORIG_MAGIC);
-    FX (pf_forward_resolve);
+    pf_forward_resolve_();
 }
 P4COMPILE (pf_repeat, pf_branch_execution, P4_SKIPS_OFFSET);
 
@@ -811,7 +811,7 @@ FCode (pf_again)
 {
     pf_Q_pairs (P4_DEST_MAGIC);
     FX_COMPILE (pf_again);
-    FX (pf_backward_resolve);
+    pf_backward_resolve_();
 }
 P4COMPILE (pf_again, pf_branch_execution, P4_SKIPS_OFFSET);
 
@@ -844,7 +844,7 @@ FCode (pf_do_execution)
 FCode (pf_do)
 {
     FX_COMPILE (pf_do);
-    FX (pf_forward_mark);
+    pf_forward_mark_();
     *--SP = (p4cell) P4_LOOP_MAGIC;
 }
 P4COMPILE (pf_do, pf_do_execution, P4_SKIPS_OFFSET);
@@ -891,7 +891,7 @@ FCode (pf_loop)
 {
     pf_Q_pairs (P4_LOOP_MAGIC);
     FX_COMPILE (pf_loop);
-    FX (pf_forward_resolve);
+    pf_forward_resolve_();
 }
 P4COMPILE (pf_loop, pf_loop_execution, P4_SKIPS_OFFSET);
 
@@ -920,7 +920,7 @@ FCode (pf_plus_loop)
 {
     pf_Q_pairs (P4_LOOP_MAGIC);
     FX_COMPILE (pf_plus_loop);
-    FX (pf_forward_resolve);
+    pf_forward_resolve_();
 }
 P4COMPILE (pf_plus_loop, pf_plus_loop_execution, P4_SKIPS_NOTHING);
 
@@ -1015,7 +1015,7 @@ FCode (pf_endcase)
     pf_Q_pairs (P4_CASE_MAGIC);
     FX_COMPILE (pf_endcase);
     while (SP < CSP)
-        FX (pf_forward_resolve);
+        pf_forward_resolve_();
     CSP = (p4cell *) *SP++;
 }
 P4COMPILE (pf_endcase, p4_drop, P4_SKIPS_NOTHING);
@@ -1041,7 +1041,7 @@ FCode (pf_of)
 {
     pf_Q_pairs (P4_CASE_MAGIC);
     FX_COMPILE (pf_of);
-    FX (pf_forward_mark);
+    pf_forward_mark_();
     *--SP = (p4cell) P4_OF_MAGIC;
 }
 P4COMPILE (pf_of, pf_of_execution, P4_SKIPS_OFFSET);
@@ -1055,9 +1055,9 @@ FCode (pf_endof)
 {
     pf_Q_pairs (P4_OF_MAGIC);
     FX_COMPILE (pf_endof);
-    FX (pf_forward_mark);
-    FX (p4_swap);
-    FX (pf_forward_resolve);
+    pf_forward_mark_();
+    p4_swap_();
+    pf_forward_resolve_();
     *--SP = (p4cell) P4_CASE_MAGIC;
 }
 P4COMPILE (pf_endof, pf_branch_execution, P4_SKIPS_OFFSET);
@@ -1101,7 +1101,7 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("R>",           pf_r_from),
     P4_SXco ("R@",           pf_r_fetch),
     /* definition checks */
-    P4_DVAR ("STATE",        state),
+    P4_VARIABLE ("STATE",    state),
     P4_RTco ("CREATE",       pf_create),
     P4_RTco ("<BUILDS",      pf_builds),
     P4_SXco ("DOES>",        pf_does),

@@ -339,31 +339,9 @@ FCode (pf_f_dot)
     pf_outf ("%.*f ", (int) PRECISION, *FP++);
 }
 
-FCode (pf_f_e_dot)			/* with help from Lennart Benshop */
+FCode (pf_f_e_dot)
 {
-  /*
-    double f = fabs (*FP);
-    double h = 0.5 * pow10 (-PRECISION);
-    int n;
-
-    if (f == 0)
-        n = 0;
-    else if (f < 1)
-    {
-        h = 1 - h;
-        for (n = 3; f * pow10 (n) < h; n += 3);
-    }else{
-        h = 1000 - h;
-        for (n = 0; h <= f * pow10 (n); n -= 3);
-    }
-    pf_outf ("%+*.*fE%+03d ", (int) PRECISION + 5, (int) PRECISION,
-      *FP++ * pow10 (n), -n);
-  */
-}
-
-FCode (pf_f_s_dot)
-{
-    pf_outf ("%.*E ", (int) PRECISION, *FP++);
+    pf_outf ("%.*e ", (int) PRECISION, *FP++);
 }
 
 FCode (p4_float_plus)
@@ -438,7 +416,7 @@ FCode (p4_f_tanh)	{ *FP = tanh (*FP); }
 
 P4_LISTWORDS (floating) =
 {
-    P4_DVAR ("PRECISION",	 precision),
+    P4_VARIABLE ("PRECISION", precision),
     P4_FXco ("FALIGN",		 p4_d_f_align),
     P4_FXco ("FALIGNED",	 p4_d_f_aligned),
     P4_FXco (">FLOAT",		 pf_to_float),
@@ -476,7 +454,6 @@ P4_LISTWORDS (floating) =
     /* floating point extension words */
     P4_FXco ("F.",		 pf_f_dot),
     P4_FXco ("FE.",		 pf_f_e_dot),
-    P4_FXco ("FS.",		 pf_f_s_dot),
     P4_FXco ("F**",		 p4_f_star_star),
     P4_FXco ("FABS",		 p4_f_abs),
 /*

@@ -342,7 +342,7 @@ FCode_XE (pf_abort_quote_execution)
 FCode (pf_abort_quote)
 {
     FX_COMPILE (pf_abort_quote);
-    FX (pf_parse_comma_quote);
+    pf_parse_comma_quote_();
 }
 P4COMPILE (pf_abort_quote, pf_abort_quote_execution, P4_SKIPS_STRING);
 

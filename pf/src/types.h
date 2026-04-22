@@ -50,11 +50,8 @@ typedef p4code *p4xt;			/* type of the "execution token" */
 
 /* declare a primitive */
 #define  FCode(X)    void X##_(void) 
-#define FXCode_RT(X)      X##_(void)
 #define  FCode_RT(X) void X##_(void)
-#define FXCode_XE(X)      X##_(void)
 #define  FCode_XE(X) void X##_(void)
 
 #define  P4CODE(X)     X##_
-#define  FX(X)         X##_() 
 #endif

@@ -99,7 +99,7 @@ FCode (pf_dot_s)
             /* only data stack not empty */
             for (i = 0; i < dd; i++)
             {
-                FX (pf_cr);
+                pf_cr_();
                 pf_prCell (SP[i]);
             }
         }
@@ -108,23 +108,23 @@ FCode (pf_dot_s)
     else if (dd == 0) /* fd !dd */
     {
         /* only floating point stack not empty */
-        pf_outf ("\n%*s%15.*G ", (int)(DECWIDTH + HEXWIDTH + 4), "<stack empty> ", (int)PRECISION, FP[0]);
+        pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 4), "<stack empty> ", (int)PRECISION, FP[0]);
         for (i = 1; i < fd; i++) {
-            pf_outf ("\n%*.*G ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)PRECISION, FP[i]);
+            pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)PRECISION, FP[i]);
         }
     } else { /* fd dd */
         int bd = dd < fd ? dd : fd;
         for (i = 0; i < bd; i++) {
-        FX (pf_cr);
-        pf_prCell (SP[i]);
-            pf_outf ("%15.*G ", (int)PRECISION, FP[i]);
+          pf_cr_();
+          pf_prCell (SP[i]);
+          pf_outf ("%15.*f ", (int)PRECISION, FP[i]);
         }
-    for (; i < dd; i++) {
-        FX (pf_cr);
-        pf_prCell (SP[i]);
+        for (; i < dd; i++) {
+          pf_cr_();
+          pf_prCell (SP[i]);
         }
-    for (; i < fd; i++) {
-            pf_outf ("\n%*.*G ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)PRECISION, FP[i]);
+        for (; i < fd; i++) {
+          pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)PRECISION, FP[i]);
         }
     }
 #endif
@@ -144,7 +144,7 @@ FCode (pf_dot_status)
     pf_outf ("\nPRECISION:           %3d", (int) PRECISION);
 #endif
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
-    FX (pf_cr);
+    pf_cr_();
 }
 
 /* ----------------------------------------------------------------------- */
@@ -173,7 +173,7 @@ void pf_dot_name (const p4char *nfa)
 {
     if (nfa && (P4_NAMEFLAGS(nfa) & 0x80)) {
         pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
-        FX (pf_space);
+        pf_space_();
     }
 }
 
@@ -210,7 +210,12 @@ void pf_decompile_rest (p4char* nfa, p4xt *ip)
     while (**ip != P4CODE(pf_semicolon_execution)) {
         p4char *name = cfa_to_name(*ip);
         pf_dot_name(name);
+        p4_Semant *s = (p4_Semant *)((char *)(*ip) - (char *)&(((p4_Semant *)0)->exec[0]));
+//        printf("\n %p %p %p => %p \n", *ip, (char*)&(((p4_Semant *)0)->exec[0]), (char *)&((p4_Semant)0).exec, s );
+        /*
+#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
         p4_Semant *s = ((p4_Semant *)((char *)(*ip) - OFFSET_OF (p4_Semant, exec[0])));
+        */
         //pf_outf ("\nip = %p *ip = %p  s = %p  ", ip, *ip, s);
         if (s->magic == P4_SEMANT_MAGIC) {
           ip++;
@@ -273,7 +278,7 @@ FCode (pf_see)
     p4xt    xt  = LINK_TO_CFA(name_to_link(nfa));
     p4xt* rest = (p4xt*) P4_TO_BODY(xt);
 
-    FX (pf_cr);
+    pf_cr_();
 
     if (*xt == P4CODE(pf_colon_RT)) {
         pf_outs(": ");
@@ -328,7 +333,7 @@ FCode (pf_man)
     p4char* nfa = pf_tick_nfa();
     char *name = NAMEPTR(nfa);
     int  len   = NAMELEN(nfa);
-    FX (pf_cr);
+    pf_cr_();
     FILE *fh = fopen( PF_HELP_FILE, "r" );
     if( fh != NULL ) {
         while( fgets( buffer, 255, fh ) != NULL ) {
@@ -360,8 +365,8 @@ FCode (pf_dump)
     p4ucell n = (p4ucell)*(SP++);
     p4char *p = (p4char*)(*(SP++));
 
-    FX (pf_more);
-    FX (pf_cr);
+    pf_more_();
+    pf_cr_();
     pf_outf ("%*s ", (int)HEXWIDTH, "");
     for (j = 0; j < 16; j++)
         pf_outf ("%02X ", (unsigned)((p4ucell)(p + j) & 0x0F));
@@ -379,7 +384,7 @@ FCode (pf_dump)
                 ! isascii (p [j]) ? '_' :
                 isprint (p [j]) ? p [j] : '.'));
     }
-    FX (pf_space);
+    pf_space_();
 }
 
 /* ----------------------------------------------------------------------- */
@@ -389,7 +394,7 @@ FCode (pf_dump)
 FCode (pf_words)
 {
     p4char *nfa = LATEST;        /* NFA of most recently CREATEd header */
-    FX (pf_cr);
+    pf_cr_();
     while (nfa) {
         pf_dot_name(nfa);
         nfa = *name_to_link (nfa);
@@ -406,8 +411,8 @@ FCode (pf_history)
     register HIST_ENTRY **the_list = history_list();
     register int i = 0;
 
-    FX (pf_more);
-    FX (pf_cr);
+    pf_more_();
+    pf_cr_();
     while (the_list[i])
     {
         printf("%d: ",i);

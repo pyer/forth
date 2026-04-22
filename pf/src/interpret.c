@@ -385,7 +385,7 @@ FCode (pf_sh_greater)
 FCode (pf_sh_s)
 {
     do {
-        FX (pf_sh);
+        pf_sh_();
     } while (*SP);
 }
 
@@ -548,8 +548,8 @@ int pf_find_word(void)
     xt = name_to_cfa (nfa);
     if (! STATE || (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE))
     {
-    pf_call (xt);           /* execute it now */
-    FX (pf_Q_stack);        /* check stack */
+    pf_call (xt);    /* execute it now */
+    pf_Q_stack_();   /* check stack */
     }else{
     FX_XCOMMA (xt);  /* comma token */
     }
@@ -633,7 +633,7 @@ int pf_convert_number(void)
 FCode (pf_dot)
 {
     char sign=' ';
-    FX (pf_less_sh);
+    pf_less_sh_();
     pf_hold (' ');
 
     if (*SP < 0) {
@@ -641,13 +641,13 @@ FCode (pf_dot)
         *SP = -(*SP);
     }
 
-    FX (pf_sh_s);
+    pf_sh_s_();
 
     if (sign == '-' )
         pf_hold ('-');
 
-    FX (pf_sh_greater);
-    FX (pf_type);
+    pf_sh_greater_();
+    pf_type_();
 }
 
 /** .R ( value# precision# -- | value precision# -- [??] ) [ANS]
@@ -660,22 +660,21 @@ FCode (pf_dot_r)
     char sign=' ';
     p4cell w = *SP++;
 
-    FX (pf_less_sh);
-//    pf_hold (' ');
+    pf_less_sh_();
 
     if (*SP < 0) {
         sign = '-';
         *SP = -(*SP);
     }
 
-    FX (pf_sh_s);
+    pf_sh_s_();
 
     if (sign == '-' )
         pf_hold ('-');
 
-    FX (pf_sh_greater);
+    pf_sh_greater_();
     pf_emits (w - *SP, ' ');
-    FX (pf_type);
+    pf_type_();
 }
 
 /* -------------------------------------------------------------- */
@@ -695,7 +694,7 @@ FCode (pf_parse_comma_quote)
     *DP++ = len;                /* store count byte */
     while (--len >= 0)          /* store string */
         *DP++ = *s++;
-    FX (pf_align);
+    pf_align_();
 }
 
 /** '((.\"))' ( -- ) [HIDDEN] skipstring
@@ -716,7 +715,7 @@ FCode (pf_dot_quote)
     if (STATE)
     {
         FX_COMPILE (pf_dot_quote);
-    FX (pf_parse_comma_quote);
+    pf_parse_comma_quote_();
     }else{
 //        pf_skip_spaces();
 //        to_in++;    // skip only one space
@@ -747,7 +746,7 @@ FCode (pf_c_quote)
     if (STATE)
     {
         FX_COMPILE (pf_c_quote);
-    FX (pf_parse_comma_quote);
+    pf_parse_comma_quote_();
     }else{
         register char *p;
         register p4ucell n;
@@ -787,7 +786,7 @@ FCode (pf_s_quote)
     if (STATE)
     {
         FX_COMPILE (pf_s_quote);
-    FX (pf_parse_comma_quote);
+        pf_parse_comma_quote_();
     }else{
         register char *p;
         register p4ucell n;
@@ -916,26 +915,15 @@ void pf_load_words (const p4Words* ws)
         FX_COMMA ( *SP ); 
         ((*(p4cell **)&(SP))++);
         break;
-    case p4_DCON:
-        p4_header_in();
-        P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-        FX_XCOMMA(pf_dictget_RT_); /* a simply comma */
-        FX_COMMA (w->ptr);
-        break;
-    case p4_DVAR:
+    case 'v':
         p4_header_in();
         P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
         FX_XCOMMA(pf_dictvar_RT_); /* a simply comma */
         FX_COMMA (w->ptr);
         break;
-    case p4_OCON:
+    case 'c': // CONSTANT
         *--SP = (p4cell)(w->ptr);
-        FX (pf_constant);
-        break;
-        break;
-    case p4_OVAR:
-        *--SP = (p4cell)(w->ptr);
-        FX (pf_variable);
+        pf_constant_();
         break;
     default:
         pf_outf("\nERROR: unknown typecode for loadlist entry "
@@ -997,7 +985,7 @@ p4char* p4_header_comma (const p4char *name, int len)
      * string that might be HERE via a WORD call. However that makes
      * the string to move UP usually - so we have to compute the overall 
      * size of the namefield first and its gaps, then move it */ 
-    DP += 2; DP += len; FX (pf_align); 
+    DP += 2; DP += len; pf_align_(); 
     name_to_caps(DP-len, name, len);
     LATEST = DP-len -1;      /* point to count-byte before the name */
     *LATEST = len;           /* set the count-byte */
@@ -1016,7 +1004,7 @@ p4char* p4_header_comma (const p4char *name, int len)
        name_to_caps(DP, name, len);
     *LATEST = len;
     *LATEST |= '\x80'; 
-    DP += len; FX (pf_align); 
+    DP += len; pf_align_();
 # endif
     FX_PCOMMA (last); /* create the link field... */
     return LATEST;
@@ -1102,10 +1090,10 @@ void pf_convert_string(void)
 {
     if (STATE)
     {
-    FX (pf_parse_comma_quote);
-    FX (pf_count);
+        pf_parse_comma_quote_();
+        pf_count_();
     }else{
-    char *cs = pf_string();
+        char *cs = pf_string();
         *--SP = (p4cell)NAMEPTR(cs);
         *--SP = (p4cell)NAMELEN(cs);
     }
@@ -1256,7 +1244,7 @@ The function of QUERY may be performed with ACCEPT and EVALUATE.
 
 P4_LISTWORDS (interpret) =
 {
-    P4_DVAR ("BASE",         base),
+    P4_VARIABLE ("BASE",     base),
     P4_FXco ("SOURCE",       pf_source),
     P4_FXco ("LATEST",       pf_latest),
     P4_FXco ("SIGN",         pf_sign),

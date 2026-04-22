@@ -12,27 +12,27 @@ typedef struct p4_Thread	p4_Thread;
 
 struct p4_Thread
 {
-    char* dp;			/* actual top of the dictionary */
+    char* dp;			    /* actual top of the dictionary */
 
-    p4cell state;		/* interpreting (0) or compiling (-1) */
-    p4ucell base;		/* of number i/o conversion */
+    p4cell state;		  /* interpreting (0) or compiling (-1) */
+    p4ucell base;		  /* of number i/o conversion */
 
     p4cell* stack;		/*  data stack */
     p4cell* s0;
-    p4cell* sp;			/* the stack pointer */
+    p4cell* sp;			  /* the stack pointer */
 
     p4xt**  rstack;		/*  return stack */
     p4xt**  r0;
-    p4xt**  rp;			/* the return stack pointer */
+    p4xt**  rp;			  /* the return stack pointer */
 
 #if defined PF_WITH_FLOATING
-    double* fstack;		/*  floating point stack */
+    p4cell precision;	/* floating point output precision */
+    double* fstack; 	/*  floating point stack */
     double* f0;
-    double* fp;			/* the floating point stack pointer */
-    p4cell precision;		/* floating point output precision */
+    double* fp;			  /* the floating point stack pointer */
 #endif
-    p4xt*   ip;			/* the intruction pointer */
-    p4xt    wp;			/* speed up the inner interpreter */
+    p4xt*   ip;			  /* the intruction pointer */
+    p4xt    wp;			  /* speed up the inner interpreter */
 
     void (*execute)(p4xt);	/* := normal_execute */
 

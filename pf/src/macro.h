@@ -83,15 +83,6 @@
 #define p4_SXCO 'X'     /* CS */ /* smart-word (semant) */
 #define p4_RTCO 'r'     /* RT */ /* creates a word with special runtime */
  
-#define p4_OCON 'c'     /* OC */ /* ordinary constant */
-#define p4_OVAR 'v'     /* OV */ /* ordinary variable */
-
-#define p4_DCON 'd'     /* DV */ /* dict constant (threaded) */
-#define p4_DVAR 'w'     /* DV */ /* dict variable (threaded) */
-
-/* return the byte offset of a given component to beginning of structure: */
-#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
-
 /* macros to build entries in the wordlists: 
  * until all sematic-words have a proper name along, we need to help
  * the decompiler here to print the name. Since PFE uses %.*s to print,
@@ -103,10 +94,12 @@
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&SEM##_Semant }
 #define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&RUN##_Runtime }
 
-#define P4_OCON( NM, VAL)       { "c\237"NM, (p4code)(VAL) }
+#define P4_CONSTANT( NM, VAL)   { "c\237"NM, (p4code)(VAL) }
 
-#define P4_DCON( NM, VAL)       { "d\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
-#define P4_DVAR( NM, VAL)       { "w\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
+/* return the byte offset of a given component to beginning of structure: */
+#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
+#define P4_VARIABLE( NM, VAL)   { "v\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
+//#define P4_VARIABLE( NM, VAL)   { "v\237"NM, (p4code)((char *)&(((p4_Thread *)0)->VAL) - (char *)0) }
 
 #ifndef P4_MAX_FILES /* maximum number of open files */
 #define P4_MAX_FILES 0x10
