@@ -274,7 +274,7 @@ int main (int argc, char** argv)
                 pf_outs (" ok\n");
             len = pf_accept (buffer, 255);
             pf_interpret(buffer, len, 0);
-            FCode (pf_Q_stack);
+            pf_Q_stack_();
     }
 //    return exitcode;
 }

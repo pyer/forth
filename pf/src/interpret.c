@@ -128,7 +128,7 @@ p4char * cfa_to_name (p4xt xt)
  * longjmp via (Except->jmp) following inline
  * - purpose: stop the inner interpreter
  */
-FCode_XE (pf_call_stop)
+FCode (pf_call_stop)
 {
     p4_Except *buf = (p4_Except *) *IP;
     longjmp (buf->jmp, 1);
@@ -700,7 +700,7 @@ FCode (pf_parse_comma_quote)
 /** '((.\"))' ( -- ) [HIDDEN] skipstring
  * compiled by => ." string"
  */
-FCode_XE (pf_dot_quote_execution)
+FCode (pf_dot_quote_execution)
 {
     register p4char *p = (p4char *) IP;
     pf_type ((const char *)p + 1, *p);
@@ -728,7 +728,7 @@ P4COMPILE (pf_dot_quote, pf_dot_quote_execution, P4_SKIPS_STRING);
 /** '((C"))' ( -- string-bstr* ) [HIDDEN]
  * execution compiled by => C" string"
  */
-FCode_XE (pf_c_quote_execution)
+FCode (pf_c_quote_execution)
 {
     register char *p = (char *) IP;
     *--SP = (p4cell) p;
@@ -765,7 +765,7 @@ P4COMPILE (pf_c_quote, pf_c_quote_execution, P4_SKIPS_STRING);
 /** '((S"))' ( -- string-ptr string-len ) [HIDDEN]
  * execution compiled by => S"
  */
-FCode_XE (pf_s_quote_execution)
+FCode (pf_s_quote_execution)
 {
     register char *p = (char *) IP;
     SP -= 2;
@@ -825,7 +825,7 @@ FCode (pf_backslash)
 /**
  * (DICTVAR) forth-thread variable runtime, => VARIABLE like
  */
-FCode_RT (pf_dictvar_RT)
+FCode (pf_dictvar_RT)
 {
     *--SP = (p4cell) ((char *) p4TH + (WP_PFA)[0]);
 }
@@ -833,7 +833,7 @@ FCode_RT (pf_dictvar_RT)
 /**
  * (DICTGET) forth-thread constget runtime, => CONSTANT like
  */
-FCode_RT (pf_dictget_RT)
+FCode (pf_dictget_RT)
 {
     *--SP = *(p4cell *) ((char *) p4TH + (WP_PFA)[0]);
 }

@@ -180,7 +180,7 @@ FCode (p4_f_fetch)
     *--FP = *(double *) *SP++;
 }
 
-FCode_RT (p4_f_constant_RT)
+FCode (p4_f_constant_RT)
 {
     *--FP = *(double *)WP_PFA;
 }
@@ -210,7 +210,7 @@ FCode (p4_f_dup)
     FP[0] = FP[1];
 }
 
-FCode_XE (p4_f_literal_execution)
+FCode (p4_f_literal_execution)
 {
     *--FP = *((*(double **)&(IP))++);
 }
@@ -281,7 +281,7 @@ FCode (p4_f_swap)
     FP[0] = h;
 }
 
-FCode_RT (p4_f_variable_RT)
+FCode (p4_f_variable_RT)
 {
     *--SP = (p4cell) WP_PFA;
 }

@@ -92,30 +92,30 @@ FCode (pf_forward_mark);
 FCode (pf_forward_resolve);
 FCode (pf_bracket_compile);
 
-FCode_RT (pf_create_RT);
-FCode  (pf_create);
-FCode_RT (pf_builds_RT);
-FCode  (pf_builds);
-FCode_RT (pf_defer_RT);
-FCode  (pf_defer);
-FCode_RT (pf_does_RT);
-FCode  (pf_does);
+FCode (pf_create_RT);
+FCode (pf_create);
+FCode (pf_builds_RT);
+FCode (pf_builds);
+FCode (pf_defer_RT);
+FCode (pf_defer);
+FCode (pf_does_RT);
+FCode (pf_does);
 
-FCode_RT (pf_colon_RT);
-FCode  (pf_colon);
+FCode (pf_colon_RT);
+FCode (pf_colon);
 
-FCode_XE (pf_semicolon_execution);
-FCode_XE (pf_does_execution);
-FCode_XE (pf_literal_execution);
+FCode (pf_semicolon_execution);
+FCode (pf_does_execution);
+FCode (pf_literal_execution);
 
-FCode_RT (pf_constant_RT);
-FCode  (pf_constant);
-FCode_RT (pf_variable_RT);
-FCode  (pf_variable);
+FCode (pf_constant_RT);
+FCode (pf_constant);
+FCode (pf_variable_RT);
+FCode (pf_variable);
 
   #if defined PF_WITH_FLOATING
-    FCode_RT (p4_f_constant_RT);
-    FCode_RT (p4_f_variable_RT);
+    FCode (p4_f_constant_RT);
+    FCode (p4_f_variable_RT);
   #endif
 
 #endif

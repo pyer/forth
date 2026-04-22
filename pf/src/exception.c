@@ -325,7 +325,7 @@ FCode (pf_abort)
 /** ((ABORT")) ( -- ) [HIDDEN]
  * compiled by => ABORT" what"
  */ 
-FCode_XE (pf_abort_quote_execution)
+FCode (pf_abort_quote_execution)
 {
     char msg[256];
     char *p = (char *)IP;

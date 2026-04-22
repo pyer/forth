@@ -127,7 +127,7 @@ FCode (pf_to_r)
     FX_COMPILE (pf_to_r);
 }
 
-FCode_XE (pf_to_r_execution)
+FCode (pf_to_r_execution)
 {
 //#define P4_PUSH(X,P)    (*P4_DEC (P, p4cell) = (X))
 //#define P4_DEC(P,T)	(--(*(T **)&(P)))
@@ -151,7 +151,7 @@ FCode (pf_r_from)
     FX_COMPILE (pf_r_from);
 }
 
-FCode_XE (pf_r_from_execution)
+FCode (pf_r_from_execution)
 {
     *--SP = (p4cell) *RP++;
 }
@@ -169,7 +169,7 @@ FCode (pf_r_fetch)
     pf_Q_comp_();
     FX_COMPILE (pf_r_fetch);
 }
-FCode_XE (pf_r_fetch_execution)
+FCode (pf_r_fetch_execution)
 {
     *--SP = *((p4cell*)RP);
 }
@@ -231,7 +231,7 @@ FCode (pf_forward_resolve)
 }
 
 /* -------------------------------------------------------------- */
-FCode_XE (pf_semicolon_execution);
+FCode (pf_semicolon_execution);
 FCode (pf_semicolon);
 
 /** "((CREATE))" ( -- pfa ) [HIDDEN]
@@ -286,7 +286,7 @@ P4RUNTIME1(pf_builds, pf_builds_RT);
 /** ((DEFER)) ( -- )
  * runtime of => DEFER words
  */
-FCode_RT (pf_defer_RT)
+FCode (pf_defer_RT)
 {
     register p4xt xt;
     xt = * (p4xt*) P4_TO_DOES_BODY(P4_BODY_FROM((WP_PFA))); /* check IS-field */
@@ -321,7 +321,7 @@ P4RUNTIME1(pf_defer, pf_defer_RT);
 /** "(DOES>)" ( -- pfa ) [HIDDEN]
  * execution compiled by => DOES>
  */
-FCode_XE (pf_does_execution)
+FCode (pf_does_execution)
 {
     p4xt xt;
     xt = name_to_cfa (LATEST);
@@ -361,7 +361,7 @@ P4COMPILE (pf_does, pf_does_execution, P4_SKIPS_NOTHING);
 /** "((DOES>))" ( -- pfa ) [HIDDEN]
  * runtime compiled by DOES>
  */
-FCode_RT (pf_does_RT)
+FCode (pf_does_RT)
 {
     *--SP = (p4cell) P4_TO_DOES_BODY(WP);  /* from CFA[2] */
     *--RP = IP; IP = *P4_TO_DOES_CODE(WP); /* from CFA[1] */
@@ -373,7 +373,7 @@ P4RUNTIME1(pf_does, pf_does_RT);
  * compiled by => :
  * (see also => (NONAME) compiled by => :NONAME )
  */
-FCode_RT (pf_colon_RT)
+FCode (pf_colon_RT)
 {
     *--RP = IP;
     IP = (p4xt *) WP_PFA;
@@ -402,7 +402,7 @@ P4RUNTIME1(pf_colon, pf_colon_RT);
  * compiled by => ; and maybe => ;AND --
  * it will perform an => EXIT
  */
-FCode_XE (pf_semicolon_execution)
+FCode (pf_semicolon_execution)
 {
     IP = *RP++;
 }
@@ -511,7 +511,7 @@ FCode (pf_allot)
 /** "((CONSTANT))" ( -- ) [HIDDEN]
  * runtime compiled by => CONSTANT
  */
-FCode_RT (pf_constant_RT)
+FCode (pf_constant_RT)
 {
     *--SP = WP_PFA[0];
 }
@@ -533,7 +533,7 @@ P4RUNTIME1(pf_constant, pf_constant_RT);
 /** "((VAR))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => VARIABLE
  */
-FCode_RT (pf_variable_RT)
+FCode (pf_variable_RT)
 {
     *--SP = (p4cell) WP_PFA;
 }
@@ -557,7 +557,7 @@ P4RUNTIME1(pf_variable, pf_variable_RT);
 /** "((LIT))" ( -- value ) [HIDDEN]
  * execution compiled by => LITERAL
  */
-FCode_XE (pf_literal_execution)
+FCode (pf_literal_execution)
 {
     *--SP = *((*(p4cell **)&(IP))++);
 }
@@ -678,7 +678,7 @@ FCode (pf_bracket_compile)
 /** "(?BRANCH)" ( -- ) [HIDDEN]
  * execution word compiled by => IF - just some simple => ?BRANCH
  */
-FCode_XE (pf_q_branch_execution)
+FCode (pf_q_branch_execution)
 {
     if (!*SP++)
         FX_BRANCH;
@@ -689,7 +689,7 @@ FCode_XE (pf_q_branch_execution)
 /** "(BRANCH)" ( -- ) [HIDDEN]
  * execution compiled by => ELSE - just a simple => BRANCH
  */
-FCode_XE (pf_branch_execution)
+FCode (pf_branch_execution)
 {
     FX_BRANCH;
 }
@@ -854,7 +854,7 @@ P4COMPILE (pf_do, pf_do_execution, P4_SKIPS_OFFSET);
  * clean the return-stack and branches to the place directly
  * after the next => LOOP
  */
-FCode_XE (pf_leave_execution)
+FCode (pf_leave_execution)
 {
     IP = RP[2] - 1; /* the place after the next LOOP */
     RP += 3;        /* UNLOOP */
@@ -929,7 +929,7 @@ P4COMPILE (pf_plus_loop, pf_plus_loop_execution, P4_SKIPS_NOTHING);
  * usually used just in before an => EXIT call. Using this multiple
  * times can unnest multiple nested loops.
  */
-FCode_XE (pf_unloop_execution)
+FCode (pf_unloop_execution)
 {
     RP += 3;        /* terminate loop */
 }
@@ -1023,7 +1023,7 @@ P4COMPILE (pf_endcase, p4_drop, P4_SKIPS_NOTHING);
 /** "((OF))" ( check val -- check ) [HIDDEN]
  * execution compiled by => OF
  */
-FCode_XE (pf_of_execution)
+FCode (pf_of_execution)
 {
     if (SP[0] != SP[1])          /* tos equals second? */
     { SP += 1; FX_BRANCH; }      /* no: drop top, branch */
