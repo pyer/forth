@@ -36,11 +36,11 @@
 #include "terminal.h"
 
 /************************************************************************/
-jmp_buf jump_loop;		/* QUIT and ABORT do a THROW which longjmp() */
-				/* here thus C-stack gets cleaned up too */
+jmp_buf jump_loop;    /* QUIT and ABORT do a THROW which longjmp() */
+        /* here thus C-stack gets cleaned up too */
 
-p4_Except *catchframe = NULL;	/* links to chain of CATCHed words */
-				/* and no exceptions to be caught */
+p4_Except *catchframe = NULL;  /* links to chain of CATCHed words */
+        /* and no exceptions to be caught */
 /************************************************************************/
 /**
  * just call longjmp on PFE.loop
@@ -167,7 +167,7 @@ static void throw_msg (int id, char *msg)
     else if (-1024 < id && id <= -256)
     {
         /* Signals, see signal-ext.c,
-	   those not handled and not fatal lead to THROW */
+     those not handled and not fatal lead to THROW */
         sprintf (msg, "Received signal %d", -256 - id);
     }
     else if (-2048 < id && id <= -1024)
@@ -177,22 +177,22 @@ static void throw_msg (int id, char *msg)
     }
     else if (-32767 < id && id <= -2048)
     {
-	/* search the exception_link for our id */
-	p4_Exception* expt = exception_link;
-	strcpy (msg, "module-specific error-condition");
-	while (expt)
-	{
-	    if (expt->id == id)
-	    {
-		strcpy (msg, expt->name);
-		break;
-	    }
-	    expt = expt->next;
-	}
+  /* search the exception_link for our id */
+  p4_Exception* expt = exception_link;
+  strcpy (msg, "module-specific error-condition");
+  while (expt)
+  {
+      if (expt->id == id)
+      {
+    strcpy (msg, expt->name);
+    break;
+      }
+      expt = expt->next;
+  }
     }
     else if (0 < id)
     {
-	strcpy (msg, strerror (id));
+  strcpy (msg, strerror (id));
     }
     else
     {
@@ -259,7 +259,7 @@ void p4_throwstr (int id, const char* description)
 #if defined PF_WITH_FLOATING
         FP = frame->fpp;
 #endif
-	RP = frame->rpp;
+  RP = frame->rpp;
         longjmp (frame->jmp, id);
     }
 
@@ -269,7 +269,7 @@ void p4_throwstr (int id, const char* description)
     {
      case P4_ON_ABORT_QUOTE:
      {
-	 show_error (addr);
+   show_error (addr);
      }
      case P4_ON_ABORT:
          pf_longjmp_abort ();
@@ -310,7 +310,7 @@ FCode (p4_throw)
 {
     p4cell n = *SP++;
     if (n)
-	 p4_throw (n);
+   p4_throw (n);
 }
 
 /** ABORT ( -- [THROW] ) [ANS]
@@ -357,11 +357,11 @@ FCode (pf_bye)
 
 P4_LISTWORDS (exception) =
 {
-    P4_FXco ("CATCH",		p4_catch),
-    P4_FXco ("THROW",		p4_throw),
-    P4_FXco ("ABORT",		pf_abort),
-    P4_SXco ("ABORT\"",		pf_abort_quote),
-    P4_FXco ("BYE",		pf_bye),
+    P4_FXco ("CATCH",    p4_catch),
+    P4_FXco ("THROW",    p4_throw),
+    P4_FXco ("ABORT",    pf_abort),
+    P4_SXco ("ABORT\"",    pf_abort_quote),
+    P4_FXco ("BYE",    pf_bye),
 };
 P4_COUNTWORDS (exception, "Exception");
 

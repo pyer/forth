@@ -6,9 +6,17 @@
  * 
  *  Copyright (C) Tektronix, Inc. 1998 - 2001.
  *  Copyright (C) 2005 - 2008 Guido U. Draheim <guidod@gmx.de>
- *  Copyright (C) Pierre Bazonnard 2013 - 2014.
+ *  Copyright (C) Pierre Bazonnard 2013 - 2026.
  *
  */
+
+/* determines the dimension of any given vector */
+#ifndef DIM
+#define DIM(X)		((int)(sizeof (X) / sizeof *(X)))
+#endif
+
+/* declare a primitive */
+#define FCode(X) void X##_(void)
 
 /* either have a seperate Flag-Field-Area before name or use flags
  * integrated in the (hi bits of the) count-byte of a bstring */
@@ -89,8 +97,8 @@
  * it is okay to the upper bound of the length as a dummy count byte,
  * which is 0xFF (0377) for immediate words and 0x9F (0237) for the others.
  */
-#define P4_FXco( NM, PCODE)     { "p\237"NM, &P4CODE (PCODE) }
-#define P4_IXco( NM, PCODE)     { "P\377"NM, &P4CODE (PCODE) }
+#define P4_FXco( NM, PCODE)     { "p\237"NM, &PCODE##_ }
+#define P4_IXco( NM, PCODE)     { "P\377"NM, &PCODE##_ }
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&SEM##_Semant }
 #define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&RUN##_Runtime }
 

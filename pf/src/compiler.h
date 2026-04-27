@@ -18,7 +18,7 @@ typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */
 #define P4RUNTIME1(C,E1)            \
 p4_Runtime2 C##_Runtime =           \
 { P4_RUNTIME_MAGIC, 0,              \
-  P4CODE(C), { P4CODE(E1), NULL }   \
+  C##_, { E1##_, NULL }   \
 }
 
 #define FX_RUNTIME1(X) do { extern p4_Runtime2 X##_Runtime;  \
@@ -47,22 +47,10 @@ p4_Semant C##_Semant =              \
 {                                   \
   P4_SEMANT_MAGIC,                  \
   NULL,                             \
-  P4CODE (C),                       \
-  { P4CODE (E) },                   \
+  C##_,                             \
+  { E##_ },                         \
   S                                 \
 }
-
-/*
-#define P4COMPILE(C,E,S)            \
-p4_Semant C##_Semant =              \
-{                                   \
-  P4_SEMANT_MAGIC,                  \
-  S,                                \
-  NULL,                             \
-  P4CODE (C),                       \
-  { P4CODE (E) }                    \
-}
-*/
 
 /* compile execution semantics from within C-code: */
 #define FX_COMPILE(X)  do { extern  p4_Semant X##_Semant;  \

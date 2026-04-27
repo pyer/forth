@@ -142,7 +142,7 @@ void pf_call_loop (p4xt xt)
 {
     p4_Except stop;
 
-    static p4code call_stop = P4CODE (pf_call_stop);
+    static p4code call_stop = pf_call_stop_;
     p4xt list[3];
     list[0] = xt;
     list[1] = &call_stop;

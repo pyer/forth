@@ -40,7 +40,15 @@
 #include "interpret.h"
 #include "terminal.h"
 
-# define PFE_DIR_DELIMITER '/'
+#define PFE_DIR_DELIMITER '/'
+#define PFE_HOMEDIR_CHAR  '~'
+
+#  if PFE_DIR_DELIMITER == '\\'
+#   define PFE_ANTI_DELIMITER '/'
+#  else
+#   define PFE_ANTI_DELIMITER '\\'
+#  endif
+
 
 #define CHECKFILE " (did some FILE-OPEN fail?)"
 
@@ -189,14 +197,6 @@ char* pf_store_filename (const char* str, int n)
     char* src = (char*) str;
 
     if (!src || !n) { *dst = '\0'; return dst; }
-
-#  if PFE_DIR_DELIMITER == '\\'
-#   define PFE_ANTI_DELIMITER '/'
-#  else
-#   define PFE_ANTI_DELIMITER '\\'
-#  endif
-
-# define PFE_HOMEDIR_CHAR '~'
 
     *dst = '\0';
     if (n && max > n && *src == PFE_HOMEDIR_CHAR)

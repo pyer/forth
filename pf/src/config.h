@@ -40,20 +40,18 @@
 
 #define TOTAL_SIZE (1024*1024) /* the shorthand for default-computations */
 
-
-#ifndef PFE_BYTEORDER
-# if defined WORDS_BIGENDIAN
-# define PFE_BYTEORDER 4321
-# elif defined BYTEORDER
-# define PFE_BYTEORDER BYTEORDER
-# else
-#  ifdef __GNUC__
-#  warning no byteorder defined, assuming little-endian
-#  define PFE_BYTEORDER 1234
-#  else
-#  error no byteorder defined, define BYTEORDER or PFE_BYTEORDER
-#  endif
-# endif
+/* a cell has at least the size of a pointer but the type of an integer */
+#if defined SIZEOF_INT && SIZEOF_INT >= SIZEOF_VOIDP
+# define       SIZEOF_CELL SIZEOF_INT
+# define       TYPEOF_CELL int
+#elif defined SIZEOF_LONG && SIZEOF_LONG >= SIZEOF_VOIDP
+# define       SIZEOF_CELL SIZEOF_LONG
+# define       TYPEOF_CELL long
+#else 
+# error cell type and size not detected.
 #endif
+
+#define SIZEOF_FCELL SIZEOF_DOUBLE
+#define TYPEOF_FCELL double
 
 #endif

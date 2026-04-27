@@ -65,7 +65,7 @@
 /* ---------------------------------------------------------------------- */
 /* Readable macros for magic numbers suggested by spc@pineal.math.fau.edu */
 /* FIXME: not ready for 16bit, isn't it? */
-#if PFE_BYTEORDER == 4321
+#if BYTEORDER == 4321
 #define	P4_MAGIC_(A,B,C,D)	((p4cell)A << 24 | (p4cell)B << 16 |\
 				 (p4cell)C <<  8 | (p4cell)D)
 #else

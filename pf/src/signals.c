@@ -18,13 +18,13 @@
  *      a signal which will be assigned a corresponding THROW
  *      on forth level, e.g. for SIGFPE
  *  </dd>
- *  <dt>Abort:</dt><dd>		
+ *  <dt>Abort:</dt><dd>    
  *      a signal that will not kill the current forth process
  *      but which has not forth-level THROW either, e.g. SIGILL.
  *      It will result in an ABORT" Signal-Description"
  *   </dd>
  *  <dt>Fatal:</dt><dd>
- *	the current forth process will die gracefully.
+ *  the current forth process will die gracefully.
  *  </dd>
  *  <dt>Default:</dt><dd>
  *      A signal with some unknown meaning, exported to allow
@@ -80,24 +80,24 @@
 #include "terminal.h"
 
 /* -------------------------------------------------------------- */
-typedef void (*SigHdl) (int);	/* signal handler function type */
+typedef void (*SigHdl) (int);  /* signal handler function type */
 
-enum				/* Classification of signals: The */
-{				/* signal class is either a THROW code or: */
-    Fatal,			/*   p4th terminates if such a signal arrives */
-    Abort,			/*   executes ABORT" */
-    Chandled,			/*   handled by C code, e.g. stop/continue */
-    Default			/*   left alone by p4th, cannot be caught */
+enum        /* Classification of signals: The */
+{        /* signal class is either a THROW code or: */
+    Fatal,      /*   p4th terminates if such a signal arrives */
+    Abort,      /*   executes ABORT" */
+    Chandled,      /*   handled by C code, e.g. stop/continue */
+    Default      /*   left alone by p4th, cannot be caught */
 };
 
-typedef struct			/* all we need to know about a signal */
+typedef struct      /* all we need to know about a signal */
 {
-    short sig;			/* the signal */
-    short cLass;		/* a classification */
-    char const * name;		/* the name of the signal */
-    char const * msg;		/* a textual signal description */
-    SigHdl old;			/* state of signal before we took it */
-    p4xt hdl;			/* a forth word to handle the signal */
+    short sig;      /* the signal */
+    short cLass;    /* a classification */
+    char const * name;    /* the name of the signal */
+    char const * msg;    /* a textual signal description */
+    SigHdl old;      /* state of signal before we took it */
+    p4xt hdl;      /* a forth word to handle the signal */
 } Siginfo;
 
 /**
@@ -110,7 +110,7 @@ typedef struct			/* all we need to know about a signal */
  * so actually, this can not be helped. You have to live with these warning
  * messages.
  */
-#define SIG(NM,CL,MSG)		{ NM, CL, #NM, MSG, SIG_DFL }
+#define SIG(NM,CL,MSG)    { NM, CL, #NM, MSG, SIG_DFL }
 
 /*
  * With the means of the above structures and classifications we
@@ -278,17 +278,17 @@ static Siginfo siginfo[] =
  * signal constructor => <<load_signals>>
  */
     /*"SIGSTKFLT"*/
-#ifdef SIGSTKFLT		/* Linux */
+#ifdef SIGSTKFLT    /* Linux */
   SIG (SIGSTKFLT, Abort, "SIGSTKFLT"),
 #endif
 
     /*"SIGBREAK"*/
-#ifdef SIGBREAK			/* EMX, Watcom */
+#ifdef SIGBREAK      /* EMX, Watcom */
   SIG (SIGBREAK, P4_ON_USER_INTERRUPT, NULL),
 #endif
 
     /*"SIGMSG"*/
-#ifdef SIGMSG			/* AIX 3.2 */
+#ifdef SIGMSG      /* AIX 3.2 */
   SIG (SIGMSG, Default, "input data is in the HFT ring buffer"),
 #endif
     /*"SIGDANGER"*/
@@ -325,6 +325,12 @@ static Siginfo siginfo[] =
 #endif
 };
 
+/*
+ **
+ * Size of siginfo array.
+ */
+#define SIGSIZE ((int)(sizeof(siginfo) / sizeof *(siginfo)))
+
 /* -------------------------------------------------------------- */
 /**
  * switch between p4th setting of signals and state before 
@@ -333,7 +339,7 @@ void swap_signals (void)
 {
     int i;
 
-    for (i = 0; i < DIM (siginfo); i++)
+    for (i = 0; i < SIGSIZE; i++)
         if (siginfo[i].cLass != Default || siginfo[i].hdl)
             siginfo[i].old = signal (siginfo[i].sig, siginfo[i].old);
 }
@@ -343,7 +349,7 @@ static int getinfo (int sig)
 {
     int i;
 
-    for (i = 0; i < DIM (siginfo); i++)
+    for (i = 0; i < SIGSIZE; i++)
         if (siginfo[i].sig == sig)
             return i;
 
@@ -353,33 +359,33 @@ static int getinfo (int sig)
 
 typedef void (*_sighandler_t)(int);
 
-static void sig_handler (int sig)		/* Signal handler for all signals */
+static void sig_handler (int sig)    /* Signal handler for all signals */
 {
     Siginfo *s;
 
     if (SIG_ERR == signal (sig, (_sighandler_t) sig_handler)) {
-	puts("ERROR: signal reinstall failed");
+  puts("ERROR: signal reinstall failed");
     }
 
     {
         s = &siginfo[getinfo (sig)];
         if (s->hdl) {
-	          puts("forth-signal callback does not work!"); /* FIXME: */
-	          /* assume that s->hdl is a colon word */
+            puts("forth-signal callback does not work!"); /* FIXME: */
+            /* assume that s->hdl is a colon word */
             (*--RP) = IP;
-	          IP = (p4xt *) P4_TO_BODY (s->hdl);
+            IP = (p4xt *) P4_TO_BODY (s->hdl);
         } else {
             const char* msg = s->msg;
-	          /* P4_warn1 ("throw signal '%s'", msg); */
+            /* P4_warn1 ("throw signal '%s'", msg); */
             switch (s->cLass)
             {
-             default:		  /* an ANSI-Forth defined condition */
+             default:      /* an ANSI-Forth defined condition */
                  printf("signal %i throw %i\n", sig, s->cLass);
                  p4_throw (s->cLass);
-             case Abort:		/* another catchable signal */
+             case Abort:    /* another catchable signal */
                  printf("signal %i abort %s\n", sig, msg); 
                  p4_throwstr (-256 - sig, msg);
-             case Fatal:		/* a signal that kills us */
+             case Fatal:    /* a signal that kills us */
                  printf("Received signal %s, %s\n", s->name, msg);
                  pf_longjmp_exit ();
             }
@@ -428,7 +434,7 @@ static void handle_sigalrm (int sig)
 void pf_init_signal_handlers (void)
 {
     int i, j;
-    for (i = 0; i < DIM (siginfo); i++)
+    for (i = 0; i < SIGSIZE; i++)
     {
         /* some systems may have more than one name for the same signal,
          * take care not to install it twice: */
@@ -436,14 +442,14 @@ void pf_init_signal_handlers (void)
             if (siginfo[i].sig == siginfo[j].sig)
                 goto cont;
         switch (siginfo[i].cLass)
-	{
+  {
          default:
              siginfo[i].old = signal (siginfo[i].sig, sig_handler);
              if (0) { printf("signal %s @ %i, hooked %p", 
                         siginfo[i].name, siginfo[i].sig, siginfo[i].old); }
          case Chandled:
          case Default:;
-	}
+  }
      cont:;
     }
 
@@ -481,7 +487,7 @@ void pf_init_signal_handlers (void)
 FCode (pf_load_signals)
 {
     Siginfo *s;
-    for (s = siginfo; s < siginfo + DIM (siginfo); s++)
+    for (s = siginfo; s < siginfo + SIGSIZE; s++)
     {
         p4_header_comma ((const p4char*) s->name, strlen (s->name));
         FX_RUNTIME1(pf_constant);
@@ -503,10 +509,10 @@ FCode (pf_raise_signal)
  * xt != NULL: install forth word as signal handler for signal
  * xt == NULL: install p4th default signal handler for signal
  */
-FCode (pf_forth_signal)		
-{			
-    int sig = *SP++;		// signal#
-    p4xt xt = (p4xt)*SP;	// handler-xt*
+FCode (pf_forth_signal)    
+{      
+    int sig = *SP++;    // signal#
+    p4xt xt = (p4xt)*SP;  // handler-xt*
 
     int i = getinfo (sig);
     p4xt old;
@@ -522,16 +528,16 @@ FCode (pf_forth_signal)
         }
     }
 
-    *SP = (p4cell)old;		// old-signal-xt*
+    *SP = (p4cell)old;    // old-signal-xt*
 }
 
 /* -------------------------------------------------------------- */
 P4_LISTWORDS (signals) =
 {
 //    P4_INTO ("FORTH", 0),
-    P4_FXco ("LOAD-SIGNALS",		pf_load_signals),
-    P4_FXco ("RAISE-SIGNAL",		pf_raise_signal),
-    P4_FXco ("FORTH-SIGNAL",		pf_forth_signal),
+    P4_FXco ("LOAD-SIGNALS",    pf_load_signals),
+    P4_FXco ("RAISE-SIGNAL",    pf_raise_signal),
+    P4_FXco ("FORTH-SIGNAL",    pf_forth_signal),
 };
 P4_COUNTWORDS (signals, "Signals Extension");
 

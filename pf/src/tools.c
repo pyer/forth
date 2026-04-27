@@ -207,7 +207,7 @@ void pf_dot_number(p4ucell u)
 void pf_decompile_rest (p4char* nfa, p4xt *ip)
 {
     pf_dot_name (nfa);
-    while (**ip != P4CODE(pf_semicolon_execution)) {
+    while (**ip != pf_semicolon_execution_) {
         p4char *name = cfa_to_name(*ip);
         pf_dot_name(name);
         p4_Semant *s = (p4_Semant *)((char *)(*ip) - (char *)&(((p4_Semant *)0)->exec[0]));
@@ -253,7 +253,7 @@ void pf_decompile_rest (p4char* nfa, p4xt *ip)
         } else {
           ip++;
         }
-        if (**ip == P4CODE(pf_does_execution)) {
+        if (**ip == pf_does_execution_) {
           pf_outs("DOES> ");
           ip++;
         }
@@ -280,35 +280,35 @@ FCode (pf_see)
 
     pf_cr_();
 
-    if (*xt == P4CODE(pf_colon_RT)) {
+    if (*xt == pf_colon_RT_) {
         pf_outs(": ");
         pf_decompile_rest(nfa, rest);
         pf_outs("; ");
-    } else if (*xt == P4CODE(pf_create_RT)) {
+    } else if (*xt == pf_create_RT_) {
         pf_outs("CREATE ");
         pf_dot_name (nfa);
-    } else if (*xt == P4CODE(pf_builds_RT)) {
+    } else if (*xt == pf_builds_RT_) {
         pf_outs("<BUILDS ");
         pf_dot_name (nfa);
-    } else if (*xt == P4CODE(pf_does_RT)) {
+    } else if (*xt == pf_does_RT_) {
         pf_outs("<BUILDS ");
         pf_dot_name (nfa);
         pf_outs("DOES> ??? ");
         pf_outf("DOES> %p ", xt);
         //pf_decompile_rest(NULL, rest);
         pf_outs(";");
-    } else if (*xt == P4CODE(pf_constant_RT)) {
+    } else if (*xt == pf_constant_RT_) {
         pf_outf("%d CONSTANT ", (p4cell)*rest);
         pf_dot_name (nfa);
-    } else if (*xt == P4CODE(pf_variable_RT)) {
+    } else if (*xt == pf_variable_RT_) {
         pf_outs("VARIABLE ");
         pf_dot_name (nfa);
 #if defined PF_WITH_FLOATING
-    } else if (*xt == P4CODE(p4_f_constant_RT)) {
+    } else if (*xt == p4_f_constant_RT_) {
         double fval = *(double *)(rest);
         pf_outf ("%.*f FCONSTANT ", (int) PRECISION, fval);
         pf_dot_name (nfa);
-    } else if (*xt == P4CODE(p4_f_variable_RT)) {
+    } else if (*xt == p4_f_variable_RT_) {
         pf_outs("FVARIABLE ");
         pf_dot_name (nfa);
 #endif
