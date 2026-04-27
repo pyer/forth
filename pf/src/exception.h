@@ -28,9 +28,9 @@ struct p4_Except
     p4cell magic;
     p4xt** rpp;              /* P4_REGRP_T */
     p4xt *ipp;               /* P4_REGIP_T */
-    p4cell *spp;                /* P4_REGSP_T */
-    p4cell *lpp;                /* P4_REGLP_T */
-    double *fpp;                /* P4_REGFP_T */
+    p4cell *spp;             /* P4_REGSP_T */
+    p4cell *lpp;             /* P4_REGLP_T */
+    p4fcell *fpp;            /* P4_REGFP_T */
     jmp_buf jmp;
     p4_Except *prev;
 };

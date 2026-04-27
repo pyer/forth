@@ -44,7 +44,7 @@
 #define P4_COMMA_(P,X,Y,T) (*(T *)(P) = (T)(X), ((*(T **)&(P))++))
 
 #define FX_COMMA(X)      P4_COMMA_(DP,(X), 0 ,p4cell)
-#define FX_FCOMMA(X)     P4_COMMA_(DP,(X),'F',double)
+#define FX_FCOMMA(X)     P4_COMMA_(DP,(X),'F',p4fcell)
 #define FX_XCOMMA(X)     P4_COMMA_(DP,(X),'X',p4xt)
 #define FX_ZCOMMA(X)     P4_COMMA_(DP,(X),'Z',p4xt)
 #define FX_RCOMMA(X)     P4_COMMA_(DP,(X),'R',p4code)
@@ -65,7 +65,7 @@
    C = character =~ byte-wide number
    S = singlecell-wide (signed) number or item of cell-element stringspan
    U = singlecell-wide (unsigned) number or item of cell-element stringspan
-   D = doublecell (signed) number or item of doubecell-element stringspan
+   D = doublecell (signed) number or item of double cell-element stringspan
    B = byte-wide number or item of byte-element stringspan
    W = word-wide number or item of word-element stringspan
    L = long-wide number or item of long-element stringspan

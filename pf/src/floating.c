@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Tektronix, Inc. 1998 - 2001.
  *  Copyright (C) 2005 - 2008 Guido U. Draheim <guidod@gmx.de>
- *  Copyright (C) Pierre Bazonnard 2013 - 2014.
+ *  Copyright (C) Pierre Bazonnard 2013 - 2026.
  *
  *  @see     GNU LGPL
  *  @author  Guido U. Draheim            (modified by $Author: guidod $)
@@ -48,7 +48,7 @@
 /* ------------------------------------------------------------------ */
 
 /**
- * return double float-aligned address
+ * return float-aligned address
  */
 p4cell p4_dfaligned (p4cell n)
 {
@@ -72,7 +72,7 @@ FCode (p4_d_f_aligned)
  *  used in engine
  *  return 0 if error
  */
-int pf_to_float (const char *p, p4cell n, double *r)
+int pf_to_float (const char *p, p4cell n, p4fcell *r)
 {
 /* most systems have good strtod */
     char *endptr;
@@ -101,7 +101,7 @@ FCode (pf_to_float)
 {
     const char *p;
     p4cell n;
-    double r;
+    p4fcell r;
 
     n = (int)*SP++;
     p = (char*) *SP;
@@ -118,7 +118,7 @@ FCode (pf_to_float)
  */
 FCode (pf_s_to_f)
 {
-    *--FP = (double)(*SP++);
+    *--FP = (p4fcell)(*SP++);
 }
 
 /** ( f: r -- n )
@@ -132,7 +132,7 @@ FCode (pf_f_to_s)
 
 FCode (p4_f_store)
 {
-    *(double *) *SP++ = *FP++;
+    *(p4fcell *) *SP++ = *FP++;
 }
 
 FCode (p4_f_star)
@@ -177,12 +177,12 @@ FCode (p4_f_less_than)
 
 FCode (p4_f_fetch)
 {
-    *--FP = *(double *) *SP++;
+    *--FP = *(p4fcell *) *SP++;
 }
 
 FCode (p4_f_constant_RT)
 {
-    *--FP = *(double *)WP_PFA;
+    *--FP = *(p4fcell *)WP_PFA;
 }
 
 FCode (p4_f_constant)
@@ -212,7 +212,7 @@ FCode (p4_f_dup)
 
 FCode (p4_f_literal_execution)
 {
-    *--FP = *((*(double **)&(IP))++);
+    *--FP = *((*(p4fcell **)&(IP))++);
 }
 
 FCode (p4_f_literal)
@@ -260,7 +260,7 @@ FCode (p4_f_over)
 
 FCode (p4_f_rot)
 {
-    double h = FP[2];
+    p4fcell h = FP[2];
 
     FP[2] = FP[1];
     FP[1] = FP[0];
@@ -275,7 +275,7 @@ FCode (p4_f_round)
 
 FCode (p4_f_swap)
 {
-    double h = FP[1];
+    p4fcell h = FP[1];
 
     FP[1] = FP[0];
     FP[0] = h;
@@ -299,7 +299,7 @@ FCode (p4_represent)		/* with help from Lennart Benshop */
 {
     char *p, buf[0x80];
     int u, log, sign;
-    double f;
+    p4fcell f;
 
     f = *FP++;
     p = (char *) SP[1];
@@ -346,12 +346,12 @@ FCode (pf_f_e_dot)
 
 FCode (p4_float_plus)
 {
-    *SP += sizeof (double);
+    *SP += SIZEOF_FCELL;
 }
 
 FCode (p4_floats)
 {
-    *SP *= sizeof (double);
+    *SP += SIZEOF_FCELL;
 }
 
 FCode (p4_f_star_star)

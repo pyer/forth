@@ -126,7 +126,7 @@ void pf_init_system (p4_Thread* th) /* main_init */
     long int stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
     long int ret_stack_size = (TOTAL_SIZE / 64 + 256) / sizeof(p4cell);
 #if defined PF_WITH_FLOATING
-    long int float_stack_size = (TOTAL_SIZE / 32) / sizeof(double);
+    long int float_stack_size = (TOTAL_SIZE / 32) / sizeof(p4fcell);
 #endif
 
     setlocale (LC_ALL, "C");
@@ -156,7 +156,7 @@ void pf_init_system (p4_Thread* th) /* main_init */
                       SIZEOF_CELL,
                       (void**) & PFE.stack, (void**) & S0);
 #if defined PF_WITH_FLOATING
-    p4_dict_allocate (float_stack_size, sizeof(double),
+    p4_dict_allocate (float_stack_size, sizeof(p4fcell),
                       SIZEOF_FCELL,
                       (void**) &PFE.fstack, (void**) &F0);
 #endif

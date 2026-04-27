@@ -27,9 +27,9 @@ struct p4_Thread
 
 #if defined PF_WITH_FLOATING
     p4cell precision;	/* floating point output precision */
-    double* fstack; 	/*  floating point stack */
-    double* f0;
-    double* fp;			  /* the floating point stack pointer */
+    p4fcell* fstack; 	/*  floating point stack */
+    p4fcell* f0;
+    p4fcell* fp;			/* the floating point stack pointer */
 #endif
     p4xt*   ip;			  /* the intruction pointer */
     p4xt    wp;			  /* speed up the inner interpreter */

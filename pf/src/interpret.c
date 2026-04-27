@@ -1102,11 +1102,11 @@ void pf_convert_string(void)
 /* -------------------------------------------------------------- */
 #if defined PF_WITH_FLOATING
 /* in floating.c */
-int pf_to_float (const char *p, p4cell n, double *r);
+int pf_to_float (const char *p, p4cell n, p4fcell *r);
 
 int pf_convert_float(void)
 {
-    double f;
+    p4fcell f;
     /* scanned word sits at PFE.word. (not at HERE) */
     if ( BASE != 10 )
         return 0; /* quick path */

@@ -305,7 +305,7 @@ FCode (pf_see)
         pf_dot_name (nfa);
 #if defined PF_WITH_FLOATING
     } else if (*xt == p4_f_constant_RT_) {
-        double fval = *(double *)(rest);
+        p4fcell fval = *(p4fcell *)(rest);
         pf_outf ("%.*f FCONSTANT ", (int) PRECISION, fval);
         pf_dot_name (nfa);
     } else if (*xt == p4_f_variable_RT_) {
