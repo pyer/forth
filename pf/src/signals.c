@@ -72,7 +72,6 @@
 #include "types.h"
 #include "const.h"
 #include "macro.h"
-#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"

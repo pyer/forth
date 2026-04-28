@@ -30,7 +30,6 @@
 #include "const.h"
 #include "types.h"
 #include "macro.h"
-#include "thread.h"
 #include "compiler.h"
 #include "interpret.h"
 #include "terminal.h"

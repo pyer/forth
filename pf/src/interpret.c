@@ -16,7 +16,6 @@
 #include "types.h"
 #include "const.h"
 #include "macro.h"
-#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -889,7 +888,7 @@ void pf_load_words (const p4Words* ws)
 //        *--SP = (p4cell)(w->ptr);
     
     switch (type) {
-    case p4_SXCO:
+    case 'X': // smart-word (semant)
         //___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
         p4_Semant* semant = (p4_Semant*)(void*)(w->ptr);
         p4_header_in();
@@ -902,20 +901,20 @@ void pf_load_words (const p4Words* ws)
            a maxlen
         */
         break;
-    case p4_RTCO:
+    case 'r': // creates a word with special runtime
         //___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
         p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
         p4_header_in();
         FX_COMMA ( runtime->comp );
         break;
-    case p4_IXCO:         /* these are real primitives which do */
-    case p4_FXCO:         /* not reference an info-block but just */
+    case 'p': // ordinary primitive
+    case 'P': // immediate primitive
         *--SP = (p4cell)(w->ptr);
         p4_header_in();   /* the p4code directly */
         FX_COMMA ( *SP ); 
         ((*(p4cell **)&(SP))++);
         break;
-    case 'v':
+    case 'v': // VARIABLE
         p4_header_in();
         P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
         FX_XCOMMA(pf_dictvar_RT_); /* a simply comma */

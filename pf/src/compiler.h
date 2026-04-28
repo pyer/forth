@@ -10,7 +10,6 @@ struct p4_Runtime2              /* describes characteristics of CFA code */
     char const *name;           /* the header name for it */
     p4code comp;             /* the word that will CREATE new headers */
     p4code exec[2];          /* and the values contained in created CFAs */
-//    p4cell flag;                /* the call-threading flags for the exec[]s */
 };
 
 typedef struct p4_Runtime2 p4_Runtime2; /* and also for the CFA themselves */

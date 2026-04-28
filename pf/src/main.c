@@ -32,7 +32,6 @@
 #include "types.h"
 #include "const.h"
 #include "macro.h"
-#include "thread.h"
 
 #include "compiler.h"
 #include "exception.h"
@@ -80,9 +79,9 @@ void* p4_dict_allocate (int items, int size, int align, void** lower, void** upp
  */
 void quit_system (void)
 {
-    CSP = (p4cell*) RP;		/* come_back marker */
-    RP = R0;			/* return stack to its bottom */
-    STATE = P4_FALSE;		/* interpreting now */
+    CSP = (p4cell*) RP;        /* come_back marker */
+    RP = R0;            /* return stack to its bottom */
+    STATE = P4_FALSE;        /* interpreting now */
     PFE.execute = pf_normal_execute;
 }
 
@@ -92,7 +91,7 @@ void quit_system (void)
 void abort_system (void)
 {
     BASE = 10;
-    SP = S0;		/* stacks */
+    SP = S0;        /* stacks */
 #if defined PF_WITH_FLOATING
     FP = F0;
     PRECISION = 6;
@@ -103,7 +102,6 @@ void abort_system (void)
 extern const p4Words
     P4WORDS(compiler),
     P4WORDS(core),
-//    P4WORDS(debug),
     P4WORDS(exception),
     P4WORDS(facility),
     P4WORDS(file),
@@ -139,10 +137,10 @@ void pf_init_system (p4_Thread* th) /* main_init */
 
     dict = calloc (1, (size_t) total_size);
     if (dict == NULL) {
-            printf("[%p] FAILED to alloc any base memory (len %lu): %s\n",
-		      p4TH, total_size, strerror(errno));
-            puts ("ERROR: out of memory");
-	    exit(6);
+        printf("[%p] FAILED to alloc any base memory (len %lu): %s\n",
+              p4TH, total_size, strerror(errno));
+        puts ("ERROR: out of memory");
+        exit(6);
     }
 
     /* ________________ initialize dictionary _____________ */
@@ -161,11 +159,10 @@ void pf_init_system (p4_Thread* th) /* main_init */
                       (void**) &PFE.fstack, (void**) &F0);
 #endif
 
-    if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000)
-    {
-	puts ("ERROR: impossible memory map");
-	exitcode = 3;
-	pf_longjmp_exit ();
+    if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000) {
+        puts ("ERROR: impossible memory map");
+        exitcode = 3;
+        pf_longjmp_exit ();
     }
 
     /*  -- cold boot stage -- */
@@ -247,8 +244,8 @@ int main (int argc, char** argv)
     quit_system ();
     exitcode = 0;
 
-    switch (setjmp (jump_loop))
-    {           /* classify unhandled throw codes */
+    switch (setjmp (jump_loop)) {
+    /* classify unhandled throw codes */
     case 'A': /* do abort */
         abort_system();
     case 'Q': /* do quit */
@@ -260,13 +257,13 @@ int main (int argc, char** argv)
             pf_include(buffer,len);
         if ( cmd == 'e' ) {
             pf_interpret(buffer, len, 0);
-	    pf_longjmp_exit ();
+            pf_longjmp_exit ();
         }
         break;
     default:
         pf_cleanup_terminal();
         free(dict);
-    	return exitcode;
+        return exitcode;
     }
 
     for (;;) {
