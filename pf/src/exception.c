@@ -211,7 +211,7 @@ int p4_catch (p4xt xt)
     frame.ipp = IP;
     frame.spp = SP;
 #if defined PF_WITH_FLOATING
-    frame.fpp = FP;
+    frame.fpp = fp;
 #endif
     frame.rpp = RP;
     frame.prev = catchframe;  catchframe = &frame;
@@ -256,7 +256,7 @@ void p4_throwstr (int id, const char* description)
         IP = frame->ipp;
         SP = frame->spp;
 #if defined PF_WITH_FLOATING
-        FP = frame->fpp;
+        fp = frame->fpp;
 #endif
   RP = frame->rpp;
         longjmp (frame->jmp, id);

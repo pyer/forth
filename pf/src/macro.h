@@ -12,7 +12,7 @@
 
 /* determines the dimension of any given vector */
 #ifndef DIM
-#define DIM(X)		((int)(sizeof (X) / sizeof *(X)))
+#define DIM(X)    ((int)(sizeof (X) / sizeof *(X)))
 #endif
 
 /* declare a primitive */
@@ -100,8 +100,8 @@
 #define P4_CONSTANT( NM, VAL)   { "c\237"NM, (p4code)(VAL) }
 
 /* return the byte offset of a given component to beginning of structure: */
-#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
-#define P4_VARIABLE( NM, VAL)   { "v\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
+//#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
+//#define P4_VARIABLE( NM, VAL)   { "v\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
 //#define P4_VARIABLE( NM, VAL)   { "v\237"NM, (p4code)((char *)&(((p4_Thread *)0)->VAL) - (char *)0) }
 
 #ifndef P4_MAX_FILES /* maximum number of open files */
@@ -149,35 +149,28 @@ p4Words;
    your OS isn`t multi-threaded, what the heck, use this feature!
 */
 
-typedef struct p4_Thread	p4_Thread;
+//typedef struct p4_Thread  p4_Thread;
 
 struct p4_Thread
 {
-    char* dp;			    /* actual top of the dictionary */
+    char* dp;          /* actual top of the dictionary */
 
-    p4cell state;		  /* interpreting (0) or compiling (-1) */
-    p4ucell base;		  /* of number i/o conversion */
-
-    p4cell* stack;		/*  data stack */
+    p4cell* stack;    /*  data stack */
     p4cell* s0;
-    p4cell* sp;			  /* the stack pointer */
+    p4cell* sp;        /* the stack pointer */
 
-    p4xt**  rstack;		/*  return stack */
+    p4xt**  rstack;    /*  return stack */
     p4xt**  r0;
-    p4xt**  rp;			  /* the return stack pointer */
+    p4xt**  rp;        /* the return stack pointer */
 
-#if defined PF_WITH_FLOATING
-    p4cell precision;	/* floating point output precision */
-    p4fcell* fstack; 	/*  floating point stack */
-    p4fcell* f0;
-    p4fcell* fp;			/* the floating point stack pointer */
-#endif
-    p4xt*   ip;			  /* the intruction pointer */
-    p4xt    wp;			  /* speed up the inner interpreter */
+    p4xt*   ip;        /* the intruction pointer */
+    p4xt    wp;        /* speed up the inner interpreter */
 
-    void (*execute)(p4xt);	/* := normal_execute */
+    void (*execute)(p4xt);  /* := normal_execute */
 
+//} p4_Thread;
 };
+
 
 extern struct p4_Thread* p4TH;
 
@@ -194,16 +187,10 @@ extern char* dictlimit;
 #define R0 PFE.r0
 #define RP (PFE.rp)
 
-#if defined PF_WITH_FLOATING
-  #define F0 PFE.f0
-  #define FP (PFE.fp)
-  #define PRECISION (PFE.precision)
-#endif
-
 #define IP (PFE.ip)
 #define WP (PFE.wp)
 
-#define STATE (PFE.state)
-#define BASE  (PFE.base)
+//#define STATE (PFE.state)
+//#define BASE  (PFE.base)
 
 #endif 

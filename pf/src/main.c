@@ -14,20 +14,16 @@
  */
 #include "config.h"
 
+#include <ctype.h>
+#include <errno.h>
+#include <locale.h>
+#include <setjmp.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <ctype.h>
-#include <setjmp.h>
 
-#if defined PF_WITH_FLOATING
-#include <float.h>
-#endif
-#include <errno.h>
-#include <locale.h>
 
 #include "types.h"
 #include "const.h"
@@ -45,7 +41,7 @@ void pf_init_signal_handlers (void);
 
 static char memory[TOTAL_SIZE]; /* BSS */
 
-p4_Thread* p4TH;
+struct p4_Thread* p4TH;
 /************************************************************************/
 int exitcode = 0;
 
@@ -53,8 +49,11 @@ int exitcode = 0;
 char* dict;
 char* dictlimit;
 
-/* NFA of most recently CREATEd header */
-p4char *LATEST;
+p4char *LATEST;     /* NFA of most recently CREATEd header */
+
+p4cell STATE;       /* interpreting (0) or compiling (-1) */
+p4cell BASE;        /* of number i/o conversion */
+
 /************************************************************************/
 /**
  * helper routine to allocate a portion of the dictionary
@@ -93,8 +92,8 @@ void abort_system (void)
     BASE = 10;
     SP = S0;        /* stacks */
 #if defined PF_WITH_FLOATING
-    FP = F0;
-    PRECISION = 6;
+    fp = f0;
+    precision = 6;
 #endif
 }
 
@@ -116,9 +115,8 @@ extern const p4Words
 
 /************************************************************************/
 /**
- * note the argument
  */
-void pf_init_system (p4_Thread* th) /* main_init */
+void pf_init_system() /* main_init */
 {
     long int total_size = TOTAL_SIZE;
     long int stack_size = (TOTAL_SIZE / 32 + 256)  / sizeof(p4cell); 
@@ -129,7 +127,8 @@ void pf_init_system (p4_Thread* th) /* main_init */
 
     setlocale (LC_ALL, "C");
     /* ............................................................*/
-    p4TH = th;
+    p4TH = (struct p4_Thread*)memory;
+    memset (memory, 0, sizeof(struct p4_Thread));
     pf_init_terminal();
     pf_init_signal_handlers();
 
@@ -138,7 +137,7 @@ void pf_init_system (p4_Thread* th) /* main_init */
     dict = calloc (1, (size_t) total_size);
     if (dict == NULL) {
         printf("[%p] FAILED to alloc any base memory (len %lu): %s\n",
-              p4TH, total_size, strerror(errno));
+              memory, total_size, strerror(errno));
         puts ("ERROR: out of memory");
         exit(6);
     }
@@ -156,7 +155,7 @@ void pf_init_system (p4_Thread* th) /* main_init */
 #if defined PF_WITH_FLOATING
     p4_dict_allocate (float_stack_size, sizeof(p4fcell),
                       SIZEOF_FCELL,
-                      (void**) &PFE.fstack, (void**) &F0);
+                      (void**) &fstack, (void**) &f0);
 #endif
 
     if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000) {
@@ -165,14 +164,8 @@ void pf_init_system (p4_Thread* th) /* main_init */
         pf_longjmp_exit ();
     }
 
-    /*  -- cold boot stage -- */
-    RP = R0;
-    SP = S0;
-#if defined PF_WITH_FLOATING
-    FP = F0;
-    PRECISION = 6;
-#endif
-    BASE = 10;
+    /* -------- cold boot stage ------- */
+    abort_system();
     /* Wipe the dictionary: */
     memset (dict, 0, (dictlimit - dict));
     DP = dict;
@@ -193,6 +186,8 @@ void pf_init_system (p4_Thread* th) /* main_init */
     pf_load_words (&P4WORDS (signals));
     pf_load_words (&P4WORDS (tools));
     pf_load_words (&P4WORDS (facility));
+    /* -------- warm boot stage ------- */
+    quit_system ();
 }
 
 void help_opt(char *progname)
@@ -213,7 +208,6 @@ int main (int argc, char** argv)
     char buffer[256];
     int len = 0;
     int opt;
-    p4_Thread* thread = (p4_Thread*) memory;
   
     while ((opt = getopt(argc, argv, "e:f:vh")) != -1) {
         switch (opt) {
@@ -236,12 +230,8 @@ int main (int argc, char** argv)
         }
     }
 
-    memset (thread, 0, sizeof(p4_Thread));
-    /* -------- cold boot stage ------- */
-    pf_init_system(thread);
-    /* -------- warm boot stage ------- */
-    abort_system ();
-    quit_system ();
+    /* boot stage */
+    pf_init_system();
     exitcode = 0;
 
     switch (setjmp (jump_loop)) {

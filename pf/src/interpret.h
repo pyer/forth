@@ -6,6 +6,7 @@ extern int redefined_msg;
 void show_word(void);
 
 extern p4char *LATEST;
+extern p4cell BASE;
 
 /* you must differentiate between VAR-style body and DOES-style body */
 #define CFA_TO_LINK(C)   ((p4char**)(C) - 1 )

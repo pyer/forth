@@ -1,8 +1,19 @@
 #ifndef __PF_COMPILER_H
 #define __PF_COMPILER_H
 
+
+
 extern p4cell *csp;        /* compiler security, saves sp here */
 #define CSP        (csp)
+
+extern p4cell STATE;
+
+#if defined PF_WITH_FLOATING
+extern p4fcell* fstack;
+extern p4fcell* f0;
+extern p4fcell* fp;
+extern p4cell precision;
+#endif
 
 struct p4_Runtime2              /* describes characteristics of CFA code */
 {

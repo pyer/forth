@@ -85,7 +85,7 @@ FCode (pf_dot_s)
 
     int dd = S0 - SP;
 #if defined PF_WITH_FLOATING
-    int fd = F0 - FP;
+    int fd = f0 - fp;
     if (fd == 0)
 #endif
     {
@@ -107,23 +107,23 @@ FCode (pf_dot_s)
     else if (dd == 0) /* fd !dd */
     {
         /* only floating point stack not empty */
-        pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 4), "<stack empty> ", (int)PRECISION, FP[0]);
+        pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 4), "<stack empty> ", (int)precision, fp[0]);
         for (i = 1; i < fd; i++) {
-            pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)PRECISION, FP[i]);
+            pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)precision, fp[i]);
         }
     } else { /* fd dd */
         int bd = dd < fd ? dd : fd;
         for (i = 0; i < bd; i++) {
           pf_cr_();
           pf_prCell (SP[i]);
-          pf_outf ("%15.*f ", (int)PRECISION, FP[i]);
+          pf_outf ("%15.*f ", (int)precision, fp[i]);
         }
         for (; i < dd; i++) {
           pf_cr_();
           pf_prCell (SP[i]);
         }
         for (; i < fd; i++) {
-          pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)PRECISION, FP[i]);
+          pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)precision, fp[i]);
         }
     }
 #endif
@@ -139,8 +139,8 @@ FCode (pf_dot_status)
     pf_outf ("\nStack space:         %7ld cells",  (p4cell) (S0 - PFE.stack));  /* sizeof (p4cell) */
     pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4cell) (R0 - PFE.rstack));  /* sizeof (p4xt**) */
 #if defined PF_WITH_FLOATING
-    pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (F0 - PFE.fstack)); /* sizeof (double) */
-    pf_outf ("\nPRECISION:           %3d", (int) PRECISION);
+    pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (f0 - fstack)); /* sizeof (double) */
+    pf_outf ("\nprecision:           %3d", (int) precision);
 #endif
     pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
     pf_cr_();
@@ -239,7 +239,7 @@ void pf_decompile_rest (p4char* nfa, p4xt *ip)
 #if defined PF_WITH_FLOATING
             case P4_SKIPS_FLOAT:
               TYPEOF_FCELL *f = (TYPEOF_FCELL *)ip;
-              pf_outf ("%.*f ", (int) PRECISION, *f);
+              pf_outf ("%.*f ", (int) precision, *f);
               f++;
               ip = (p4xt *)f;
               break;
@@ -305,7 +305,7 @@ FCode (pf_see)
 #if defined PF_WITH_FLOATING
     } else if (*xt == p4_f_constant_RT_) {
         p4fcell fval = *(p4fcell *)(rest);
-        pf_outf ("%.*f FCONSTANT ", (int) PRECISION, fval);
+        pf_outf ("%.*f FCONSTANT ", (int) precision, fval);
         pf_dot_name (nfa);
     } else if (*xt == p4_f_variable_RT_) {
         pf_outs("FVARIABLE ");

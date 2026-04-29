@@ -104,8 +104,8 @@ FCode (pf_Q_stack)
     if (SP > S0)            p4_throw (P4_ON_STACK_UNDER);
     if (SP < PFE.stack)         p4_throw (P4_ON_STACK_OVER);
 #if defined PF_WITH_FLOATING
-    if (FP > F0)            p4_throw (P4_ON_FSTACK_UNDER);
-    if (FP < PFE.fstack)        p4_throw (P4_ON_FSTACK_OVER);
+    if (fp > f0)            p4_throw (P4_ON_FSTACK_UNDER);
+    if (fp < fstack)        p4_throw (P4_ON_FSTACK_OVER);
 #endif
     if (dictlimit - MIN_UNUSED < DP) 
         p4_throw (P4_ON_DICT_OVER);  
@@ -227,6 +227,13 @@ FCode (pf_forward_resolve)
 {
     pf_Q_comp_();
     *(p4char **) *SP++ = DP;
+}
+
+/* -------------------------------------------------------------- */
+
+FCode (pf_state)            
+{
+    *--SP = (p4cell)&STATE;
 }
 
 /* -------------------------------------------------------------- */
@@ -1100,7 +1107,7 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("R>",           pf_r_from),
     P4_SXco ("R@",           pf_r_fetch),
     /* definition checks */
-    P4_VARIABLE ("STATE",    state),
+    P4_FXco ("STATE",        pf_state),
     P4_RTco ("CREATE",       pf_create),
     P4_RTco ("<BUILDS",      pf_builds),
     P4_SXco ("DOES>",        pf_does),

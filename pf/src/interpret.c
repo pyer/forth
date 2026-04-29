@@ -64,6 +64,15 @@ FCode (pf_source)
 }
 
 /* -------------------------------------------------------------- */
+/** BASE ( -- a-addr )
+ * a-addr is the address of a cell containing the current number-conversion radix {{2...36}}
+ */
+FCode (pf_base)            
+{
+    *--SP = (p4cell)&BASE;
+}
+
+/* -------------------------------------------------------------- */
 /** LATEST ( -- nfa )
  * return the NFA of the latest created word
  */
@@ -821,23 +830,6 @@ FCode (pf_backslash)
 }
 
 /* -------------------------------------------------------------- */
-/**
- * (DICTVAR) forth-thread variable runtime, => VARIABLE like
- */
-FCode (pf_dictvar_RT)
-{
-    *--SP = (p4cell) ((char *) p4TH + (WP_PFA)[0]);
-}
-
-/**
- * (DICTGET) forth-thread constget runtime, => CONSTANT like
- */
-FCode (pf_dictget_RT)
-{
-    *--SP = *(p4cell *) ((char *) p4TH + (WP_PFA)[0]);
-}
-
-/* -------------------------------------------------------------- */
 /* >BODY is known to work on both DOES-style and VAR-style words
  * and it will even return the thread-local address of remote-style words
  * (DOES-style words are <BUILDS CREATE and DEFER in ans-forth-mode)
@@ -846,10 +838,7 @@ p4cell * cfa_to_body (p4xt xt)
 {
     if (! xt) return P4_TO_BODY (xt);
 
-    if (*xt == pf_dictvar_RT_ ||
-        *xt == pf_dictget_RT_) {
-        return ((p4cell*)( (char*)p4TH + P4_TO_BODY(xt)[0] ));
-    } else if (*xt == pf_create_RT_ ||
+    if (*xt == pf_create_RT_ ||
              *xt == pf_does_RT_ || 
              *xt == pf_defer_RT_) {
         return P4_TO_DOES_BODY(xt); 
@@ -885,40 +874,38 @@ void pf_load_words (const p4Words* ws)
 
     word_ptr = ((p4char*)(w->name+2));
     word_len = -1;
-//        *--SP = (p4cell)(w->ptr);
-    
+
     switch (type) {
-    case 'X': // smart-word (semant)
-        //___ p4_Semant* semant = (p4_Semant*)(void*)(*SP++);
+    case 'X': // immediate smart-word (semant)
         p4_Semant* semant = (p4_Semant*)(void*)(w->ptr);
         p4_header_in();
         FX_COMMA ( semant->comp );
         if (! (semant ->name))
-        semant ->name = (p4char*)( word_ptr-1 ); 
+            semant ->name = (p4char*)( word_ptr-1 ); 
         /* discard const */
         /* BEWARE: the arg' name must come from a wordset entry to
            be both static and have a byte in front that could be 
            a maxlen
         */
+        P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
         break;
     case 'r': // creates a word with special runtime
-        //___ p4_Runtime2* runtime  = ((p4_Runtime2 *) (*SP++));
         p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
         p4_header_in();
         FX_COMMA ( runtime->comp );
         break;
     case 'p': // ordinary primitive
-    case 'P': // immediate primitive
         *--SP = (p4cell)(w->ptr);
         p4_header_in();   /* the p4code directly */
         FX_COMMA ( *SP ); 
         ((*(p4cell **)&(SP))++);
         break;
-    case 'v': // VARIABLE
-        p4_header_in();
-        P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-        FX_XCOMMA(pf_dictvar_RT_); /* a simply comma */
-        FX_COMMA (w->ptr);
+    case 'P': // immediate primitive
+        *--SP = (p4cell)(w->ptr);
+        p4_header_in();   /* the p4code directly */
+        FX_COMMA ( *SP ); 
+        ((*(p4cell **)&(SP))++);
+        P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
         break;
     case 'c': // CONSTANT
         *--SP = (p4cell)(w->ptr);
@@ -929,14 +916,10 @@ void pf_load_words (const p4Words* ws)
               "0x%x -> \"%s\"", 
               type, word_ptr);
     } /*switch*/
-    
-    /* implicit IMMEDIATE still around: */
-    if ('A' <= type && type <= 'Z')
-            P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+
   } /* for w in ws->w */
 
 }
-
 
 /* -------------------------------------------------------------- */
 /**
@@ -1113,7 +1096,7 @@ int pf_convert_float(void)
     /* WORD-string is at HERE */
     if (! pf_to_float (word_ptr, word_len, &f))
         return 0; /* quick path */
-    *--FP = f;
+    *--fp = f;
     return 1;
 }
 #endif
@@ -1243,7 +1226,7 @@ The function of QUERY may be performed with ACCEPT and EVALUATE.
 
 P4_LISTWORDS (interpret) =
 {
-    P4_VARIABLE ("BASE",     base),
+    P4_FXco ("BASE",         pf_base),
     P4_FXco ("SOURCE",       pf_source),
     P4_FXco ("LATEST",       pf_latest),
     P4_FXco ("SIGN",         pf_sign),
