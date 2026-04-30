@@ -140,8 +140,8 @@ FCode (pf_dot_s)
 FCode (pf_dot_status)
 {
     pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4cell) (dictlimit - dict),(p4cell) (DP - dict));
-    pf_outf ("\nStack space:         %7ld cells",  (p4cell) (S0 - PFE.stack));  /* sizeof (p4cell) */
-    pf_outf ("\nReturn stack space:  %7ld cells, (not the C call stack)",(p4cell) (R0 - PFE.rstack));  /* sizeof (p4xt**) */
+    pf_outf ("\nStack space:         %7ld cells",  (p4cell) (s0 - stack));  /* sizeof (p4cell) */
+    pf_outf ("\nReturn stack space:  %7ld cells",(p4cell) (r0 - rstack));  /* sizeof (p4xt**) */
 #if defined PF_WITH_FLOATING
     pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (f0 - fstack)); /* sizeof (double) */
     pf_outf ("\nprecision:           %3d", (int) precision);

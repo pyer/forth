@@ -39,6 +39,11 @@ FCode (p4_swap);
 FCode (p4_rot);
 
 /* -------------------------------------------------------------- */
+p4xt*   IP;        /* the intruction pointer */
+p4xt    WP;        /* speed up the inner interpreter */
+
+void (*execute)(p4xt);  /* := normal_execute */
+
 p4cell *csp;		/* compiler security, saves sp here */
 /* -------------------------------------------------------------- */
 FCode(pf_noop)
@@ -102,10 +107,10 @@ FCode (pf_Q_pairs)
  */
 FCode (pf_Q_stack)
 {
-    if (RP > R0)            p4_throw (P4_ON_RSTACK_UNDER);
-    if (RP < PFE.rstack)        p4_throw (P4_ON_RSTACK_OVER);
-    if (SP > S0)            p4_throw (P4_ON_STACK_UNDER);
-    if (SP < PFE.stack)         p4_throw (P4_ON_STACK_OVER);
+    if (RP > r0)            p4_throw (P4_ON_RSTACK_UNDER);
+    if (RP < rstack)        p4_throw (P4_ON_RSTACK_OVER);
+    if (SP > s0)            p4_throw (P4_ON_STACK_UNDER);
+    if (SP < stack)         p4_throw (P4_ON_STACK_OVER);
 #if defined PF_WITH_FLOATING
     if (fp > f0)            p4_throw (P4_ON_FSTACK_UNDER);
     if (fp < fstack)        p4_throw (P4_ON_FSTACK_OVER);
@@ -300,7 +305,7 @@ FCode (pf_defer_RT)
     register p4xt xt;
     xt = * (p4xt*) P4_TO_DOES_BODY(P4_BODY_FROM((WP_PFA))); /* check IS-field */
     if (xt) {
-        PFE.execute (xt);
+        execute (xt);
     }
 }
 

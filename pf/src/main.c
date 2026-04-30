@@ -46,13 +46,21 @@ void pf_init_signal_handlers (void);
 
 static char memory[TOTAL_SIZE]; /* BSS */
 
-struct p4_Thread* p4TH;
 /************************************************************************/
 int exitcode = 0;
 
 /* dictionary */
 char* dict;
 char* dictlimit;
+char* DP;           /* actual top of the dictionary */
+
+p4cell* stack;      /*  data stack */
+p4cell* s0;
+p4cell* sp;         /* the stack pointer */
+
+p4xt**  rstack;     /*  return stack */
+p4xt**  r0;
+p4xt**  rp;         /* the return stack pointer */
 
 p4char *LATEST;     /* NFA of most recently CREATEd header */
 
@@ -84,9 +92,9 @@ void* p4_dict_allocate (int items, int size, int align, void** lower, void** upp
 void quit_system (void)
 {
     CSP = (p4cell*) RP;        /* come_back marker */
-    RP = R0;            /* return stack to its bottom */
-    STATE = P4_FALSE;        /* interpreting now */
-    PFE.execute = pf_normal_execute;
+    RP = R0;                   /* return stack to its bottom */
+    STATE = P4_FALSE;          /* interpreting now */
+    execute = pf_normal_execute;
 }
 
 /*
@@ -132,8 +140,6 @@ void pf_init_system() /* main_init */
 
     setlocale (LC_ALL, "C");
     /* ............................................................*/
-    p4TH = (struct p4_Thread*)memory;
-    memset (memory, 0, sizeof(struct p4_Thread));
     pf_init_terminal();
     pf_init_signal_handlers();
 
@@ -153,14 +159,14 @@ void pf_init_system() /* main_init */
 
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
                       SIZEOF_CELL,
-                      (void**) & PFE.rstack, (void**) & R0);
+                      (void**) & rstack, (void**) &r0);
     p4_dict_allocate (stack_size, sizeof(p4cell),
                       SIZEOF_CELL,
-                      (void**) & PFE.stack, (void**) & S0);
+                      (void**) & stack,  (void**) &s0);
 #if defined PF_WITH_FLOATING
     p4_dict_allocate (float_stack_size, sizeof(p4fcell),
                       SIZEOF_FCELL,
-                      (void**) &fstack, (void**) &f0);
+                      (void**) &fstack,  (void**) &f0);
 #endif
 
     if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000) {

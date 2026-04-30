@@ -20,6 +20,7 @@
 #include "config.h"
 #include "types.h"
 #include "macro.h"
+#include "compiler.h"
 
 /* -------------------------------------------------------------- */
 /** MS ( milliseconds# -- ) [ANS]

@@ -35,9 +35,6 @@
 #   define NAMEPTR(X)   (((p4char*)(X))+1)
 #   define NAMELEN(X)   P4_NAME_MASK_LEN(*(p4char*)X)
 
-/* useful shortcuts */
-# define WP_PFA  ((p4cell *)&PFE.wp [1]) 
-
 #define FX_SKIP_STRING  (*(char **)&(IP) += (pf_aligned (*(p4char*)IP + 1)))
 
 /* P:dictpointer X:value Y:hintchar T:typedef */
@@ -99,11 +96,6 @@
 
 #define P4_CONSTANT( NM, VAL)   { "c\237"NM, (p4code)(VAL) }
 
-/* return the byte offset of a given component to beginning of structure: */
-//#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
-//#define P4_VARIABLE( NM, VAL)   { "v\237"NM, (p4code)OFFSET_OF(p4_Thread, VAL) }
-//#define P4_VARIABLE( NM, VAL)   { "v\237"NM, (p4code)((char *)&(((p4_Thread *)0)->VAL) - (char *)0) }
-
 #ifndef P4_MAX_FILES /* maximum number of open files */
 #define P4_MAX_FILES 0x10
 #endif
@@ -141,56 +133,4 @@ p4Words;
         NAME                    \
     }
   
-
-/* this is called options structure, since this aggregate communicates
-   the command-line. But it has enhanced over time. Just expect it to
-   be THE data-structure unique to each thread (started via main).
-   You can actually have MP_MAX forth-processors per thread, so if
-   your OS isn`t multi-threaded, what the heck, use this feature!
-*/
-
-//typedef struct p4_Thread  p4_Thread;
-
-struct p4_Thread
-{
-    char* dp;          /* actual top of the dictionary */
-
-    p4cell* stack;    /*  data stack */
-    p4cell* s0;
-    p4cell* sp;        /* the stack pointer */
-
-    p4xt**  rstack;    /*  return stack */
-    p4xt**  r0;
-    p4xt**  rp;        /* the return stack pointer */
-
-    p4xt*   ip;        /* the intruction pointer */
-    p4xt    wp;        /* speed up the inner interpreter */
-
-    void (*execute)(p4xt);  /* := normal_execute */
-
-//} p4_Thread;
-};
-
-
-extern struct p4_Thread* p4TH;
-
-extern char* dict;
-extern char* dictlimit;
-
-
-#define PFE (*p4TH)
-
-#define DP (PFE.dp)
-
-#define S0 PFE.s0
-#define SP (PFE.sp)
-#define R0 PFE.r0
-#define RP (PFE.rp)
-
-#define IP (PFE.ip)
-#define WP (PFE.wp)
-
-//#define STATE (PFE.state)
-//#define BASE  (PFE.base)
-
 #endif 

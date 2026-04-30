@@ -420,7 +420,7 @@ FCode (p4_depth)
 {
     register size_t n;
 
-    n = PFE.s0 - SP;
+    n = S0 - SP;
     *--SP = n;
 }
 
@@ -451,7 +451,7 @@ FCode (p4_dup)
  */
 FCode (p4_execute)
 {
-    PFE.execute ((p4xt) *SP++);
+    execute ((p4xt) *SP++);
 }
 
 /** FILL ( mem-ptr mem-len char# -- ) [ANS]

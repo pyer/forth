@@ -1,12 +1,36 @@
 #ifndef __PF_COMPILER_H
 #define __PF_COMPILER_H
 
+extern char* dict;
+extern char* dictlimit;
 
+extern char* DP;           /* actual top of the dictionary */
+
+extern p4cell* stack;      /*  data stack */
+extern p4cell* s0;
+extern p4cell* sp;         /* the stack pointer */
+
+extern p4xt**  rstack;     /*  return stack */
+extern p4xt**  r0;
+extern p4xt**  rp;         /* the return stack pointer */
+
+#define S0 s0
+#define SP sp
+#define R0 r0
+#define RP rp
+
+extern p4xt*   IP;        /* the intruction pointer */
+extern p4xt    WP;        /* speed up the inner interpreter */
+/* useful shortcuts */
+# define WP_PFA  ((p4cell *)&WP[1]) 
+
+extern void (*execute)(p4xt);  /* := normal_execute */
 
 extern p4cell *csp;        /* compiler security, saves sp here */
 #define CSP        (csp)
 
 extern p4cell STATE;
+
 
 struct p4_Runtime2              /* describes characteristics of CFA code */
 {

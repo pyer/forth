@@ -543,7 +543,7 @@ FCode (pf_count)
  possibly_idempotent:
     if (((p4char**)SP)[1][-1] == (p4char)(SP[0])) /* idempotent ? */
     { if ((p4char)(SP[0])) return; } /* only if not null-count ! */
-    *--PFE.sp = (p4cell)(0); /* makes later functions to copy nothing at all */
+    *--SP = (p4cell)(0); /* makes later functions to copy nothing at all */
 }
 
 /* -------------------------------------------------------------- */
