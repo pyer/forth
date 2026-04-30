@@ -35,6 +35,10 @@
 #include "terminal.h"
 #include "history.h"
 
+#if defined PF_WITH_FLOATING
+  #include "floating.h"
+#endif
+
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
 #define HEXWIDTH (sizeof (p4cell) * 2)
 

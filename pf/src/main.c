@@ -34,6 +34,11 @@
 #include "interpret.h"
 #include "terminal.h"
 
+#if defined PF_WITH_FLOATING
+  #include "floating.h"
+#endif
+
+/************************************************************************/
 const char* pf_version_string(void);
 void pf_init_signal_handlers (void);
 

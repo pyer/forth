@@ -8,13 +8,6 @@ extern p4cell *csp;        /* compiler security, saves sp here */
 
 extern p4cell STATE;
 
-#if defined PF_WITH_FLOATING
-extern p4fcell* fstack;
-extern p4fcell* f0;
-extern p4fcell* fp;
-extern p4cell precision;
-#endif
-
 struct p4_Runtime2              /* describes characteristics of CFA code */
 {
     long magic;                 /* mark begin of structure */
@@ -110,10 +103,5 @@ FCode (pf_constant_RT);
 FCode (pf_constant);
 FCode (pf_variable_RT);
 FCode (pf_variable);
-
-  #if defined PF_WITH_FLOATING
-    FCode (p4_f_constant_RT);
-    FCode (p4_f_variable_RT);
-  #endif
 
 #endif

@@ -29,6 +29,9 @@
 #include "exception.h"
 #include "interpret.h"
 
+#if defined PF_WITH_FLOATING
+  #include "floating.h"
+#endif
 /* -------------------------------------------------------------- */
 
 FCode (p4_drop);
