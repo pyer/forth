@@ -721,10 +721,10 @@ P4_LISTWORDS (core) =
 {
 //    P4_INTO ("FORTH", 0),
     /** quick constants - implemented as code */
-    P4_CONSTANT ("0",		0),
-    P4_CONSTANT ("1",		1),
-    P4_CONSTANT ("2",		2),
-    P4_CONSTANT ("3",		3),
+    P4_CONSTANT ("0",    0),
+    P4_CONSTANT ("1",    1),
+    P4_CONSTANT ("2",    2),
+    P4_CONSTANT ("3",    3),
     /* core words */
     P4_FXco ("!",            p4_store),
     P4_FXco ("*",            p4_star),

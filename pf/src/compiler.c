@@ -44,7 +44,7 @@ p4xt    WP;        /* speed up the inner interpreter */
 
 void (*execute)(p4xt);  /* := normal_execute */
 
-p4cell *csp;		/* compiler security, saves sp here */
+p4cell *csp;    /* compiler security, saves sp here */
 /* -------------------------------------------------------------- */
 FCode(pf_noop)
 {
@@ -56,7 +56,7 @@ FCode(pf_noop)
  * check that => SP == => CSP otherwise => THROW
  * <br> used in control-words
  */
-FCode (pf_Q_csp)	
+FCode (pf_Q_csp)  
 {
     if (SP != CSP)
         p4_throw (P4_ON_CONTROL_MISMATCH);
@@ -67,7 +67,7 @@ FCode (pf_Q_csp)
  * otherwise => THROW
  * <br> often used in control-words
  */
-FCode (pf_Q_comp)		
+FCode (pf_Q_comp)    
 {
     if (!STATE)
         p4_throw (P4_ON_COMPILE_ONLY);
@@ -78,7 +78,7 @@ FCode (pf_Q_comp)
  * otherwise => THROW
  * <br> often used in control-words
  */
-FCode (pf_Q_exec)		
+FCode (pf_Q_exec)    
 {
     if (STATE)
         p4_throw (P4_ON_COMPILER_NESTING);
@@ -137,7 +137,7 @@ FCode (pf_to_r)
 FCode (pf_to_r_execution)
 {
 //#define P4_PUSH(X,P)    (*P4_DEC (P, p4cell) = (X))
-//#define P4_DEC(P,T)	(--(*(T **)&(P)))
+//#define P4_DEC(P,T)  (--(*(T **)&(P)))
 //    P4_PUSH(*SP++, RP);
 //    *P4_DEC (RP, p4cell) = *SP++;
     *(--(*(p4cell **)&(RP))) = *SP++;
@@ -190,7 +190,7 @@ P4COMPILE (pf_r_fetch, pf_r_fetch_execution, P4_SKIPS_NOTHING);
  simulate:
    : <MARK ?COMP  HERE ;
  */
-FCode (pf_backward_mark)	
+FCode (pf_backward_mark)  
 {
     pf_Q_comp_();
     *--SP = (p4cell) DP;
@@ -204,7 +204,7 @@ FCode (pf_backward_mark)
  simulate:
    : <RESOLVE ?COMP  , ;
  */
-FCode (pf_backward_resolve)		
+FCode (pf_backward_resolve)    
 {
     pf_Q_comp_();
     FX_QCOMMA (*SP++);
@@ -219,7 +219,7 @@ FCode (pf_backward_resolve)
  simulate:
    : MARK> ?COMP  HERE 0 , ;
  */
-FCode (pf_forward_mark)	
+FCode (pf_forward_mark)  
 {
     pf_backward_mark_();
     FX_QCOMMA(0);
@@ -476,7 +476,7 @@ FCode (pf_c_comma)
 }
 
 /* -------------------------------------------------------------- */
-#define P4_ALIGNED(P)	(((size_t)(P) & (SIZEOF_CELL - 1)) == 0)
+#define P4_ALIGNED(P)  (((size_t)(P) & (SIZEOF_CELL - 1)) == 0)
 
 /** ALIGN ( -- ) [ANS]
  * will make the dictionary aligned, usually to a
@@ -686,7 +686,7 @@ FCode (pf_bracket_compile)
 }
 
 /* -------------------------------------------------------------- */
-#define	FX_BRANCH	(IP = (p4xt*)*IP)
+#define  FX_BRANCH  (IP = (p4xt*)*IP)
 #define FX_SKIP_BRANCH  (IP++)
 
 /** "(?BRANCH)" ( -- ) [HIDDEN]
@@ -887,7 +887,7 @@ P4COMPILE (pf_leave, pf_leave_execution, P4_SKIPS_NOTHING);
 FCode (pf_loop_execution)
 {
     RP[0] = (p4xt *)((p4cell)(*RP) + 1);
-    if (RP[0]<RP[1])	/* counter < upper limit ? */
+    if (RP[0]<RP[1])  /* counter < upper limit ? */
     {
         IP = RP[2];     /* if yes: loop back (BRANCH) */
     } else
@@ -916,7 +916,7 @@ FCode (pf_plus_loop_execution)
 {
     p4cell i = *SP++;
     RP[0] = (p4xt *)((p4cell)(*RP) + i);
-    if (RP[0]<RP[1])	/* counter < upper limit ? */
+    if (RP[0]<RP[1])  /* counter < upper limit ? */
     {
         IP = RP[2];     /* if yes: loop back (BRANCH) */
     } else
@@ -1139,8 +1139,8 @@ P4_LISTWORDS (compiler) =
     P4_FXco ("COMPILE,",     pf_compile_comma),
     P4_IXco ("[COMPILE]",    pf_bracket_compile),
 /*
-    P4_IXco ("BRANCH",		pf_branch),
-    P4_IXco ("?BRANCH",		pf_q_branch),
+    P4_IXco ("BRANCH",    pf_branch),
+    P4_IXco ("?BRANCH",    pf_q_branch),
 */
     P4_SXco ("IF",           pf_if),
     P4_SXco ("ELSE",         pf_else),

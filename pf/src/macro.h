@@ -91,8 +91,8 @@
  */
 #define P4_FXco( NM, PCODE)     { "p\237"NM, &PCODE##_ }
 #define P4_IXco( NM, PCODE)     { "P\377"NM, &PCODE##_ }
-#define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&SEM##_Semant }
 #define P4_RTco( NM, RUN)       { "r\237"NM, (p4code)&RUN##_Runtime }
+#define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&SEM##_Semant }
 
 #define P4_CONSTANT( NM, VAL)   { "c\237"NM, (p4code)(VAL) }
 

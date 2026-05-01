@@ -48,7 +48,7 @@ p4fcell* f0;
 p4fcell* fp;       /* the floating point stack pointer */
 
 /* ------------------------------------------------------------------ */
-#define P4_DFALIGNED(P)	(((size_t)(P) & (SIZEOF_FCELL - 1)) == 0)
+#define P4_DFALIGNED(P)  (((size_t)(P) & (SIZEOF_FCELL - 1)) == 0)
 /* ------------------------------------------------------------------ */
 
 /**
@@ -313,7 +313,7 @@ FCode (p4_f_variable)
 }
 P4RUNTIME1(p4_f_variable, p4_f_variable_RT);
 
-FCode (p4_represent)		/* with help from Lennart Benshop */
+FCode (p4_represent)    /* with help from Lennart Benshop */
 {
     char *p, buf[0x80];
     int u, log, sign;
@@ -407,27 +407,27 @@ FCode (p4_s_floats)
 
 /*-- simple mappings to the ANSI-C library  --*/
 /*
-FCode (p4_f_acos)	{ *fp = acos (*fp); }
-FCode (p4_f_acosh)	{ *fp = acosh (*fp); }
-FCode (p4_f_alog)	{ *fp = pow10 (*fp); }
-FCode (p4_f_asin)	{ *fp = asin (*fp); }
-FCode (p4_f_asinh)	{ *fp = asinh (*fp); }
-FCode (p4_f_atan)	{ *fp = atan (*fp); }
-FCode (p4_f_atan2)	{ fp [1] = atan2 (fp [1], fp [0]); fp++; }
-FCode (p4_f_atanh)	{ *fp = atanh (*fp); }
-FCode (p4_f_cos)	{ *fp = cos (*fp); }
-FCode (p4_f_cosh)	{ *fp = cosh (*fp); }
-FCode (p4_f_exp)	{ *fp = exp (*fp); }
-FCode (p4_f_expm1)	{ *fp = expm1 (*fp); }
-FCode (p4_f_ln)		{ *fp = log (*fp); }
-FCode (p4_f_lnp1)	{ *fp = log1p (*fp); }
-FCode (p4_f_log)	{ *fp = log10 (*fp); }
-FCode (p4_f_sin)	{ *fp = sin (*fp); }
-FCode (p4_f_sincos)	{ --fp; fp [0] = cos (fp [1]); fp [1] = sin (fp [1]); }
-FCode (p4_f_sinh)	{ *fp = sinh (*fp); }
-FCode (p4_f_sqrt)	{ *fp = sqrt (*fp); }
-FCode (p4_f_tan)	{ *fp = tan (*fp); }
-FCode (p4_f_tanh)	{ *fp = tanh (*fp); }
+FCode (p4_f_acos)  { *fp = acos (*fp); }
+FCode (p4_f_acosh)  { *fp = acosh (*fp); }
+FCode (p4_f_alog)  { *fp = pow10 (*fp); }
+FCode (p4_f_asin)  { *fp = asin (*fp); }
+FCode (p4_f_asinh)  { *fp = asinh (*fp); }
+FCode (p4_f_atan)  { *fp = atan (*fp); }
+FCode (p4_f_atan2)  { fp [1] = atan2 (fp [1], fp [0]); fp++; }
+FCode (p4_f_atanh)  { *fp = atanh (*fp); }
+FCode (p4_f_cos)  { *fp = cos (*fp); }
+FCode (p4_f_cosh)  { *fp = cosh (*fp); }
+FCode (p4_f_exp)  { *fp = exp (*fp); }
+FCode (p4_f_expm1)  { *fp = expm1 (*fp); }
+FCode (p4_f_ln)    { *fp = log (*fp); }
+FCode (p4_f_lnp1)  { *fp = log1p (*fp); }
+FCode (p4_f_log)  { *fp = log10 (*fp); }
+FCode (p4_f_sin)  { *fp = sin (*fp); }
+FCode (p4_f_sincos)  { --fp; fp [0] = cos (fp [1]); fp [1] = sin (fp [1]); }
+FCode (p4_f_sinh)  { *fp = sinh (*fp); }
+FCode (p4_f_sqrt)  { *fp = sqrt (*fp); }
+FCode (p4_f_tan)  { *fp = tan (*fp); }
+FCode (p4_f_tanh)  { *fp = tanh (*fp); }
 */
 
 /* ************************************************** */
@@ -435,82 +435,82 @@ FCode (p4_f_tanh)	{ *fp = tanh (*fp); }
 P4_LISTWORDS (floating) =
 {
     P4_FXco ("PRECISION",  pf_precision),
-    P4_FXco ("FALIGN",		 p4_d_f_align),
-    P4_FXco ("FALIGNED",	 p4_d_f_aligned),
-    P4_FXco (">FLOAT",		 pf_to_float),
-    P4_FXco ("S>F",		 pf_s_to_f),
-    P4_FXco ("F>S",		 pf_f_to_s),
+    P4_FXco ("FALIGN",     p4_d_f_align),
+    P4_FXco ("FALIGNED",   p4_d_f_aligned),
+    P4_FXco (">FLOAT",     pf_to_float),
+    P4_FXco ("S>F",     pf_s_to_f),
+    P4_FXco ("F>S",     pf_f_to_s),
 
-    P4_FXco ("F!",		 p4_f_store),
-    P4_FXco ("F*",		 p4_f_star),
-    P4_FXco ("F+",		 p4_f_plus),
-    P4_FXco ("F-",		 p4_f_minus),
-    P4_FXco ("F/",		 p4_f_slash),
-    P4_FXco ("F0<",		 p4_f_zero_less),
-    P4_FXco ("F0=",		 p4_f_zero_equal),
-    P4_FXco ("F<",		 p4_f_less_than),
+    P4_FXco ("F!",     p4_f_store),
+    P4_FXco ("F*",     p4_f_star),
+    P4_FXco ("F+",     p4_f_plus),
+    P4_FXco ("F-",     p4_f_minus),
+    P4_FXco ("F/",     p4_f_slash),
+    P4_FXco ("F0<",     p4_f_zero_less),
+    P4_FXco ("F0=",     p4_f_zero_equal),
+    P4_FXco ("F<",     p4_f_less_than),
 
-    P4_FXco ("F@",		 p4_f_fetch),
-    P4_RTco ("FCONSTANT",	 p4_f_constant),
-    P4_FXco ("FDEPTH",		 p4_f_depth),
-    P4_FXco ("FDROP",		 p4_f_drop),
-    P4_FXco ("FDUP",		 p4_f_dup),
-    P4_SXco ("FLITERAL",	 p4_f_literal),
-    P4_FXco ("FLOAT+",		 p4_float_plus),
-    P4_FXco ("FLOATS",		 p4_floats),
-    P4_FXco ("FLOOR",		 p4_floor),
-    P4_FXco ("FMAX",		 p4_f_max),
-    P4_FXco ("FMIN",		 p4_f_min),
-    P4_FXco ("FNEGATE",		 p4_f_negate),
-    P4_FXco ("FOVER",		 p4_f_over),
-    P4_FXco ("FROT",		 p4_f_rot),
-    P4_FXco ("FROUND",		 p4_f_round),
-    P4_FXco ("FSWAP",		 p4_f_swap),
-    P4_RTco ("FVARIABLE",	 p4_f_variable),
-    P4_FXco ("REPRESENT",	 p4_represent),
+    P4_FXco ("F@",     p4_f_fetch),
+    P4_RTco ("FCONSTANT",   p4_f_constant),
+    P4_FXco ("FDEPTH",     p4_f_depth),
+    P4_FXco ("FDROP",     p4_f_drop),
+    P4_FXco ("FDUP",     p4_f_dup),
+    P4_SXco ("FLITERAL",   p4_f_literal),
+    P4_FXco ("FLOAT+",     p4_float_plus),
+    P4_FXco ("FLOATS",     p4_floats),
+    P4_FXco ("FLOOR",     p4_floor),
+    P4_FXco ("FMAX",     p4_f_max),
+    P4_FXco ("FMIN",     p4_f_min),
+    P4_FXco ("FNEGATE",     p4_f_negate),
+    P4_FXco ("FOVER",     p4_f_over),
+    P4_FXco ("FROT",     p4_f_rot),
+    P4_FXco ("FROUND",     p4_f_round),
+    P4_FXco ("FSWAP",     p4_f_swap),
+    P4_RTco ("FVARIABLE",   p4_f_variable),
+    P4_FXco ("REPRESENT",   p4_represent),
 
     /* floating point extension words */
-    P4_FXco ("F.",		 pf_f_dot),
-    P4_FXco ("FE.",		 pf_f_e_dot),
-    P4_FXco ("F**",		 p4_f_star_star),
-    P4_FXco ("FABS",		 p4_f_abs),
+    P4_FXco ("F.",     pf_f_dot),
+    P4_FXco ("FE.",     pf_f_e_dot),
+    P4_FXco ("F**",     p4_f_star_star),
+    P4_FXco ("FABS",     p4_f_abs),
 /*
-    P4_FXco ("DF!",		 p4_f_store),
-    P4_FXco ("DF@",		 p4_f_fetch),
-    P4_FXco ("DFALIGN",		 p4_d_f_align),
-    P4_FXco ("DFALIGNED",	 p4_d_f_aligned),
-    P4_FXco ("DFLOAT+",		 p4_d_float_plus),
-    P4_FXco ("DFLOATS",		 p4_d_floats),
+    P4_FXco ("DF!",     p4_f_store),
+    P4_FXco ("DF@",     p4_f_fetch),
+    P4_FXco ("DFALIGN",     p4_d_f_align),
+    P4_FXco ("DFALIGNED",   p4_d_f_aligned),
+    P4_FXco ("DFLOAT+",     p4_d_float_plus),
+    P4_FXco ("DFLOATS",     p4_d_floats),
 
-    P4_FXco ("FACOS",		 p4_f_acos),
-    P4_FXco ("FACOSH",		 p4_f_acosh),
-    P4_FXco ("FALOG",		 p4_f_alog),
-    P4_FXco ("FASIN",		 p4_f_asin),
-    P4_FXco ("FASINH",		 p4_f_asinh),
-    P4_FXco ("FATAN",		 p4_f_atan),
-    P4_FXco ("FATAN2",		 p4_f_atan2),
-    P4_FXco ("FATANH",		 p4_f_atanh),
-    P4_FXco ("FCOS",		 p4_f_cos),
-    P4_FXco ("FCOSH",		 p4_f_cosh),
-    P4_FXco ("FEXP",		 p4_f_exp),
-    P4_FXco ("FEXPM1",		 p4_f_expm1),
-    P4_FXco ("FLN",		 p4_f_ln),
-    P4_FXco ("FLNP1",		 p4_f_lnp1),
-    P4_FXco ("FLOG",		 p4_f_log),
-    P4_FXco ("FSIN",		 p4_f_sin),
-    P4_FXco ("FSINCOS",		 p4_f_sincos),
-    P4_FXco ("FSINH",		 p4_f_sinh),
-    P4_FXco ("FSQRT",		 p4_f_sqrt),
-    P4_FXco ("FTAN",		 p4_f_tan),
-    P4_FXco ("FTANH",		 p4_f_tanh),
+    P4_FXco ("FACOS",     p4_f_acos),
+    P4_FXco ("FACOSH",     p4_f_acosh),
+    P4_FXco ("FALOG",     p4_f_alog),
+    P4_FXco ("FASIN",     p4_f_asin),
+    P4_FXco ("FASINH",     p4_f_asinh),
+    P4_FXco ("FATAN",     p4_f_atan),
+    P4_FXco ("FATAN2",     p4_f_atan2),
+    P4_FXco ("FATANH",     p4_f_atanh),
+    P4_FXco ("FCOS",     p4_f_cos),
+    P4_FXco ("FCOSH",     p4_f_cosh),
+    P4_FXco ("FEXP",     p4_f_exp),
+    P4_FXco ("FEXPM1",     p4_f_expm1),
+    P4_FXco ("FLN",     p4_f_ln),
+    P4_FXco ("FLNP1",     p4_f_lnp1),
+    P4_FXco ("FLOG",     p4_f_log),
+    P4_FXco ("FSIN",     p4_f_sin),
+    P4_FXco ("FSINCOS",     p4_f_sincos),
+    P4_FXco ("FSINH",     p4_f_sinh),
+    P4_FXco ("FSQRT",     p4_f_sqrt),
+    P4_FXco ("FTAN",     p4_f_tan),
+    P4_FXco ("FTANH",     p4_f_tanh),
 
-    P4_FXco ("F~",		 p4_f_proximate),
-    P4_FXco ("SF!",		 p4_s_f_store),
-    P4_FXco ("SF@",		 p4_s_f_fetch),
-    P4_FXco ("SFALIGN",		 p4_align),
-    P4_FXco ("SFALIGNED",	 p4_aligned),
-    P4_FXco ("SFLOAT+",		 p4_s_float_plus),
-    P4_FXco ("SFLOATS",		 p4_s_floats),
+    P4_FXco ("F~",     p4_f_proximate),
+    P4_FXco ("SF!",     p4_s_f_store),
+    P4_FXco ("SF@",     p4_s_f_fetch),
+    P4_FXco ("SFALIGN",     p4_align),
+    P4_FXco ("SFALIGNED",   p4_aligned),
+    P4_FXco ("SFLOAT+",     p4_s_float_plus),
+    P4_FXco ("SFLOATS",     p4_s_floats),
 */
 };
 P4_COUNTWORDS (floating, "Floating point");

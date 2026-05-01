@@ -16,10 +16,10 @@
 extern jmp_buf jump_loop;
 void pf_longjmp_loop(int arg);
 
-#define pf_longjmp_abort()	(pf_longjmp_loop('A'))
-#define pf_longjmp_exit()	(pf_longjmp_loop('X'))
-#define pf_longjmp_quit()	(pf_longjmp_loop('Q'))
-#define pf_longjmp_yield()	(pf_longjmp_loop('S'))
+#define pf_longjmp_abort()  (pf_longjmp_loop('A'))
+#define pf_longjmp_exit()  (pf_longjmp_loop('X'))
+#define pf_longjmp_quit()  (pf_longjmp_loop('Q'))
+#define pf_longjmp_yield()  (pf_longjmp_loop('S'))
 
 typedef struct p4_Except p4_Except; /* an exception frame */
 
