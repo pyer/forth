@@ -33,7 +33,7 @@
 /* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
 #define BYTEORDER 1234
 
-#define PF_WITH_FFA      1       /* use seperate FlagField */
+//#define PF_WITH_FFA      1       /* use seperate FlagField */
 #define PF_WITH_FLOATING 1       /* enable floating point numbers */
 
 #define PATH_LENGTH 256

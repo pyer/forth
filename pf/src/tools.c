@@ -146,7 +146,6 @@ FCode (pf_dot_status)
     pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (f0 - fstack)); /* sizeof (double) */
     pf_outf ("\nprecision:           %3d", (int) precision);
 #endif
-    pf_outf ("\nmaximum number of open files:     %u",  P4_MAX_FILES);
     pf_cr_();
 }
 
@@ -174,7 +173,7 @@ FCode (pf_dot_version)
 /* ----------------------------------------------------------------------- */
 void pf_dot_name (const p4char *nfa)
 {
-    if (nfa && (P4_NAMEFLAGS(nfa) & 0x80)) {
+    if (nfa && (NAMEFLAGS(nfa) & P4xFLAG)) {
         pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
         pf_space_();
     }
@@ -320,10 +319,8 @@ FCode (pf_see)
         pf_outs("is a primitive. ");
     }
 
-    if (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE)
+    if (NAMEFLAGS(nfa) & P4xIMMEDIATE)
             pf_outs ("IMMEDIATE ");
-//    if (P4_NAMEFLAGS(nfa) & P4xISxRUNTIME)
-//            pf_outs ("RUNTIME ");
 }
 
 /* ----------------------------------------------------------------------- */

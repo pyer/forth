@@ -271,7 +271,6 @@ FCode (pf_create_RT)
 FCode (pf_create)
 {
     p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (pf_create);
     FX_RCOMMA (0);
 }
@@ -291,7 +290,6 @@ FCode (pf_builds_RT)
 FCode (pf_builds)
 {
     p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (pf_builds);
     FX_RCOMMA (0);
 }
@@ -324,7 +322,6 @@ FCode (pf_defer)
 {
 //    FX_RUNTIME_HEADER;
     p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (pf_defer);
     FX_XCOMMA (0); /* <-- leave it blank (may become chain-link later) */
     FX_XCOMMA (0); /* <-- put XT here in fig-mode */
@@ -403,8 +400,7 @@ FCode (pf_colon)
 {
     pf_Q_exec_();
     p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
-    P4_NAMEFLAGS(LATEST) |= P4xSMUDGED;
+    NAMEFLAGS(LATEST) |= P4xSMUDGED;
     FX_RUNTIME1 (pf_colon);
     CSP = SP;
     STATE = P4_TRUE;
@@ -430,7 +426,7 @@ FCode (pf_semicolon)
 {
     pf_Q_csp_();
     STATE = P4_FALSE;
-    P4_NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
+    NAMEFLAGS(LATEST) &= ~P4xSMUDGED;
     FX_COMPILE (pf_semicolon);
 }
 
@@ -452,7 +448,7 @@ P4COMPILE (pf_exit, pf_semicolon_execution, P4_SKIPS_NOTHING);
  */
 FCode (pf_immediate)
 {
-    P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+    NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
 }
 
 /* -------------------------------------------------------------- */
@@ -538,7 +534,6 @@ FCode (pf_constant_RT)
 FCode (pf_constant)
 {
     p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1 (pf_constant);
     FX_VCOMMA (*SP++);
 }
@@ -561,7 +556,6 @@ FCode (pf_variable_RT)
 FCode (pf_variable)
 {
     p4_header_in();
-    P4_NAMEFLAGS(LATEST) |= P4xISxRUNTIME;
     FX_RUNTIME1(pf_variable);
     FX_VCOMMA (0);
 }

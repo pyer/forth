@@ -21,19 +21,17 @@
 /* either have a seperate Flag-Field-Area before name or use flags
  * integrated in the (hi bits of the) count-byte of a bstring */
 # if defined PF_WITH_FFA
-#   define P4_NAMEFLAGS(X)   (((p4char*)X)[-1]) /* == (*P4_NFA2FLAGS(X)) */
-#   define P4_NAMESTART(X)  (&((p4char*)X)[-1]) /* NFA -> FFA w/ FFA-byte */
-#   define P4_NAME_MASK_LEN(X)  (X)
+#   define NAMEFLAGS(X)   (*((p4char*)(X)-1))    /* FFA is before NFA */
+#   define NAMEPTR(X)     (((p4char*)(X))+1)
+#   define NAMELEN(X)     (*(p4char*)X)
 #   define NAME_SIZE_MAX     127                 /* C99 defines SIZE_MAX for size_t */
 # else
-#   define P4_NAMEFLAGS(X) (*(p4char*)X)        /* == (*P4_NFA2FLAGS(X)) */
-#   define P4_NAMESTART(X)  ((p4char*)X)        /* NFA -> FFA w/o FFA-byte */
-#   define P4_NAME_MASK_LEN(X)  ((X)&31)            /* NFA -> count of namefield */
+#   define NAMEFLAGS(X)   (*(p4char*)X)          /* FFA is the hi bits of NFA */
+#   define NAMEPTR(X)     (((p4char*)(X))+1)
+#   define NAMELEN(X)     ((*(p4char*)X)&31)
 #   define NAME_SIZE_MAX     31                  /* used for buffer-sizes */
 # endif
 
-#   define NAMEPTR(X)   (((p4char*)(X))+1)
-#   define NAMELEN(X)   P4_NAME_MASK_LEN(*(p4char*)X)
 
 #define FX_SKIP_STRING  (*(char **)&(IP) += (pf_aligned (*(p4char*)IP + 1)))
 
@@ -95,10 +93,6 @@
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&SEM##_Semant }
 
 #define P4_CONSTANT( NM, VAL)   { "c\237"NM, (p4code)(VAL) }
-
-#ifndef P4_MAX_FILES /* maximum number of open files */
-#define P4_MAX_FILES 0x10
-#endif
 
 /*
  *         here are the macros that are used to build the various

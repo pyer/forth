@@ -124,7 +124,7 @@ p4char * cfa_to_name (p4xt xt)
     {
         /* traditional: search for CHAR of name-area with a hi-bit set
          * and assume that it is the flags/count field for the NAME */
-        if ((P4_NAMEFLAGS(p) & 0x80) && ((unsigned)NAMELEN(p) == n))
+        if ((NAMEFLAGS(p) & P4xFLAG) && ((unsigned)NAMELEN(p) == n))
             return p;
         if (! isprint(*p))
             return NULL;
@@ -268,7 +268,7 @@ p4char* pf_find (const p4char *nm, int l)
            AND lower-case input shall match those definitions */
         p4char *nfa = LATEST;        /* NFA of most recently CREATEd header */
         while (nfa) {
-            if (! (P4_NAMEFLAGS(nfa) & P4xSMUDGED) && NAMELEN(nfa) == l) {
+            if (! (NAMEFLAGS(nfa) & P4xSMUDGED) && NAMELEN(nfa) == l) {
                 if (!memcmp (nm, NAMEPTR(nfa), l))  break;
                 if (!memcmp (upper, NAMEPTR(nfa), l)) break;
             }
@@ -293,7 +293,7 @@ FCode (pf_find)
     p = pf_find (p + 1, *p);
     if (p) {
         *SP = (p4cell) name_to_cfa (p);
-        *--SP = (P4_NAMEFLAGS(p) & P4xIMMEDIATE) ? 1 : -1;
+        *--SP = (NAMEFLAGS(p) & P4xIMMEDIATE) ? 1 : -1;
     } else {
         *--SP = 0;
     }
@@ -558,7 +558,7 @@ int pf_find_word(void)
         return 0;
 
     xt = name_to_cfa (nfa);
-    if (! STATE || (P4_NAMEFLAGS(nfa) & P4xIMMEDIATE))
+    if (! STATE || (NAMEFLAGS(nfa) & P4xIMMEDIATE))
     {
     pf_call (xt);    /* execute it now */
     pf_Q_stack_();   /* check stack */
@@ -891,7 +891,7 @@ void pf_load_words (const p4Words* ws)
            be both static and have a byte in front that could be 
            a maxlen
         */
-        P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+        NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
         break;
     case 'r': // creates a word with special runtime
         p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
@@ -909,7 +909,7 @@ void pf_load_words (const p4Words* ws)
         p4_header_in();   /* the p4code directly */
         FX_COMMA ( *SP ); 
         ((*(p4cell **)&(SP))++);
-        P4_NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
+        NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
         break;
     case 'c': // CONSTANT
         *--SP = (p4cell)(w->ptr);
@@ -975,7 +975,7 @@ p4char* p4_header_comma (const p4char *name, int len)
     name_to_caps(DP-len, name, len);
     LATEST = DP-len -1;      /* point to count-byte before the name */
     *LATEST = len;           /* set the count-byte */
-    LATEST[-1] = '\x80';     /* set the flag-byte before the count-byte */
+    LATEST[-1] = P4xFLAG;    /* set the flag-byte before the count-byte */
 # else
     /* traditional way - avoid copying if using WORD. Just look for the
      * only if() in this code which will skip over the memcpy() call if
@@ -989,8 +989,9 @@ p4char* p4_header_comma (const p4char *name, int len)
     if (name != DP)
        name_to_caps(DP, name, len);
     *LATEST = len;
-    *LATEST |= '\x80'; 
-    DP += len; pf_align_();
+    *LATEST |= P4xFLAG;
+    DP += len;
+    pf_align_();
 # endif
     FX_PCOMMA (last); /* create the link field... */
     return LATEST;

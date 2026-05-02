@@ -28,10 +28,9 @@
 #define P4_FLAG(X)  ((X) ? P4_TRUE : P4_FALSE)
 
 /* ---------------------------------------------------------------------- */
-#define P4xIMMEDIATE   0x40  /* these bits are flags in */
+#define P4xFLAG        0x80  /* these bits are flags in */
+#define P4xIMMEDIATE   0x40  /*  */
 #define P4xSMUDGED     0x20  /* the count byte of a definition */
-#define P4xONxDESTROY  0x10  /* word being freed, shall be exec'd before */
-#define P4xISxRUNTIME  0x08  /* word has parameter field, not primitive */
 /* ---------------------------------------------------------------------- */
 /*
  * Decompiler style. Each 5 comma separated numbers, meaning:
