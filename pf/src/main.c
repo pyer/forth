@@ -229,7 +229,6 @@ int main (int argc, char** argv)
             len = strlen(buffer);
             break;
         case 'v':
-//            puts(PF_VERSION);
             puts(pf_version_string());
             return 0;
         case 'h':

@@ -34,6 +34,7 @@
 #include "interpret.h"
 #include "terminal.h"
 #include "history.h"
+#include "version.h"
 
 #if defined PF_WITH_FLOATING
   #include "floating.h"
@@ -156,14 +157,13 @@ FCode (pf_dot_status)
 const char* pf_version_string(void)
 {
     return
-        "\nPyer's Forth "PF_VERSION
+        "\nPyer's Forth "VERSION
         "\n(" MAKEDATE " " MAKETIME ")"
         "\n";
 }
 
 /** .VERSION ( -- )
  * show the version of the current PF system
- : .VERSION [ ENVIRONMENT ] FORTH-NAME TYPE FORTH-VERSION TYPE ;
  */
 FCode (pf_dot_version)
 {
