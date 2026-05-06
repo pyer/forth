@@ -39,7 +39,6 @@
 #define P4_COMMA_(P,X,Y,T) (*(T *)(P) = (T)(X), ((*(T **)&(P))++))
 
 #define FX_COMMA(X)      P4_COMMA_(DP,(X), 0 ,p4cell)
-#define FX_FCOMMA(X)     P4_COMMA_(DP,(X),'F',p4fcell)
 #define FX_XCOMMA(X)     P4_COMMA_(DP,(X),'X',p4xt)
 #define FX_ZCOMMA(X)     P4_COMMA_(DP,(X),'Z',p4xt)
 #define FX_RCOMMA(X)     P4_COMMA_(DP,(X),'R',p4code)
@@ -47,9 +46,9 @@
 #define FX_QCOMMA(X)     P4_COMMA_(DP,(X),'Q',void*)
 #define FX_BCOMMA(X)     P4_COMMA_(DP,(X),'B',unsigned char)
 #define FX_WCOMMA(X)     P4_COMMA_(DP,(X),'W',unsigned short)
-#define FX_LCOMMA(X)     P4_COMMA_(DP,(X),'L',p4ucell)
-#define FX_UCOMMA(X)     P4_COMMA_(DP,(X),'U',p4ucell)
-#define FX_VCOMMA(X)     P4_COMMA_(DP,(X),'V',p4ucell)
+#define FX_LCOMMA(X)     P4_COMMA_(DP,(X),'L',p4cell)
+#define FX_UCOMMA(X)     P4_COMMA_(DP,(X),'U',p4cell)
+#define FX_VCOMMA(X)     P4_COMMA_(DP,(X),'V',p4cell)
 #define FX_SCOMMA(X)     P4_COMMA_(DP,(X),'S',p4cell)
 
 /* typed comma:

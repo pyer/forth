@@ -297,7 +297,7 @@ FILE * p4_create_file (const p4char *name, int len, int mode)
 /**
  * read file
  */
-int p4_read_file (void *p, p4ucell *n, FILE *fid)
+int p4_read_file (void *p, p4cell *n, FILE *fid)
 {
     int m;
     errno = 0;
@@ -314,9 +314,9 @@ int p4_read_file (void *p, p4ucell *n, FILE *fid)
 /**
  * write file
  */
-int p4_write_file (void *p, p4ucell n, FILE *fid)
+int p4_write_file (void *p, p4cell n, FILE *fid)
 {
-    return (p4ucell) fwrite (p, 1, n, fid) != n ? errno : 0;
+    return (p4cell) fwrite (p, 1, n, fid) != n ? errno : 0;
 }
 
 /**
@@ -347,12 +347,12 @@ int p4_resize_file (FILE *fid, long size)
 /**
  * read line
  */
-int p4_read_line (void* buf, p4ucell *u, FILE *fid, p4cell *ior)
+int p4_read_line (void* buf, p4cell *u, FILE *fid, p4cell *ior)
 {
     int c, n; char* p = buf;
     
 //    fid->line.pos = ftell (fid->f); /* fixme: the only reference to it!*/
-    for (n = 0; (p4ucell) n < *u; n++)
+    for (n = 0; (p4cell) n < *u; n++)
     {
         switch (c = getc (fid))
         {
@@ -409,7 +409,7 @@ FCode (p4_close_file)
 FCode (p4_create_file)
 {
     register p4char *fn = (p4char *) SP[2]; /* c-addr, name */
-    register p4ucell u = SP[1];                   /* length of name */
+    register p4cell u = SP[1];                   /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
     FILE *fid = p4_create_file (fn, u, fam);
     
@@ -442,15 +442,15 @@ FCode (p4_file_position)
     pos = ftell (fid);
     if (pos != -1)
     {
- SP[2] = (p4ucell)(pos);
+ SP[2] = (p4cell)(pos);
  if (sizeof (*SP) >= sizeof(pos)) /* compile-time decision !*/
      SP[1] = 0;
  else                            /* assume: 1x or 2x sizeof(*SP) */
-     SP[1] = (p4ucell)(pos >> 8*(sizeof(pos)-sizeof(*SP)));
+     SP[1] = (p4cell)(pos >> 8*(sizeof(pos)-sizeof(*SP)));
         SP[0] = 0;  /* ior */
     }else{
- SP[2] = (p4ucell)-1;      /* set to -1 */
- SP[1] = (p4ucell)-1;
+ SP[2] = (p4cell)-1;      /* set to -1 */
+ SP[1] = (p4cell)-1;
         SP[0] = errno; /* ior */
     }
 }
@@ -468,15 +468,15 @@ FCode (p4_file_size)
     SP -= 2;
     if (size != -1)
     {
- SP[2] = (p4ucell)(size);
+ SP[2] = (p4cell)(size);
  if (sizeof (*SP) >= sizeof(size)) /* compile-time decision !*/
      SP[1] = 0;
  else                            /* assume: 1x or 2x sizeof(*SP) */
-     SP[1] = (p4ucell)(size >> 8*(sizeof(size)-sizeof(*SP)));
+     SP[1] = (p4cell)(size >> 8*(sizeof(size)-sizeof(*SP)));
         SP[0] = 0;  /* ior */
     }else{
- SP[2] = (p4ucell)-1;      /* set to -1 */
- SP[1] = (p4ucell)-1;
+ SP[2] = (p4cell)-1;      /* set to -1 */
+ SP[1] = (p4cell)-1;
         SP[0] = errno; /* ior */
     }
 }
@@ -490,7 +490,7 @@ FCode (p4_file_size)
 FCode (p4_open_file)
 {
     register p4char *fn = (p4char *) SP[2]; /* c-addr, name */
-    register p4ucell u = SP[1];                   /* length of name */
+    register p4cell u = SP[1];                   /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
     register FILE *fid = p4_open_file (fn, u, fam);
 
@@ -510,11 +510,11 @@ FCode (p4_open_file)
 FCode (p4_read_file)
 {
     register p4char *  buf = (p4char *) SP[2];
-    register p4ucell len = SP[1];
+    register p4cell len = SP[1];
     register FILE *  fid = (FILE *) SP[0];
     SP += 1;
     SP[1] = len;
-    SP[0] = p4_read_file (buf, ((p4ucell*)SP) + 1, fid);
+    SP[0] = p4_read_file (buf, ((p4cell*)SP) + 1, fid);
 }
 
 /** READ-LINE ( buf-ptr buf-len some-file* -- buf-count buf-flag some-errno# ) [ANS]
@@ -528,10 +528,10 @@ FCode (p4_read_file)
 FCode (p4_read_line)
 {
     register p4char *  buf = (p4char *) SP[2];
-    register p4ucell len = SP[1];
+    register p4cell len = SP[1];
     register FILE *  fid = (FILE *) SP[0];
     SP[2] = len;
-    SP[1] = p4_read_line (buf, ((p4ucell*)SP) + 2, fid, & SP[0]);
+    SP[1] = p4_read_line (buf, ((p4cell*)SP) + 2, fid, & SP[0]);
 }
 
 /** REPOSITION-FILE ( o,offset# some-file* -- some-errno# ) [ANS]
@@ -547,9 +547,9 @@ FCode (p4_reposition_file)
  pos = SP[2];
     } else
     {
- pos = (p4ucell) SP[1];
+ pos = (p4cell) SP[1];
  pos <<= 8*(sizeof(pos)-sizeof(*SP)); /* assume: 1x or 2x sizeof(*SP) */
- pos |=  (p4ucell)(SP[2]);
+ pos |=  (p4cell)(SP[2]);
     }
 
     SP += 2;
@@ -568,9 +568,9 @@ FCode (p4_resize_file)
  size = SP[2];
     } else
     {
- size = (p4ucell) SP[1];
+ size = (p4cell) SP[1];
  size <<= 8*(sizeof(size)-sizeof(*SP)); /* assume: 1x or 2x size(*SP) */
- size |=  (p4ucell)(SP[2]);
+ size |=  (p4cell)(SP[2]);
     }
 
     SP += 2;
@@ -587,7 +587,7 @@ FCode (p4_resize_file)
 FCode (p4_write_file)
 {
     register char *  buf = (char *) SP[2];
-    register p4ucell len = SP[1];
+    register p4cell len = SP[1];
     register FILE *  fid = (FILE *) SP[0];
 
     SP += 2;
@@ -602,7 +602,7 @@ FCode (p4_write_file)
 FCode (p4_write_line)
 {
     register char *  buf = (char *) SP[2];
-    register p4ucell len = SP[1];
+    register p4cell len = SP[1];
     register FILE *  fid = (FILE *) SP[0];
 
     SP += 2;

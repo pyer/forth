@@ -179,7 +179,7 @@ void pf_dot_name (const p4char *nfa)
     }
 }
 
-void pf_dot_number(p4ucell u)
+void pf_dot_number(p4cell u)
 {
     char sign=' ';
     char *hold = DP + MIN_HOLD;
@@ -361,17 +361,17 @@ FCode (pf_man)
  */
 FCode (pf_dump)
 {
-    p4ucell i, j;
-    p4ucell n = (p4ucell)*(SP++);
+    p4cell i, j;
+    p4cell n = (p4cell)*(SP++);
     p4char *p = (p4char*)(*(SP++));
 
     pf_more_();
     pf_cr_();
     pf_outf ("%*s ", (int)HEXWIDTH, "");
     for (j = 0; j < 16; j++)
-        pf_outf ("%02X ", (unsigned)((p4ucell)(p + j) & 0x0F));
+        pf_outf ("%02X ", (unsigned)((p4cell)(p + j) & 0x0F));
     for (j = 0; j < 16; j++)
-        pf_outf ("%X", (unsigned)((p4ucell)(p + j) & 0x0F));
+        pf_outf ("%X", (unsigned)((p4cell)(p + j) & 0x0F));
     for (i = 0; i < n; i += 16, p += 16)
     {
         if (pf_more_Q())

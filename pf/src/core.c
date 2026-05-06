@@ -371,7 +371,7 @@ FCode (p4_cmove)
 {
     char *p = (char *)SP[2];
     char *q = (char *)SP[1];
-    p4ucell n = SP[0];
+    p4cell n = SP[0];
     SP+=3;
     while (n--)
         *q++ = *p++;
@@ -385,7 +385,7 @@ FCode (p4_cmove_up)
 {
     char *p = (char *)SP[2];
     char *q = (char *)SP[1];
-    p4ucell n = SP[0];
+    p4cell n = SP[0];
     SP+=3;
     p += n;
     q += n;
@@ -400,7 +400,7 @@ FCode (p4_move)
 {
     unsigned char *p = (unsigned char *)SP[2];
     unsigned char *q = (unsigned char *)SP[1];
-    p4ucell n = SP[0];
+    p4cell n = SP[0];
     SP+=3;
     /* check overlap */
     if ( p < q ) {
@@ -586,7 +586,7 @@ FCode (p4_rot)
  */
 FCode (p4_r_shift)
 {
-    *(p4ucell *) &SP[1] >>= SP[0];
+    *(p4cell *) &SP[1] >>= SP[0];
     SP++;
 }
 
@@ -679,8 +679,8 @@ FCode (p4_tuck)
 FCode (p4_within)
 {
     SP[2] = P4_FLAG
-        ( (p4ucell) (SP[2] - SP[1]) <
-          (p4ucell) (SP[0] - SP[1]) );
+        ( (p4cell) (SP[2] - SP[1]) <
+          (p4cell) (SP[0] - SP[1]) );
     SP += 2;
 }
 

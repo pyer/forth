@@ -199,7 +199,7 @@ void pf_normal_execute (p4xt xt)
 /** number to digit ( val -- c )
  * make digit
  */
-char pf_number2digit(p4ucell n)
+char pf_number2digit(p4cell n)
 {
     if (n < 10)
         return n + '0';
@@ -212,7 +212,7 @@ char pf_number2digit(p4ucell n)
 /** digit to number ( c n* base -- ?ok )
  * Get value of digit c into *n, return flag: valid digit.
  */
-int pf_digit2number (p4char c, p4ucell *n, p4ucell base)
+int pf_digit2number (p4char c, p4cell *n, p4cell base)
 {
     if (c < '0')
         return P4_FALSE;
@@ -367,7 +367,7 @@ FCode (pf_less_sh)
  */
 FCode (pf_sh)
 {
-    p4ucell u = *SP;
+    p4cell u = *SP;
     udiv_t res;
     res.quot = u / BASE;
     res.rem  = u % BASE;
@@ -470,14 +470,14 @@ FCode (pf_tick)
 }
 
 /* -------------------------------------------------------------- */
-const p4char * pf_to_number (const p4char *p, p4ucell *n, p4cell *d, p4ucell base)
+const p4char * pf_to_number (const p4char *p, p4cell *n, p4cell *d, p4cell base)
 {
     p4cell value = 0;
     int sign = 0;
     if (*p == '-') { p++; n--; sign = 1; }
 
     for (; *n > 0; p++, --*n) {
-        p4ucell c;
+        p4cell c;
         if (!pf_digit2number(*p, &c, base))
             break;
         value = value * base + c;
@@ -498,7 +498,7 @@ FCode (pf_to_number)
     SP[1] = (p4cell)
         pf_to_number (
                       (p4char *) SP[1],
-                      (p4ucell *) &SP[0],
+                      (p4cell *) &SP[0],
                       (p4cell *) &SP[2],
                       BASE);
 }
@@ -526,7 +526,7 @@ FCode (pf_char)
 FCode (pf_count)
 {
     /* can not unpack twice - this trick prevents from many common errors */
-    if (256 > (p4ucell)(SP[0])) goto possibly_idempotent;
+    if (256 > (p4cell)(SP[0])) goto possibly_idempotent;
     --SP;
     SP[0] = *((*(p4char **)&(SP[1]))++);
     return;
@@ -577,9 +577,9 @@ int pf_convert_number(void)
 {
     /* WORD-string is at HERE and at word_ptr / word_len */
     const p4char *p = word_ptr;
-    p4ucell          n = word_len;
+    p4cell        n = word_len;
 
-    p4ucell base = 0;
+    p4cell base = 0;
     int sign = 0;
     p4cell value = 0;
 
@@ -617,7 +617,7 @@ int pf_convert_number(void)
 
     for (; n > 0; p++, --n)
     {
-        p4ucell c;
+        p4cell c;
         if (!pf_digit2number(*p, &c, base))
             break;
         value = value * base + c;
@@ -761,9 +761,7 @@ FCode (pf_c_quote)
     pf_parse_comma_quote_();
     }else{
         register char *p;
-        register p4ucell n;
-//        pf_skip_spaces();
-//        to_in++;    // skip only one space
+        register p4cell n;
         pf_parse_word('"');
         p = PAD;
     n = word_len;
@@ -801,9 +799,7 @@ FCode (pf_s_quote)
         pf_parse_comma_quote_();
     }else{
         register char *p;
-        register p4ucell n;
-//        pf_skip_spaces();
-//        to_in++;    // skip only one space
+        register p4cell n;
         pf_parse_word('"');
         p = PAD;
     n = word_len;
