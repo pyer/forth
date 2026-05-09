@@ -490,7 +490,7 @@ FCode (pf_load_signals)
     {
         p4_header_comma ((const p4char*) s->name, strlen (s->name));
         FX_RUNTIME1(pf_constant);
-        FX_UCOMMA (s->sig);
+        FX_SCOMMA (s->sig);
     }
 }
 

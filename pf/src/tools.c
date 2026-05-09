@@ -333,6 +333,7 @@ FCode (pf_man)
     p4char* nfa = pf_tick_nfa();
     char *name = NAMEPTR(nfa);
     int  len   = NAMELEN(nfa);
+    bool notfound = 1;
     pf_cr_();
     FILE *fh = fopen( PF_HELP_FILE, "r" );
     if( fh != NULL ) {
@@ -342,10 +343,14 @@ FCode (pf_man)
               while( fgets( buffer, 255, fh ) != NULL && strlen(buffer)>1 ) {
                 pf_outs(buffer);
               }
+              notfound = 0;
               break;
             }
         }
         fclose( fh );
+        if( notfound ) {
+          pf_outs("undocumented");
+        }
     } else {
         printf( "ERROR: file %s not found.\n", name );
     }

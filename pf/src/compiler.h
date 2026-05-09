@@ -81,7 +81,7 @@ p4_Semant C##_Semant =              \
 
 /* compile execution semantics from within C-code: */
 #define FX_COMPILE(X)  do { extern  p4_Semant X##_Semant;  \
-                            FX_ZCOMMA (&X##_Semant.exec[0]); } while(0)
+                            FX_XCOMMA (&X##_Semant.exec[0]); } while(0)
 
 /* 
  * -- compiler definitions 

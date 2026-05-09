@@ -207,7 +207,7 @@ FCode (pf_backward_mark)
 FCode (pf_backward_resolve)    
 {
     pf_Q_comp_();
-    FX_QCOMMA (*SP++);
+    FX_PCOMMA (*SP++);
 }
 
 /** MARK> ( -- DP-mark ) compile-only
@@ -222,7 +222,7 @@ FCode (pf_backward_resolve)
 FCode (pf_forward_mark)  
 {
     pf_backward_mark_();
-    FX_QCOMMA(0);
+    FX_PCOMMA(0);
 }
 
 /** RESOLVE> ( DP-mark -- ) compile-only
@@ -459,7 +459,7 @@ FCode (pf_immediate)
  */
 FCode (pf_comma)
 {
-    FX_VCOMMA (*SP++);
+    FX_SCOMMA (*SP++);
 }
 
 /** C, ( value# -- ) [ANS]
@@ -535,7 +535,7 @@ FCode (pf_constant)
 {
     p4_header_in();
     FX_RUNTIME1 (pf_constant);
-    FX_VCOMMA (*SP++);
+    FX_SCOMMA (*SP++);
 }
 P4RUNTIME1(pf_constant, pf_constant_RT);
 
@@ -557,7 +557,7 @@ FCode (pf_variable)
 {
     p4_header_in();
     FX_RUNTIME1(pf_variable);
-    FX_VCOMMA (0);
+    FX_SCOMMA (0);
 }
 P4RUNTIME1(pf_variable, pf_variable_RT);
 

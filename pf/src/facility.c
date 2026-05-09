@@ -68,6 +68,7 @@ FCode (pf_now)
     SP[0] = tm->tm_year + 1900;
 }
 
+//#define P4_FXco( NM, PCODE)     { "p\237"NM, &PCODE##_ }
 P4_LISTWORDS (facility) =
 {
     P4_FXco ("MS",     pf_ms),

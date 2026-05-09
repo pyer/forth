@@ -28,9 +28,6 @@
 
 /* -------------------------------------------------------------- */
 
-#define ___ {
-#define ____ }
-
 #define PAD    (DP + MIN_HOLD)
 #define HLD    hold
 
@@ -879,7 +876,7 @@ void pf_load_words (const p4Words* ws)
     case 'X': // immediate smart-word (semant)
         p4_Semant* semant = (p4_Semant*)(void*)(w->ptr);
         p4_header_in();
-        FX_COMMA ( semant->comp );
+        FX_SCOMMA ( semant->comp );
         if (! (semant ->name))
             semant ->name = (p4char*)( word_ptr-1 ); 
         /* discard const */
@@ -892,18 +889,18 @@ void pf_load_words (const p4Words* ws)
     case 'r': // creates a word with special runtime
         p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
         p4_header_in();
-        FX_COMMA ( runtime->comp );
+        FX_SCOMMA ( runtime->comp );
         break;
     case 'p': // ordinary primitive
         *--SP = (p4cell)(w->ptr);
         p4_header_in();   /* the p4code directly */
-        FX_COMMA ( *SP ); 
+        FX_SCOMMA ( *SP ); 
         ((*(p4cell **)&(SP))++);
         break;
     case 'P': // immediate primitive
         *--SP = (p4cell)(w->ptr);
         p4_header_in();   /* the p4code directly */
-        FX_COMMA ( *SP ); 
+        FX_SCOMMA ( *SP ); 
         ((*(p4cell **)&(SP))++);
         NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
         break;

@@ -48,7 +48,7 @@ p4fcell* f0;
 p4fcell* fp;       /* the floating point stack pointer */
 
 /* ------------------------------------------------------------------ */
-#define FX_FCOMMA(X)     P4_COMMA_(DP,(X),'F',p4fcell)
+#define FX_FCOMMA(X)     P4_COMMA_((X),p4fcell)
 #define P4_DFALIGNED(P)  (((size_t)(P) & (SIZEOF_FCELL - 1)) == 0)
 /* ------------------------------------------------------------------ */
 

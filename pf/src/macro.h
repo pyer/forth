@@ -35,40 +35,14 @@
 
 #define FX_SKIP_STRING  (*(char **)&(IP) += (pf_aligned (*(p4char*)IP + 1)))
 
-/* P:dictpointer X:value Y:hintchar T:typedef */
-#define P4_COMMA_(P,X,Y,T) (*(T *)(P) = (T)(X), ((*(T **)&(P))++))
+/* X:value T:typedef */
+#define P4_COMMA_(X,T) (*(T *)(DP) = (T)(X), ((*(T **)&(DP))++))
 
-#define FX_COMMA(X)      P4_COMMA_(DP,(X), 0 ,p4cell)
-#define FX_XCOMMA(X)     P4_COMMA_(DP,(X),'X',p4xt)
-#define FX_ZCOMMA(X)     P4_COMMA_(DP,(X),'Z',p4xt)
-#define FX_RCOMMA(X)     P4_COMMA_(DP,(X),'R',p4code)
-#define FX_PCOMMA(X)     P4_COMMA_(DP,(X),'P',void*)
-#define FX_QCOMMA(X)     P4_COMMA_(DP,(X),'Q',void*)
-#define FX_BCOMMA(X)     P4_COMMA_(DP,(X),'B',unsigned char)
-#define FX_WCOMMA(X)     P4_COMMA_(DP,(X),'W',unsigned short)
-#define FX_LCOMMA(X)     P4_COMMA_(DP,(X),'L',p4cell)
-#define FX_UCOMMA(X)     P4_COMMA_(DP,(X),'U',p4cell)
-#define FX_VCOMMA(X)     P4_COMMA_(DP,(X),'V',p4cell)
-#define FX_SCOMMA(X)     P4_COMMA_(DP,(X),'S',p4cell)
+#define FX_PCOMMA(X)     P4_COMMA_((X),void*)  // pointer into the dictionary
+#define FX_RCOMMA(X)     P4_COMMA_((X),p4code) // runtime = pointer to C-routine = code-field (needs .so relocation!)
+#define FX_SCOMMA(X)     P4_COMMA_((X),p4cell) // singlecell-wide (signed) number or item of cell-element stringspan
+#define FX_XCOMMA(X)     P4_COMMA_((X),p4xt)   // exectoken = pointer to pointer to C-routine =~ pointer to code-field
 
-/* typed comma:
-   X = exectoken = pointer to pointer to C-routine =~ pointer to code-field
-   R = runtime = pointer to C-routine = code-field (needs .so relocation!)
-   P = pointer into the dictionary
-   Q = pointer into compiled colon word =~ P (i.e. HERE)
-   C = character =~ byte-wide number
-   S = singlecell-wide (signed) number or item of cell-element stringspan
-   U = singlecell-wide (unsigned) number or item of cell-element stringspan
-   D = doublecell (signed) number or item of double cell-element stringspan
-   B = byte-wide number or item of byte-element stringspan
-   W = word-wide number or item of word-element stringspan
-   L = long-wide number or item of long-element stringspan
-   F = floating-pointer number
-   I = bitfield (e.g. flags-byte of headers)
-   Z = pointer to runtime-address in C-datafield =~ X (e.g. semantics)
-   V = value, probably a number but can not be sure, must better check
-   ... bigcaps for the start of the element ... lowcaps for extensions ...
-*/
 
 /* Encoding the kind of definition i.e. which runtime to fill into the cfa. 
  * 
