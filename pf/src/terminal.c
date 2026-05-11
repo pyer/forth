@@ -20,7 +20,6 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 #include <fcntl.h>
 #include <string.h>
 #include <ctype.h>
-#include <setjmp.h>
 #include <sys/select.h>
 #include <termios.h>
 #include <sys/ioctl.h>

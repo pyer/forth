@@ -10,11 +10,6 @@
  *
  */
 
-/* determines the dimension of any given vector */
-#ifndef DIM
-#define DIM(X)    ((int)(sizeof (X) / sizeof *(X)))
-#endif
-
 /* declare a primitive */
 #define FCode(X) void X##_(void)
 

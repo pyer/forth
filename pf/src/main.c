@@ -86,16 +86,6 @@ void* p4_dict_allocate (int items, int size, int align, void** lower, void** upp
     return (dictlimit = memtop);
 }
 /************************************************************************/
-/*
- * things => QUIT has to initialize
- */
-void quit_system (void)
-{
-    CSP = (p4cell*) RP;        /* come_back marker */
-    RP = R0;                   /* return stack to its bottom */
-    STATE = P4_FALSE;          /* interpreting now */
-    execute = pf_normal_execute;
-}
 
 /*
  * things => ABORT has to initialize
@@ -111,22 +101,6 @@ void abort_system (void)
 }
 
 /************************************************************************/
-/*
-extern const p4Words
-    P4WORDS(compiler),
-    P4WORDS(core),
-    P4WORDS(exception),
-    P4WORDS(facility),
-    P4WORDS(file),
-#if defined PF_WITH_FLOATING
-    P4WORDS(floating),
-#endif
-    P4WORDS(interpret),
-    P4WORDS(shell),
-    P4WORDS(signals),
-    P4WORDS(terminal),
-    P4WORDS(tools);
-*/
 extern WORDS(compiler);
 extern WORDS(core);
 extern WORDS(exception);
@@ -195,10 +169,7 @@ void pf_init_system() /* main_init */
     /* Wipe the dictionary: */
     memset (dict, 0, (dictlimit - dict));
     DP = dict;
-    /* Create first word */
-    p4_header_comma ("FORTH", 5);
-    FX_XCOMMA ((p4xt)(pf_noop_));
-    /* and load other words */
+    /* Load primitive words */
     pf_load_words (core_WORDS);
     pf_load_words(compiler_WORDS);
     pf_load_words(interpret_WORDS);
@@ -214,7 +185,10 @@ void pf_init_system() /* main_init */
     pf_load_words(facility_WORDS);
 
     /* -------- warm boot stage ------- */
-    quit_system ();
+    CSP = (p4cell*) RP;        /* come_back marker */
+    RP = R0;                   /* return stack to its bottom */
+    STATE = P4_FALSE;          /* interpreting now */
+    execute = pf_normal_execute;
 }
 
 void help_opt(char *progname)
@@ -269,9 +243,6 @@ int main (int argc, char** argv)
     /* classify unhandled throw codes */
     case 'A': /* do abort */
         abort_system();
-    case 'Q': /* do quit */
-        quit_system();
-        break;
     case 0:
         if ( boot_file )
             pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );

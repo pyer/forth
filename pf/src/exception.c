@@ -40,20 +40,11 @@
 
 
 /************************************************************************/
-jmp_buf jump_loop;    /* QUIT and ABORT do a THROW which longjmp() */
+jmp_buf jump_loop;    /* BYE and ABORT do a THROW which longjmp() */
         /* here thus C-stack gets cleaned up too */
 
 p4_Except *catchframe = NULL;  /* links to chain of CATCHed words */
         /* and no exceptions to be caught */
-/************************************************************************/
-/**
- * just call longjmp on PFE.loop
- */
-void pf_longjmp_loop(int arg)
-{
-    longjmp (jump_loop, arg);
-}
-
 /************************************************************************/
 typedef struct p4_Exception p4_Exception;
 struct p4_Exception
@@ -139,67 +130,32 @@ static void throw_msg (int id, char *msg)
         /* -53 */ "exception stack overflow",
         /* -54 */ "floating-point underflow",
         /* -55 */ "floating-point unidentified fault",
-        /* -56 */ NULL, /* QUIT */
-        /* -57 */ "error in sending or receiving a character",
-        /* -58 */ "[IF], [ELSE] or [THEN] error",
-        /* these Forth200x THROW-IORS:X are not used in PFE */
-        /* -59 */ "ALLOCATE error",
-        /* -60 */ "FREE error",
-        /* -61 */ "RESIZE error",
-        /* -62 */ "CLOSE-FILE error",
-        /* -63 */ "CREATE-FILE error",
-        /* -64 */ "DELETE-FILE error",
-        /* -65 */ "FILE-POSITION error",
-        /* -66 */ "FILE-SIZE error",
-        /* -67 */ "FILE-STATUS error",
-        /* -68 */ "FLUSH-FILE error",
-        /* -69 */ "OPEN-FILE error",
-        /* -70 */ "READ-FILE error",
-        /* -71 */ "READ-LINE error",
-        /* -72 */ "RENAME-FILE error",
-        /* -73 */ "REPOSITION-FILE error",
-        /* -74 */ "RESIZE-FILE error",
-        /* -75 */ "WRITE-FILE error",
-        /* -76 */ "WRITE-LINE error",
     };
 
-    if (-1 - DIM (throw_explanation) < id && id <= -1)
-    {
+    if (-56 < id && id < 0) {
         /* ANS-Forth throw codes, messages are in throw_explanation[] */
         strcpy (msg, throw_explanation[-1 - id]);
-    }
-    else if (-1024 < id && id <= -256)
-    {
+    } else if (-1024 < id && id <= -256) {
         /* Signals, see signal-ext.c,
      those not handled and not fatal lead to THROW */
         sprintf (msg, "Received signal %d", -256 - id);
-    }
-    else if (-2048 < id && id <= -1024)
-    {
+    } else if (-2048 < id && id <= -1024) {
         /* File errors, see FX_IOR / P4_IOR(flag) */
         sprintf (msg, "I/O Error %d : %s", -1024-id, strerror (-1024-id));
-    }
-    else if (-32767 < id && id <= -2048)
-    {
-  /* search the exception_link for our id */
-  p4_Exception* expt = exception_link;
-  strcpy (msg, "module-specific error-condition");
-  while (expt)
-  {
-      if (expt->id == id)
-      {
-    strcpy (msg, expt->name);
-    break;
-      }
-      expt = expt->next;
-  }
-    }
-    else if (0 < id)
-    {
-  strcpy (msg, strerror (id));
-    }
-    else
-    {
+    } else if (-32767 < id && id <= -2048) {
+        /* search the exception_link for our id */
+        p4_Exception* expt = exception_link;
+        strcpy (msg, "module-specific error-condition");
+        while (expt) {
+          if (expt->id == id) {
+            strcpy (msg, expt->name);
+            break;
+          }
+          expt = expt->next;
+        }
+    } else if (0 < id) {
+        strcpy (msg, strerror (id));
+    } else {
         sprintf (msg, "%d THROW unassigned", id);
     }
 }
@@ -272,17 +228,12 @@ void p4_throwstr (int id, const char* description)
     switch (id)
     {
      case P4_ON_ABORT_QUOTE:
-     {
-   show_error (addr);
-     }
+         show_error (addr);
      case P4_ON_ABORT:
          pf_longjmp_abort ();
-     case P4_ON_QUIT:
-         pf_longjmp_quit ();
      default:
          throw_msg (id, msg);
-         if (addr)
-         {
+         if (addr) {
              strcat (msg, " : ");
              if (! len)
                  strcat (msg, addr);
@@ -364,7 +315,7 @@ WORDS (exception) =
     P4_FXco ("CATCH",    p4_catch),
     P4_FXco ("THROW",    p4_throw),
     P4_FXco ("ABORT",    pf_abort),
-    P4_SXco ("ABORT\"",    pf_abort_quote),
+    P4_SXco ("ABORT\"",  pf_abort_quote),
     P4_FXco ("BYE",    pf_bye),
     P4_END
 };

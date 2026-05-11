@@ -21,7 +21,6 @@
 #include <float.h>
 #include <limits.h>
 #include <ctype.h>
-#include <setjmp.h>
 #include <errno.h>
 
 #include "config.h"
@@ -30,7 +29,6 @@
 #include "macro.h"
 
 #include "compiler.h"
-#include "exception.h"
 #include "interpret.h"
 
 /************************************************************************/

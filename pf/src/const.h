@@ -139,9 +139,6 @@
 #define P4_ON_EXCEPTION_OVER    -53
 #define P4_ON_FP_UNDER          -54
 #define P4_ON_FP_FAULT          -55
-#define P4_ON_QUIT              -56
-#define P4_ON_SIGIO             -57
-#define P4_ON_IF_ELSE           -58
 
 /* gforth's IOR offset is -512, while pfe has traditionally -1024 */
 #define FX_IOR  ( -1024 - (errno))

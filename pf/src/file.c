@@ -22,7 +22,6 @@
 #include <ctype.h>
 #include <limits.h>
 #include <setjmp.h>
-//#include <pwd.h>
 
 #include <unistd.h>
 #include <sys/types.h>

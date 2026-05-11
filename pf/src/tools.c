@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <setjmp.h>
 
 #include "config.h"
 #include "const.h"
