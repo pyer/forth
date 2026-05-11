@@ -616,7 +616,7 @@ The function of QUERY may be performed with ACCEPT and EVALUATE.
 
  */
 
-P4_LISTWORDS (terminal) =
+WORDS (terminal) =
 {
     P4_FXco ("COLS",         pf_cols),
     P4_FXco ("ROWS",         pf_rows),
@@ -660,6 +660,6 @@ P4_LISTWORDS (terminal) =
 
     P4_FXco ("MORE",         pf_more),
     P4_FXco ("MORE?",        pf_more_Q),
+    P4_END
 };
-P4_COUNTWORDS (terminal, "Terminal words");
 

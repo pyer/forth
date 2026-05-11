@@ -431,7 +431,7 @@ FCode (p4_f_tanh)  { *fp = tanh (*fp); }
 
 /* ************************************************** */
 
-P4_LISTWORDS (floating) =
+WORDS (floating) =
 {
     P4_FXco ("PRECISION",  pf_precision),
     P4_FXco ("FALIGN",     p4_d_f_align),
@@ -511,7 +511,7 @@ P4_LISTWORDS (floating) =
     P4_FXco ("SFLOAT+",     p4_s_float_plus),
     P4_FXco ("SFLOATS",     p4_s_floats),
 */
+    P4_END
 };
-P4_COUNTWORDS (floating, "Floating point");
 
 #endif

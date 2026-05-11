@@ -1,8 +1,6 @@
 #ifndef __INTERPRET_H
 #define __INTERPRET_H
 
-// display a message when a word is redefined
-extern int redefined_msg;
 void show_word(void);
 
 extern p4char *LATEST;
@@ -22,7 +20,8 @@ p4xt name_to_cfa (const p4char *p);
 p4char * cfa_to_name (p4xt xt);
 p4cell * cfa_to_body (p4xt xt);
 
-void pf_load_words (const p4Words* ws);
+void pf_load_words(const p4Word wl[]);
+
 p4char* p4_header_comma (const p4char *name, int len);
 p4char* p4_header_in (void);
 

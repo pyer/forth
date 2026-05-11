@@ -787,7 +787,7 @@ FCode (pf_errno)
 
 /* ********************************************************************** 
  */
-P4_LISTWORDS (file) =
+WORDS (file) =
 {
     P4_FXco ("BIN",           p4_bin),
     P4_FXco ("CLOSE-FILE",    p4_close_file),
@@ -816,6 +816,6 @@ P4_LISTWORDS (file) =
     P4_FXco ("FPUTS",   pf_fputs),
     P4_FXco ("FCLOSE",  pf_fclose),
     P4_FXco ("ERRNO",   pf_errno),
+    P4_END
 };
-P4_COUNTWORDS (file, "File-access + extensions");
 

@@ -1097,7 +1097,7 @@ ABORT"
 
  */
 
-P4_LISTWORDS (compiler) =
+WORDS (compiler) =
 {
     /* state checks */
     P4_FXco ("?COMP",        pf_Q_comp),
@@ -1158,6 +1158,7 @@ P4_LISTWORDS (compiler) =
     P4_SXco ("OF",           pf_of),
     P4_SXco ("ENDOF",        pf_endof),
     P4_SXco ("ENDCASE",      pf_endcase),
+    P4_END
 
 };
-P4_COUNTWORDS (compiler, "Compiler words");
+//P4_COUNTWORDS (compiler, "Compiler words");

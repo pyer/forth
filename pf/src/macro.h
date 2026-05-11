@@ -66,6 +66,7 @@
 #define P4_SXco( NM, SEM)       { "X\377"NM, (p4code)&SEM##_Semant }
 
 #define P4_CONSTANT( NM, VAL)   { "c\237"NM, (p4code)(VAL) }
+#define P4_END                  { "E\377", 0 }
 
 /*
  *         here are the macros that are used to build the various
@@ -78,26 +79,6 @@ typedef struct                  /* describe a word for registration */
 }                               /* according to spc@pineal.math.fau.edu: */
 p4Word;                         /* 'void *' doesn't work here on SGI */
 
-typedef struct                  /* describes the set of words */
-{                               /* a module loads into the dictionary */
-    int n;                      /* how many words? */
-    const p4Word *w;            /* pointer to vector of words */
-    const char *name;           /* name of word set, or null */
-}
-p4Words;
+#define WORDS(set) const p4Word set##_WORDS[]
 
-#define P4WLIST(SET)  SET ## _LTX_p4_WLIST
-#define P4WORDS(SET)  SET ## _LTX_p4_WORDS
-
-#define P4_LISTWORDS( SET )  \
-    static const p4Word P4WLIST(SET)[]
-
-# define P4_COUNTWORDS(SET,NAME) \
-    const p4Words P4WORDS(SET) = \
-    {                           \
-        DIM (P4WLIST (SET)),    \
-        P4WLIST (SET),          \
-        NAME                    \
-    }
-  
 #endif 

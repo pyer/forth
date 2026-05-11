@@ -359,13 +359,13 @@ FCode (pf_bye)
     pf_longjmp_exit ();
 }
 
-P4_LISTWORDS (exception) =
+WORDS (exception) =
 {
     P4_FXco ("CATCH",    p4_catch),
     P4_FXco ("THROW",    p4_throw),
     P4_FXco ("ABORT",    pf_abort),
     P4_SXco ("ABORT\"",    pf_abort_quote),
     P4_FXco ("BYE",    pf_bye),
+    P4_END
 };
-P4_COUNTWORDS (exception, "Exception");
 

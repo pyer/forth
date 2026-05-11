@@ -111,6 +111,7 @@ void abort_system (void)
 }
 
 /************************************************************************/
+/*
 extern const p4Words
     P4WORDS(compiler),
     P4WORDS(core),
@@ -125,6 +126,20 @@ extern const p4Words
     P4WORDS(signals),
     P4WORDS(terminal),
     P4WORDS(tools);
+*/
+extern WORDS(compiler);
+extern WORDS(core);
+extern WORDS(exception);
+extern WORDS(facility);
+extern WORDS(file);
+#if defined PF_WITH_FLOATING
+extern WORDS(floating);
+#endif
+extern WORDS(interpret);
+extern WORDS(shell);
+extern WORDS(signals);
+extern WORDS(terminal);
+extern WORDS(tools);
 
 /************************************************************************/
 /**
@@ -184,19 +199,20 @@ void pf_init_system() /* main_init */
     p4_header_comma ("FORTH", 5);
     FX_XCOMMA ((p4xt)(pf_noop_));
     /* and load other words */
-    pf_load_words (&P4WORDS (core));
-    pf_load_words (&P4WORDS (compiler));
-    pf_load_words (&P4WORDS (interpret));
-    pf_load_words (&P4WORDS (file));
-    pf_load_words (&P4WORDS (terminal));
-    pf_load_words (&P4WORDS (shell));
-    pf_load_words (&P4WORDS (exception));
+    pf_load_words (core_WORDS);
+    pf_load_words(compiler_WORDS);
+    pf_load_words(interpret_WORDS);
+    pf_load_words(file_WORDS);
+    pf_load_words(terminal_WORDS);
+    pf_load_words(shell_WORDS);
+    pf_load_words(exception_WORDS);
 #if defined PF_WITH_FLOATING
-    pf_load_words (&P4WORDS (floating));
+    pf_load_words(floating_WORDS);
 #endif
-    pf_load_words (&P4WORDS (signals));
-    pf_load_words (&P4WORDS (tools));
-    pf_load_words (&P4WORDS (facility));
+    pf_load_words(signals_WORDS);
+    pf_load_words(tools_WORDS);
+    pf_load_words(facility_WORDS);
+
     /* -------- warm boot stage ------- */
     quit_system ();
 }

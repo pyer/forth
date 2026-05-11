@@ -429,7 +429,7 @@ FCode (pf_history)
 }
 
 /* ----------------------------------------------------------------------- */
-P4_LISTWORDS (tools) =
+WORDS (tools) =
 {
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
@@ -439,6 +439,6 @@ P4_LISTWORDS (tools) =
     P4_FXco ("DUMP",         pf_dump),
     P4_FXco ("WORDS",        pf_words),
     P4_FXco ("HISTORY",      pf_history),
+    P4_END
 };
-P4_COUNTWORDS (tools, "Tools words");
 

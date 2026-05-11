@@ -531,12 +531,11 @@ FCode (pf_forth_signal)
 }
 
 /* -------------------------------------------------------------- */
-P4_LISTWORDS (signals) =
+WORDS (signals) =
 {
-//    P4_INTO ("FORTH", 0),
     P4_FXco ("LOAD-SIGNALS",    pf_load_signals),
     P4_FXco ("RAISE-SIGNAL",    pf_raise_signal),
     P4_FXco ("FORTH-SIGNAL",    pf_forth_signal),
+    P4_END
 };
-P4_COUNTWORDS (signals, "Signals Extension");
 

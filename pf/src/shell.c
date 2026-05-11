@@ -335,7 +335,7 @@ FCode (pf_system)
 }
 
 /* ----------------------------------------------------------------------- */
-P4_LISTWORDS (shell) =
+WORDS (shell) =
 {
 //    P4_INTO ("FORTH", 0),
     /** ( -- fid ) - the standard file-handles of the task */
@@ -361,6 +361,6 @@ P4_LISTWORDS (shell) =
     P4_FXco ("LS",        pf_ls),
     /** task system hooks */
     P4_FXco ("SYSTEM",    pf_system),
+    P4_END
 };
-P4_COUNTWORDS (shell, "Shell like words");
 

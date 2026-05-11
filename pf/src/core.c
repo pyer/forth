@@ -717,7 +717,7 @@ EXECUTE
 EXIT
 */
 
-P4_LISTWORDS (core) =
+WORDS (core) =
 {
 //    P4_INTO ("FORTH", 0),
     /** quick constants - implemented as code */
@@ -787,6 +787,7 @@ P4_LISTWORDS (core) =
     P4_FXco ("NIP",          p4_nip),
     P4_FXco ("TUCK",         p4_tuck),
     P4_FXco ("WITHIN",       p4_within),
+    P4_END
 };
-P4_COUNTWORDS (core, "Core words");
+//P4_COUNTWORDS (core, "Core words");
 

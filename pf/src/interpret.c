@@ -32,9 +32,6 @@
 #define HLD    hold
 
 /* -------------------------------------------------------------- */
-// display a message when a word is redefined
-int redefined_msg = 0;
-/* -------------------------------------------------------------- */
 p4char *hold;        /* auxiliary pointer for number output */
 /* -------------------------------------------------------------- */
 // input buffer
@@ -859,13 +856,10 @@ FCode (pf_to_body)
 }
 
 /* -------------------------------------------------------------- */
-void pf_load_words (const p4Words* ws)
+void pf_load_words (const p4Word wl[])
 {
-  int k = ws->n;
-  const p4Word* w = ws->w;
-
-  for ( ; --k >= 0; w++) {
-        if (! w) continue;
+  const p4Word *w = wl;
+  while ( w ) {
     /* the C-name is really type-byte + count-byte away */
     char type = *w->name;
 
@@ -908,13 +902,15 @@ void pf_load_words (const p4Words* ws)
         *--SP = (p4cell)(w->ptr);
         pf_constant_();
         break;
+    case 'E': // End of words list
+        return;
     default:
         pf_outf("\nERROR: unknown typecode for loadlist entry "
               "0x%x -> \"%s\"", 
               type, word_ptr);
     } /*switch*/
-
-  } /* for w in ws->w */
+    w++;
+  } /* while ( w ) */
 
 }
 
@@ -955,7 +951,7 @@ p4char* p4_header_comma (const p4char *name, int len)
         p4_throw (P4_ON_NAME_TOO_LONG);
     }
 
-    if (redefined_msg && pf_find(name, len))
+    if (pf_find(name, len))
         pf_outf ("\n\"%.*s\" is redefined ", len, name);
 
     /* and now, do the p4_string_comma ... */
@@ -1103,7 +1099,6 @@ int pf_convert_float(void)
  */
 void pf_interpret(char *buf, int len, int n)
 {
-    redefined_msg = 1;
     source = buf;
     length = len;
     to_in = 0;
@@ -1216,11 +1211,9 @@ The functions of TIB and #TIB have been superseded by SOURCE.
 The function of CONVERT has been superseded by >NUMBER.
 The functions of EXPECT and SPAN have been superseded by ACCEPT.
 The function of QUERY may be performed with ACCEPT and EVALUATE.
-
-
 */
 
-P4_LISTWORDS (interpret) =
+WORDS (interpret) =
 {
     P4_FXco ("BASE",         pf_base),
     P4_FXco ("SOURCE",       pf_source),
@@ -1249,6 +1242,7 @@ P4_LISTWORDS (interpret) =
     P4_IXco ("\\",           pf_backslash),
     P4_FXco ("INCLUDE",      pf_include),
     P4_FXco ("INCLUDED",     pf_included),
+    P4_END
 };
-P4_COUNTWORDS (interpret, "Interpreter words");
+//P4_COUNTWORDS (interpret, "Interpreter words");
 

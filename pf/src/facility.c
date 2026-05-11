@@ -68,12 +68,11 @@ FCode (pf_now)
     SP[0] = tm->tm_year + 1900;
 }
 
-//#define P4_FXco( NM, PCODE)     { "p\237"NM, &PCODE##_ }
-P4_LISTWORDS (facility) =
+WORDS (facility) =
 {
     P4_FXco ("MS",     pf_ms),
     P4_FXco ("RANDOM", pf_random),
     P4_FXco ("SEED",   pf_seed),
     P4_FXco ("NOW",    pf_now),
+    P4_END
 };
-P4_COUNTWORDS (facility, "Facility");
