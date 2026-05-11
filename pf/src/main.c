@@ -222,6 +222,7 @@ void help_opt(char *progname)
     printf("Usage: %s [-f file] [-e word] [v] [h]\n", progname);
     puts("   -f file  : load file   (before -e option if any)");
     puts("   -e word  : execute word (after -f option if any)");
+    printf("   -s       : skip boot file '%s'\n", PF_BOOT_FILE);
     puts("   -v       : print version");
     puts("   -h       : print this help");
 }
@@ -234,15 +235,19 @@ int main (int argc, char** argv)
     char cmd = 0;
     char buffer[256];
     int len = 0;
+    int boot_file = 1;
     int opt;
   
-    while ((opt = getopt(argc, argv, "e:f:vh")) != -1) {
+    while ((opt = getopt(argc, argv, "e:f:svh")) != -1) {
         switch (opt) {
         case 'e':
         case 'f':
             cmd = opt;
             strcpy( buffer, optarg );
             len = strlen(buffer);
+            break;
+        case 's':
+            boot_file = 0;
             break;
         case 'v':
             puts(pf_version_string());
@@ -268,7 +273,8 @@ int main (int argc, char** argv)
         quit_system();
         break;
     case 0:
-        pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
+        if ( boot_file )
+            pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
         if ( cmd == 'f' )
             pf_include(buffer,len);
         if ( cmd == 'e' ) {
