@@ -13,7 +13,6 @@
 #include <setjmp.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -32,7 +31,7 @@
 #define HLD    hold
 
 /* -------------------------------------------------------------- */
-p4char *hold;        /* auxiliary pointer for number output */
+char *hold;        /* auxiliary pointer for number output */
 /* -------------------------------------------------------------- */
 // input buffer
 char* source;
@@ -80,31 +79,31 @@ FCode (pf_latest)
 }
 
 /* -------------------------------------------------------------- */
-p4char** name_to_link (const p4char* p)
+char** name_to_link (const char* p)
 {
-    return (p4char **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
+    return (char **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
 }
 
-p4xt name_to_cfa (const p4char *p)
+p4xt name_to_cfa (const char *p)
 {
     return LINK_TO_CFA (name_to_link (p));
 }
 
-p4char * cfa_to_name (p4xt xt)
+char * cfa_to_name (p4xt xt)
 {
     /* cfa to lfa */
-    p4char ** cfa;
+    char ** cfa;
     p4_Semant *s = (p4_Semant *)xt;
     if (s->magic == P4_SEMANT_MAGIC)
       cfa = name_to_link (s->name);
     else
-      cfa = (p4char**)( xt - 1 );
+      cfa = (char**)( xt - 1 );
 
     /* cfa to lfa
      * scan backward for count byte preceeding name of definition
      * returns pointer to count byte of name field or NULL
      */
-    p4char * p = (p4char *) cfa;
+    char * p = (char *) cfa;
     unsigned n;
 
 #   define NAME_ALIGN_WIDTH sizeof(p4cell) /* one or two byte */
@@ -206,7 +205,7 @@ char pf_number2digit(p4cell n)
 /** digit to number ( c n* base -- ?ok )
  * Get value of digit c into *n, return flag: valid digit.
  */
-int pf_digit2number (p4char c, p4cell *n, p4cell base)
+int pf_digit2number (char c, p4cell *n, p4cell base)
 {
     if (c < '0')
         return P4_FALSE;
@@ -246,7 +245,7 @@ int pf_digit2number (p4char c, p4cell *n, p4cell base)
  *  where that is really a problem - in my setups it happens that the ORDER
  *  overflows much before getting duplicates other than the basic wordlists.
  */
-p4char* pf_find (const p4char *nm, int l)
+char* pf_find (const char *nm, int l)
 {
     char upper[256];
     int n;
@@ -260,7 +259,7 @@ p4char* pf_find (const p4char *nm, int l)
     upper[n] = 0; // zero-terminated string
         /* this thread does contain some upper-case defs 
            AND lower-case input shall match those definitions */
-        p4char *nfa = LATEST;        /* NFA of most recently CREATEd header */
+        char *nfa = LATEST;        /* NFA of most recently CREATEd header */
         while (nfa) {
             if (! (NAMEFLAGS(nfa) & P4xSMUDGED) && NAMELEN(nfa) == l) {
                 if (!memcmp (nm, NAMEPTR(nfa), l))  break;
@@ -282,7 +281,7 @@ p4char* pf_find (const p4char *nm, int l)
  */
 FCode (pf_find)
 {
-    p4char *p = (p4char *) *SP;
+    char *p = (char *) *SP;
 
     p = pf_find (p + 1, *p);
     if (p) {
@@ -362,11 +361,10 @@ FCode (pf_less_sh)
 FCode (pf_sh)
 {
     p4cell u = *SP;
-    udiv_t res;
-    res.quot = u / BASE;
-    res.rem  = u % BASE;
-    *SP = res.quot;
-    pf_hold (pf_number2digit(res.rem));
+    p4cell quotient  = u / BASE;
+    p4cell remainder = u % BASE;
+    *SP = quotient;
+    pf_hold (pf_number2digit(remainder));
 }
 
 /** #> ( n -- hold-str-ptr hold-str-len ) [ANS]
@@ -413,7 +411,7 @@ void pf_parse_word( char delimiter )
     int   n = length;
     int   i = to_in;
 
-    word_ptr = (p4char*) q + i;
+    word_ptr = (char*) q + i;
     word_len = 0;
 
     /* BL && QUOTED -> before whitespace and after doublequote */
@@ -430,9 +428,9 @@ void pf_parse_word( char delimiter )
  * tick next word,  and
  * return count byte pointer of name field (to detect immediacy)
  */
-p4char * pf_tick_nfa (void)
+char * pf_tick_nfa (void)
 {
-    register p4char *p;
+    register char *p;
     pf_skip_spaces();
     pf_parse_word(' ');
     *DP = 0; /* PARSE-WORD-NOHERE */
@@ -464,7 +462,7 @@ FCode (pf_tick)
 }
 
 /* -------------------------------------------------------------- */
-const p4char * pf_to_number (const p4char *p, p4cell *n, p4cell *d, p4cell base)
+const char * pf_to_number (const char *p, p4cell *n, p4cell *d, p4cell base)
 {
     p4cell value = 0;
     int sign = 0;
@@ -491,7 +489,7 @@ FCode (pf_to_number)
 {
     SP[1] = (p4cell)
         pf_to_number (
-                      (p4char *) SP[1],
+                      (char *) SP[1],
                       (p4cell *) &SP[0],
                       (p4cell *) &SP[2],
                       BASE);
@@ -522,7 +520,7 @@ FCode (pf_count)
     /* can not unpack twice - this trick prevents from many common errors */
     if (256 > (p4cell)(SP[0])) goto possibly_idempotent;
     --SP;
-    SP[0] = *((*(p4char **)&(SP[1]))++);
+    SP[0] = *((*(char **)&(SP[1]))++);
     return;
 
     /* an idempotent COUNT allows to ease the transition from counted-strings
@@ -535,15 +533,15 @@ FCode (pf_count)
      * of being somewhat undetermined which part gets triggered at runtime.
      */
  possibly_idempotent:
-    if (((p4char**)SP)[1][-1] == (p4char)(SP[0])) /* idempotent ? */
-    { if ((p4char)(SP[0])) return; } /* only if not null-count ! */
+    if (((char**)SP)[1][-1] == (char)(SP[0])) /* idempotent ? */
+    { if ((char)(SP[0])) return; } /* only if not null-count ! */
     *--SP = (p4cell)(0); /* makes later functions to copy nothing at all */
 }
 
 /* -------------------------------------------------------------- */
 int pf_find_word(void)
 {
-    register p4char *nfa;
+    register char *nfa;
     register p4xt xt;
 
     /* WORD-string is at HERE and at word_ptr / word_len */
@@ -570,7 +568,7 @@ int pf_find_word(void)
 int pf_convert_number(void)
 {
     /* WORD-string is at HERE and at word_ptr / word_len */
-    const p4char *p = word_ptr;
+    const char *p = word_ptr;
     p4cell        n = word_len;
 
     p4cell base = 0;
@@ -695,7 +693,7 @@ FCode (pf_dot_r)
 FCode (pf_parse_comma_quote)
 {
     pf_parse_word('"');
-    const p4char *s = word_ptr;    
+    const char *s = word_ptr;    
     int len   = word_len; 
     *DP++ = len;                /* store count byte */
     while (--len >= 0)          /* store string */
@@ -708,7 +706,7 @@ FCode (pf_parse_comma_quote)
  */
 FCode (pf_dot_quote_execution)
 {
-    register p4char *p = (p4char *) IP;
+    register char *p = (char *) IP;
     pf_type ((const char *)p + 1, *p);
     FX_SKIP_STRING;
 }
@@ -863,7 +861,7 @@ void pf_load_words (const p4Word wl[])
     /* the C-name is really type-byte + count-byte away */
     char type = *w->name;
 
-    word_ptr = ((p4char*)(w->name+2));
+    word_ptr = ((char*)(w->name+2));
     word_len = -1;
 
     switch (type) {
@@ -872,7 +870,7 @@ void pf_load_words (const p4Word wl[])
         p4_header_in();
         FX_SCOMMA ( semant->comp );
         if (! (semant ->name))
-            semant ->name = (p4char*)( word_ptr-1 ); 
+            semant ->name = (char*)( word_ptr-1 ); 
         /* discard const */
         /* BEWARE: the arg' name must come from a wordset entry to
            be both static and have a byte in front that could be 
@@ -936,10 +934,10 @@ void name_to_caps(char *dest, const char *src, int len)
     }
 }
 
-p4char* p4_header_comma (const p4char *name, int len)
+char* p4_header_comma (const char *name, int len)
 {
 //printf("\nlatest %x  link %x",LATEST,wid->link);
-    p4char *last = LATEST;
+    char *last = LATEST;
     /* move exception handling to the end of this word - esp. nametoolong */
     if (len == 0)
         p4_throw (P4_ON_ZERO_NAME);
@@ -987,7 +985,7 @@ p4char* p4_header_comma (const p4char *name, int len)
 }
 
 /* -------------------------------------------------------------- */
-p4char* p4_header_in (void)
+char* p4_header_in (void)
 {
     /* quick path for wordset-loader: */
     if (word_len == -1) {
@@ -997,7 +995,7 @@ p4char* p4_header_in (void)
       pf_parse_word(' ');
     }
     *DP = 0; /* PARSE-WORD-NOHERE */
-    p4char *h = p4_header_comma (word_ptr, word_len);
+    char *h = p4_header_comma (word_ptr, word_len);
     return h;
 }
 

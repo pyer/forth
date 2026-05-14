@@ -18,7 +18,6 @@
 #include <time.h>
 
 #include "config.h"
-#include "types.h"
 #include "macro.h"
 #include "compiler.h"
 

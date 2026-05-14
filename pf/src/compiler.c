@@ -21,7 +21,6 @@
 #include <errno.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -234,7 +233,7 @@ FCode (pf_forward_mark)
 FCode (pf_forward_resolve)
 {
     pf_Q_comp_();
-    *(p4char **) *SP++ = DP;
+    *(char **) *SP++ = DP;
 }
 
 /* -------------------------------------------------------------- */
@@ -468,11 +467,11 @@ FCode (pf_comma)
  */
 FCode (pf_c_comma)
 {
-    *DP++ = (p4char) *SP++;
+    *DP++ = (char) *SP++;
 }
 
 /* -------------------------------------------------------------- */
-#define P4_ALIGNED(P)  (((size_t)(P) & (SIZEOF_CELL - 1)) == 0)
+#define P4_ALIGNED(P)  (((size_t)(P) & (sizeof(p4cell) - 1)) == 0)
 
 /** ALIGN ( -- ) [ANS]
  * will make the dictionary aligned, usually to a

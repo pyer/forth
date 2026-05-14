@@ -6,26 +6,26 @@
 #define PF_BOOT_FILE "/usr/lib/pf.4th"
 #define PF_HELP_FILE "/usr/share/man/pf.txt"
 
+#define PF_BYE_MSG   "\nGoodbye!\n"
+
 #if defined ARM
 /* ARM processor options */
-#define SIZEOF_CHAR   1
-#define SIZEOF_SHORT  2
-#define SIZEOF_INT    4
-#define SIZEOF_LONG   4
-#define SIZEOF_FLOAT  4
-#define SIZEOF_DOUBLE 8
-#define SIZEOF_VOIDP  4
-
+  #define SIZEOF_CHAR   1
+  #define SIZEOF_SHORT  2
+  #define SIZEOF_INT    4
+  #define SIZEOF_LONG   4
+  #define SIZEOF_FLOAT  4
+  #define SIZEOF_DOUBLE 8
+  #define SIZEOF_VOIDP  4
 #else
 /* X86-64 processor options */
-#define SIZEOF_CHAR   1
-#define SIZEOF_SHORT  2
-#define SIZEOF_INT    4
-#define SIZEOF_LONG   8
-#define SIZEOF_FLOAT  4
-#define SIZEOF_DOUBLE 8
-#define SIZEOF_VOIDP  8
-
+  #define SIZEOF_CHAR   1
+  #define SIZEOF_SHORT  2
+  #define SIZEOF_INT    4
+  #define SIZEOF_LONG   8
+  #define SIZEOF_FLOAT  4
+  #define SIZEOF_DOUBLE 8
+  #define SIZEOF_VOIDP  8
 #endif
 
 /* Both x86 and arm are little endian */
@@ -41,16 +41,16 @@
 
 /* a cell has at least the size of a pointer but the type of an integer */
 #if defined SIZEOF_INT && SIZEOF_INT >= SIZEOF_VOIDP
-# define       SIZEOF_CELL SIZEOF_INT
-# define       TYPEOF_CELL int
+typedef int  p4cell;      /* a stack item */
 #elif defined SIZEOF_LONG && SIZEOF_LONG >= SIZEOF_VOIDP
-# define       SIZEOF_CELL SIZEOF_LONG
-# define       TYPEOF_CELL long
+typedef long p4cell;      /* a stack item */
 #else 
 # error cell type and size not detected.
 #endif
 
-#define SIZEOF_FCELL SIZEOF_DOUBLE
-#define TYPEOF_FCELL double
+typedef double p4fcell;   /* a fstack item */
+
+typedef void (*p4code) (void);    /* pointer to executable code */
+typedef p4code *p4xt;     /* type of the "execution token" */
 
 #endif

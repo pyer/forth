@@ -24,13 +24,13 @@
 #include <errno.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
 #include "compiler.h"
 #include "interpret.h"
 
+typedef struct { p4cell quot, rem; } fdiv_t;
 /************************************************************************/
 /* Core Words                                                           */
 /************************************************************************/
@@ -318,7 +318,7 @@ FCode (p4_c_store)
  */
 FCode (p4_c_fetch)
 {
-    *SP = *(p4char *) *SP;
+    *SP = *(char *) *SP;
 }
 
 /** CELL+ ( value -- value' ) [ANS]
@@ -353,7 +353,7 @@ FCode (p4_char_plus)
 /** CHARS ( value# -- value#' ) [ANS]
  * scale the value by the sizeof a char
  * - the value is then often applied to an address or
- * fed into => ALLOT (did you expect that sizeof(p4char)
+ * fed into => ALLOT (did you expect that sizeof(char)
  * may actually yield 2 bytes?)
  */
 FCode (p4_chars)

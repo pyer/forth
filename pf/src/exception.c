@@ -25,7 +25,6 @@
 #include <setjmp.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -46,16 +45,14 @@ jmp_buf jump_loop;    /* BYE and ABORT do a THROW which longjmp() */
 p4_Except *catchframe = NULL;  /* links to chain of CATCHed words */
         /* and no exceptions to be caught */
 /************************************************************************/
-typedef struct p4_Exception p4_Exception;
 struct p4_Exception
 {
     struct p4_Exception* next;
     p4cell id;
-    char const * name;
+    const char* name;
 };
 
-p4cell next_exception = 0;
-p4_Exception* exception_link;
+struct p4_Exception* exception_link;
 
 /*
  * show the error, along with info like the block, filename, line numer.
@@ -144,7 +141,7 @@ static void throw_msg (int id, char *msg)
         sprintf (msg, "I/O Error %d : %s", -1024-id, strerror (-1024-id));
     } else if (-32767 < id && id <= -2048) {
         /* search the exception_link for our id */
-        p4_Exception* expt = exception_link;
+        struct p4_Exception* expt = exception_link;
         strcpy (msg, "module-specific error-condition");
         while (expt) {
           if (expt->id == id) {
@@ -306,7 +303,7 @@ P4COMPILE (pf_abort_quote, pf_abort_quote_execution, P4_SKIPS_STRING);
  */
 FCode (pf_bye)
 {
-    pf_outs ("\nGoodbye!\n");
+    pf_outs (PF_BYE_MSG);
     pf_longjmp_exit ();
 }
 

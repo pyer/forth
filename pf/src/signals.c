@@ -69,7 +69,6 @@
 #include <setjmp.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -79,24 +78,23 @@
 #include "terminal.h"
 
 /* -------------------------------------------------------------- */
-typedef void (*SigHdl) (int);  /* signal handler function type */
 
-enum        /* Classification of signals: The */
-{        /* signal class is either a THROW code or: */
+enum            /* Classification of signals: The */
+{               /* signal class is either a THROW code or: */
     Fatal,      /*   p4th terminates if such a signal arrives */
     Abort,      /*   executes ABORT" */
-    Chandled,      /*   handled by C code, e.g. stop/continue */
-    Default      /*   left alone by p4th, cannot be caught */
+    Chandled,   /*   handled by C code, e.g. stop/continue */
+    Default     /*   left alone by p4th, cannot be caught */
 };
 
-typedef struct      /* all we need to know about a signal */
+typedef struct            /* all we need to know about a signal */
 {
-    short sig;      /* the signal */
-    short cLass;    /* a classification */
+    short sig;            /* the signal */
+    short cLass;          /* a classification */
     char const * name;    /* the name of the signal */
-    char const * msg;    /* a textual signal description */
-    SigHdl old;      /* state of signal before we took it */
-    p4xt hdl;      /* a forth word to handle the signal */
+    char const * msg;     /* a textual signal description */
+    __sighandler_t old;   /* state of signal before we took it */
+    p4xt hdl;             /* a forth word to handle the signal */
 } Siginfo;
 
 /**
@@ -356,14 +354,12 @@ static int getinfo (int sig)
     return i;
 }
 
-typedef void (*_sighandler_t)(int);
-
 static void sig_handler (int sig)    /* Signal handler for all signals */
 {
     Siginfo *s;
 
-    if (SIG_ERR == signal (sig, (_sighandler_t) sig_handler)) {
-  puts("ERROR: signal reinstall failed");
+    if (SIG_ERR == signal (sig, (__sighandler_t) sig_handler)) {
+        puts("ERROR: signal reinstall failed");
     }
 
     {
@@ -400,7 +396,7 @@ static void sig_handler (int sig)    /* Signal handler for all signals */
 #ifdef SIGTSTP
 static void stop_hdl (int sig)
 {
-    signal (sig, (_sighandler_t) stop_hdl);
+    signal (sig, (__sighandler_t) stop_hdl);
     { 
         system_terminal();
         swap_signals ();
@@ -422,7 +418,7 @@ static void winchg_hdl (int sig)
 #ifdef SIGALRM
 static void handle_sigalrm (int sig)
 {
-    signal (sig, (_sighandler_t) handle_sigalrm);
+    signal (sig, (__sighandler_t) handle_sigalrm);
 }
 #endif
 
@@ -468,7 +464,7 @@ void pf_init_signal_handlers (void)
 #endif
 
 #ifdef SIGALRM
-    signal (SIGALRM, (_sighandler_t) handle_sigalrm);
+    signal (SIGALRM, (__sighandler_t) handle_sigalrm);
 #endif
 }
 
@@ -488,7 +484,7 @@ FCode (pf_load_signals)
     Siginfo *s;
     for (s = siginfo; s < siginfo + SIGSIZE; s++)
     {
-        p4_header_comma ((const p4char*) s->name, strlen (s->name));
+        p4_header_comma ((const char*) s->name, strlen (s->name));
         FX_RUNTIME1(pf_constant);
         FX_SCOMMA (s->sig);
     }

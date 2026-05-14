@@ -27,7 +27,6 @@
 
 #include "config.h"
 #include "const.h"
-#include "types.h"
 #include "macro.h"
 #include "compiler.h"
 #include "interpret.h"
@@ -140,10 +139,10 @@ FCode (pf_dot_s)
 FCode (pf_dot_status)
 {
     pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4cell) (dictlimit - dict),(p4cell) (DP - dict));
-    pf_outf ("\nStack space:         %7ld cells",  (p4cell) (s0 - stack));  /* sizeof (p4cell) */
-    pf_outf ("\nReturn stack space:  %7ld cells",(p4cell) (r0 - rstack));  /* sizeof (p4xt**) */
+    pf_outf ("\nStack space:         %7ld cells",  (p4cell) (s0 - stack));   /* sizeof (p4cell) */
+    pf_outf ("\nReturn stack space:  %7ld cells",(p4cell) (r0 - rstack));    /* sizeof (p4xt**) */
 #if defined PF_WITH_FLOATING
-    pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (f0 - fstack)); /* sizeof (double) */
+    pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (f0 - fstack));  /* sizeof (p4fcell) */
     pf_outf ("\nprecision:           %3d", (int) precision);
 #endif
     pf_cr_();
@@ -170,7 +169,7 @@ FCode (pf_dot_version)
 }
 
 /* ----------------------------------------------------------------------- */
-void pf_dot_name (const p4char *nfa)
+void pf_dot_name (const char *nfa)
 {
     if (nfa && (NAMEFLAGS(nfa) & P4xFLAG)) {
         pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
@@ -191,11 +190,10 @@ void pf_dot_number(p4cell u)
     }
 
     do {
-      udiv_t res;
-      res.quot = u / BASE;
-      res.rem  = u % BASE;
-      u = res.quot;
-      *hold-- = pf_number2digit(res.rem);
+      p4cell quotient  = u / BASE;
+      p4cell remainder = u % BASE;
+      u = quotient;
+      *hold-- = pf_number2digit(remainder);
     } while (u);
 
     if (sign == '-' )
@@ -205,11 +203,11 @@ void pf_dot_number(p4cell u)
     pf_outs(hold);
 }
 
-void pf_decompile_rest (p4char* nfa, p4xt *ip)
+void pf_decompile_rest (char* nfa, p4xt *ip)
 {
     pf_dot_name (nfa);
     while (**ip != pf_semicolon_execution_) {
-        p4char *name = cfa_to_name(*ip);
+        char *name = cfa_to_name(*ip);
         pf_dot_name(name);
         p4_Semant *s = (p4_Semant *)((char *)(*ip) - (char *)&(((p4_Semant *)0)->exec[0]));
 //        printf("\n %p %p %p => %p \n", *ip, (char*)&(((p4_Semant *)0)->exec[0]), (char *)&((p4_Semant)0).exec, s );
@@ -230,7 +228,7 @@ void pf_decompile_rest (p4char* nfa, p4xt *ip)
               ip++;
               break;
             case P4_SKIPS_STRING:
-              p4char *str = (p4char *)ip;
+              char *str = (char *)ip;
               pf_outs(".\" ");
               pf_type ((const char *)NAMEPTR(str), NAMELEN(str));
               pf_outs("\" ");
@@ -240,7 +238,7 @@ void pf_decompile_rest (p4char* nfa, p4xt *ip)
               break;
 #if defined PF_WITH_FLOATING
             case P4_SKIPS_FLOAT:
-              TYPEOF_FCELL *f = (TYPEOF_FCELL *)ip;
+              p4fcell *f = (p4fcell *)ip;
               pf_outf ("%.*f ", (int) precision, *f);
               f++;
               ip = (p4xt *)f;
@@ -275,7 +273,7 @@ void pf_decompile_rest (p4char* nfa, p4xt *ip)
 
 FCode (pf_see)
 {
-    p4char* nfa = pf_tick_nfa();
+    char* nfa = pf_tick_nfa();
     p4xt    xt  = LINK_TO_CFA(name_to_link(nfa));
     p4xt* rest = (p4xt*) P4_TO_BODY(xt);
 
@@ -329,7 +327,7 @@ FCode (pf_see)
 FCode (pf_man)
 {
     char buffer[256];
-    p4char* nfa = pf_tick_nfa();
+    char* nfa = pf_tick_nfa();
     char *name = NAMEPTR(nfa);
     int  len   = NAMELEN(nfa);
     bool notfound = 1;
@@ -367,7 +365,7 @@ FCode (pf_dump)
 {
     p4cell i, j;
     p4cell n = (p4cell)*(SP++);
-    p4char *p = (p4char*)(*(SP++));
+    char *p = (char*)(*(SP++));
 
     pf_more_();
     pf_cr_();
@@ -397,7 +395,7 @@ FCode (pf_dump)
  */
 FCode (pf_words)
 {
-    p4char *nfa = LATEST;        /* NFA of most recently CREATEd header */
+    char *nfa = LATEST;        /* NFA of most recently CREATEd header */
     pf_cr_();
     while (nfa) {
         pf_dot_name(nfa);

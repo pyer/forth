@@ -33,7 +33,6 @@
 #include <time.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -44,11 +43,6 @@
 
 /* ----------------------------------------------------------------------- */
 #define P4_ARG_MAX 4096
-
-/* ----------------------------------------------------------------------- */
-typedef int (*syscall_f)( const char* ); 
-        /*GD* used in do_one, so we don't get warnings */
-
 /* ----------------------------------------------------------------------- */
 char current_dir[PATH_LENGTH];
 char buffer1[PATH_LENGTH];
@@ -121,7 +115,7 @@ FCode (p4_pwd)
 static char * pf_word_comma(void)
 {
     char *p = pf_word(' ');
-    DP += *((p4char*)(p)) + 1;   // add word length + 1
+    DP += *((char*)(p)) + 1;   // add word length + 1
     pf_align_();
     return p;
 }
@@ -337,12 +331,6 @@ FCode (pf_system)
 /* ----------------------------------------------------------------------- */
 WORDS (shell) =
 {
-//    P4_INTO ("FORTH", 0),
-    /** ( -- fid ) - the standard file-handles of the task */
-//    P4_DVaL ("STDIN",   stdIn),
-//    P4_DVaL ("STDOUT",  stdOut),
-//    P4_DVaL ("STDERR",  stdErr),
-
     P4_FXco ("$PID",      p4_getpid),
     P4_FXco ("$UID",      p4_getuid),
     P4_FXco ("$EUID",     p4_geteuid),

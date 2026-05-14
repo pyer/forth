@@ -16,19 +16,19 @@
 /* either have a seperate Flag-Field-Area before name or use flags
  * integrated in the (hi bits of the) count-byte of a bstring */
 # if defined PF_WITH_FFA
-#   define NAMEFLAGS(X)   (*((p4char*)(X)-1))    /* FFA is before NFA */
-#   define NAMEPTR(X)     (((p4char*)(X))+1)
-#   define NAMELEN(X)     (*(p4char*)X)
+#   define NAMEFLAGS(X)   (*((char*)(X)-1))    /* FFA is before NFA */
+#   define NAMEPTR(X)     (((char*)(X))+1)
+#   define NAMELEN(X)     (*(char*)X)
 #   define NAME_SIZE_MAX     127                 /* C99 defines SIZE_MAX for size_t */
 # else
-#   define NAMEFLAGS(X)   (*(p4char*)X)          /* FFA is the hi bits of NFA */
-#   define NAMEPTR(X)     (((p4char*)(X))+1)
-#   define NAMELEN(X)     ((*(p4char*)X)&31)
+#   define NAMEFLAGS(X)   (*(char*)X)          /* FFA is the hi bits of NFA */
+#   define NAMEPTR(X)     (((char*)(X))+1)
+#   define NAMELEN(X)     ((*(char*)X)&31)
 #   define NAME_SIZE_MAX     31                  /* used for buffer-sizes */
 # endif
 
 
-#define FX_SKIP_STRING  (*(char **)&(IP) += (pf_aligned (*(p4char*)IP + 1)))
+#define FX_SKIP_STRING  (*(char **)&(IP) += (pf_aligned (*(char*)IP + 1)))
 
 /* X:value T:typedef */
 #define P4_COMMA_(X,T) (*(T *)(DP) = (T)(X), ((*(T **)&(DP))++))

@@ -24,8 +24,6 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -62,7 +60,7 @@ p4xt**  rstack;     /*  return stack */
 p4xt**  r0;
 p4xt**  rp;         /* the return stack pointer */
 
-p4char *LATEST;     /* NFA of most recently CREATEd header */
+char *LATEST;     /* NFA of most recently CREATEd header */
 
 p4cell STATE;       /* interpreting (0) or compiling (-1) */
 p4cell BASE;        /* of number i/o conversion */
@@ -75,9 +73,9 @@ p4cell BASE;        /* of number i/o conversion */
  */
 void* p4_dict_allocate (int items, int size, int align, void** lower, void** upper)
 {
-    register p4char* memtop = dictlimit;
+    register char* memtop = dictlimit;
     if (! align) align = sizeof(p4cell);
-    memtop =(p4char*)( ((p4cell)memtop) &~ ((p4cell)(align) -1) );
+    memtop =(char*)( ((p4cell)memtop) &~ ((p4cell)(align) -1) );
     if (upper) *upper = memtop;
     memtop -= items * size;
     if (lower) *lower = memtop;
@@ -147,14 +145,14 @@ void pf_init_system() /* main_init */
     dictlimit = dict + total_size;
 
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
-                      SIZEOF_CELL,
+                      sizeof(p4cell),
                       (void**) & rstack, (void**) &r0);
     p4_dict_allocate (stack_size, sizeof(p4cell),
-                      SIZEOF_CELL,
+                      sizeof(p4cell),
                       (void**) & stack,  (void**) &s0);
 #if defined PF_WITH_FLOATING
     p4_dict_allocate (float_stack_size, sizeof(p4fcell),
-                      SIZEOF_FCELL,
+                      sizeof(p4fcell),
                       (void**) &fstack,  (void**) &f0);
 #endif
 
@@ -243,6 +241,7 @@ int main (int argc, char** argv)
     /* classify unhandled throw codes */
     case 'A': /* do abort */
         abort_system();
+        break;
     case 0:
         if ( boot_file )
             pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );

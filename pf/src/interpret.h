@@ -3,11 +3,11 @@
 
 void show_word(void);
 
-extern p4char *LATEST;
+extern char *LATEST;
 extern p4cell BASE;
 
 /* you must differentiate between VAR-style body and DOES-style body */
-#define CFA_TO_LINK(C)   ((p4char**)(C) - 1 )
+#define CFA_TO_LINK(C)   ((char**)(C) - 1 )
 #define LINK_TO_CFA(C)   ((p4xt)(C) + 1 )
 
 #define P4_TO_BODY(C)     ((p4cell *)((p4xt)(C) + 1))
@@ -15,22 +15,22 @@ extern p4cell BASE;
 #define P4_TO_DOES_BODY(C)  ((p4cell *)((p4xt)(C) + 2))
 #define P4_TO_DOES_CODE(C)  ((p4xt **)((p4xt)(C) + 1))
 
-p4char** name_to_link (const p4char* p);
-p4xt name_to_cfa (const p4char *p);
-p4char * cfa_to_name (p4xt xt);
+char** name_to_link (const char* p);
+p4xt name_to_cfa (const char *p);
+char * cfa_to_name (p4xt xt);
 p4cell * cfa_to_body (p4xt xt);
 
 void pf_load_words(const p4Word wl[]);
 
-p4char* p4_header_comma (const p4char *name, int len);
-p4char* p4_header_in (void);
+char* p4_header_comma (const char *name, int len);
+char* p4_header_in (void);
 
 char pf_number2digit(p4cell n);
 
 void pf_call (p4xt xt);
 void pf_normal_execute (p4xt xt);
 
-p4char * pf_tick_nfa (void);
+char * pf_tick_nfa (void);
 p4xt pf_tick_cfa (void);
 
 void pf_skip_spaces(void);

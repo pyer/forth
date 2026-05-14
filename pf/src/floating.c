@@ -32,7 +32,6 @@
 #include <errno.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -49,7 +48,7 @@ p4fcell* fp;       /* the floating point stack pointer */
 
 /* ------------------------------------------------------------------ */
 #define FX_FCOMMA(X)     P4_COMMA_((X),p4fcell)
-#define P4_DFALIGNED(P)  (((size_t)(P) & (SIZEOF_FCELL - 1)) == 0)
+#define P4_DFALIGNED(P)  (((size_t)(P) & (sizeof(p4fcell) - 1)) == 0)
 /* ------------------------------------------------------------------ */
 
 /**
@@ -236,10 +235,9 @@ FCode (p4_f_literal_execution)
 FCode (p4_f_literal)
 {
     if (STATE) {
-# if SIZEOF_FCELL > SIZEOF_CELL
-        if (P4_DFALIGNED (DP))
+        if (sizeof(p4fcell) > sizeof(p4cell) && P4_DFALIGNED(DP)) {
             FX_COMPILE (p4_f_literal);
-#endif
+        }
         FX_COMPILE (p4_f_literal);
         FX_FCOMMA (*fp++);
     }
@@ -363,12 +361,12 @@ FCode (pf_f_e_dot)
 
 FCode (p4_float_plus)
 {
-    *SP += SIZEOF_FCELL;
+    *SP += sizeof(p4fcell);
 }
 
 FCode (p4_floats)
 {
-    *SP += SIZEOF_FCELL;
+    *SP *= sizeof(p4fcell);
 }
 
 FCode (p4_f_star_star)

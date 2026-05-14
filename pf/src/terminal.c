@@ -26,7 +26,6 @@ CR  EMIT  EXPECT  FLUSH  KEY  SPACE  SPACES  TYPE
 #include <errno.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 #include "compiler.h"

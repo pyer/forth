@@ -29,7 +29,6 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "types.h"
 #include "const.h"
 #include "macro.h"
 
@@ -230,7 +229,7 @@ char* pf_store_filename (const char* str, int n)
  * Return best possible access method,
  * 0 if no access but file exists, -1 if file doesn't exist.
  */
-int p4_file_access (const p4char *fn, int len)
+int p4_file_access (const char *fn, int len)
 {
     char* buf = pf_store_filename ((const char *)fn, len);
     if (access (buf, F_OK) != 0)
@@ -253,7 +252,7 @@ static char open_mode[][4] = /* mode strings for fopen() */
 /**
  * open file
  */
-FILE * p4_open_file (const p4char *name, int len, int mode)
+FILE * p4_open_file (const char *name, int len, int mode)
 {
     char mdstr[8];
     mode &= 7;
@@ -266,7 +265,7 @@ FILE * p4_open_file (const p4char *name, int len, int mode)
 /**
  * create file 
  */
-FILE * p4_create_file (const p4char *name, int len, int mode)
+FILE * p4_create_file (const char *name, int len, int mode)
 {
 #   define null_AT_fclose(X) { FILE* f = (X); if (!f) goto _null; fclose(f); }
 
@@ -407,7 +406,7 @@ FCode (p4_close_file)
  */
 FCode (p4_create_file)
 {
-    register p4char *fn = (p4char *) SP[2]; /* c-addr, name */
+    register char *fn = (char *) SP[2]; /* c-addr, name */
     register p4cell u = SP[1];                   /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
     FILE *fid = p4_create_file (fn, u, fam);
@@ -488,7 +487,7 @@ FCode (p4_file_size)
  */
 FCode (p4_open_file)
 {
-    register p4char *fn = (p4char *) SP[2]; /* c-addr, name */
+    register char *fn = (char *) SP[2]; /* c-addr, name */
     register p4cell u = SP[1];                   /* length of name */
     register p4cell fam = SP[0];                  /* file access mode */
     register FILE *fid = p4_open_file (fn, u, fam);
@@ -508,7 +507,7 @@ FCode (p4_open_file)
  */
 FCode (p4_read_file)
 {
-    register p4char *  buf = (p4char *) SP[2];
+    register char *  buf = (char *) SP[2];
     register p4cell len = SP[1];
     register FILE *  fid = (FILE *) SP[0];
     SP += 1;
@@ -526,7 +525,7 @@ FCode (p4_read_file)
  */
 FCode (p4_read_line)
 {
-    register p4char *  buf = (p4char *) SP[2];
+    register char *  buf = (char *) SP[2];
     register p4cell len = SP[1];
     register FILE *  fid = (FILE *) SP[0];
     SP[2] = len;
@@ -617,7 +616,7 @@ FCode (p4_write_line)
  */
 FCode (p4_file_status)
 {
-    register int mode = p4_file_access ((p4char *) SP[1], SP[0]);
+    register int mode = p4_file_access ((char *) SP[1], SP[0]);
 
     if (mode == -1)
     {

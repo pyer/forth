@@ -54,7 +54,7 @@ p4_Runtime2 C##_Runtime =           \
 struct p4_Semant    /* for words with different compilation */
 {                    /* and execution semantics: */
     long magic;      /* mark begin of structure */
-    p4char const *name;        /* compiled by */
+    char const *name;        /* compiled by */
     p4code comp;              /* compilation/interpretation semantics */
     p4code exec[1];            /* execution semantics */
     int skips;                /* to decompile the data following xt */

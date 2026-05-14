@@ -9,7 +9,7 @@ ARCH = x86
 CFLAGS = -D$(ARCH) -Isrc -O1 -g -Wall -Wstrict-prototypes -funsigned-char -fPIC
 LFLAGS = -D$(ARCH) -g -fcommon  -Wall -Wstrict-prototypes -funsigned-char -fPIC -rdynamic -lm
 
-includes = src/compiler.h src/config.h src/const.h src/exception.h src/floating.h src/history.h src/interpret.h src/macro.h src/terminal.h src/types.h src/version.h
+includes = src/compiler.h src/config.h src/const.h src/exception.h src/floating.h src/history.h src/interpret.h src/macro.h src/terminal.h src/version.h
 objects = target/main.o target/compiler.o target/core.o target/exception.o target/facility.o target/interpret.o target/file.o target/floating.o target/history.o target/terminal.o target/shell.o target/signals.o target/tools.o
 
 all: clean compile manual test
