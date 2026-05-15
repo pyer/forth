@@ -22,12 +22,12 @@ variable wiping			\ if true: wipe brick, else draw brick
 10 constant wide		\ size of pit in brick positions
 20 constant deep
 
-char J	value left-key		\ customize if you don't like them
-char K	value rot-key
-char L	value right-key
-bl	value drop-key
-char P	value pause-key
-char Q	value quit-key
+char J	constant left-key		\ customize if you don't like them
+char K	constant rot-key
+char L	constant right-key
+bl	constant drop-key
+char P	constant pause-key
+char Q	constant quit-key
 
 variable score
 variable pieces
