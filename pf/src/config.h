@@ -6,8 +6,6 @@
 #define PF_BOOT_FILE "/usr/lib/pf.4th"
 #define PF_HELP_FILE "/usr/share/man/pf.txt"
 
-#define PF_BYE_MSG   "\nGoodbye!\n"
-
 #if defined ARM
 /* ARM processor options */
   #define SIZEOF_CHAR   1

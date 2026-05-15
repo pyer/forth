@@ -298,22 +298,12 @@ FCode (pf_abort_quote)
 }
 P4COMPILE (pf_abort_quote, pf_abort_quote_execution, P4_SKIPS_STRING);
 
-/** BYE ( -- ) no-return
- * should quit the forth environment completly
- */
-FCode (pf_bye)
-{
-    pf_outs (PF_BYE_MSG);
-    pf_longjmp_exit ();
-}
-
 WORDS (exception) =
 {
     P4_FXco ("CATCH",    p4_catch),
     P4_FXco ("THROW",    p4_throw),
     P4_FXco ("ABORT",    pf_abort),
     P4_SXco ("ABORT\"",  pf_abort_quote),
-    P4_FXco ("BYE",    pf_bye),
     P4_END
 };
 

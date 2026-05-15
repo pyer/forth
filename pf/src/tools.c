@@ -20,15 +20,17 @@
  *
  */
 
+#include <ctype.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "config.h"
 #include "const.h"
 #include "macro.h"
 #include "compiler.h"
+#include "exception.h"
 #include "interpret.h"
 #include "terminal.h"
 #include "history.h"
@@ -38,10 +40,20 @@
   #include "floating.h"
 #endif
 
+/* ----------------------------------------------------------------------- */
+/** BYE ( -- ) no-return
+ * should quit the forth environment completly
+ */
+FCode (pf_bye)
+{
+    pf_outs ("\nGoodbye!\n");
+    pf_longjmp_exit ();
+}
+
+/* ----------------------------------------------------------------------- */
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
 #define HEXWIDTH (sizeof (p4cell) * 2)
 
-/* ----------------------------------------------------------------------- */
 static void pf_prCell (p4cell n)
 {
     pf_outf ("\n%*ld [0x%0*lX] ",
@@ -428,6 +440,7 @@ FCode (pf_history)
 /* ----------------------------------------------------------------------- */
 WORDS (tools) =
 {
+    P4_FXco ("BYE",          pf_bye),
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco (".VERSION",     pf_dot_version),
