@@ -14,7 +14,7 @@ S" check F>S        " 1.234 F>S 1 = check
 S" check F!         " 1.234 tmp F! tmp F@ 1.234 F= check
 S" check F*         " 1.2 3.4 F* 4.08 F= check
 S" check F+         " 1.2 3.4 F+ 4.6  F= check
-S" check F-         " 4.6 3.4 F- 1.2  F= check
+S" check F-         " 6.99 6.99 F- 0.0 F= check
 S" check F/         " 4.8 4.0 F/ 1.2  F= check
 S" check F0<        " -1.234 F0< check
 S" check F0=        " 0.0 F0= check
@@ -34,16 +34,15 @@ S" check FMAX       " 1.2 -2.0 FMAX  1.2 F= check
 S" check FMIN       " 1.2 -2.0 FMIN -2.0 F= check
 S" check FNEGATE 1  " 1.234 FNEGATE -1.234 F= check
 S" check FNEGATE 2  " -1.234 FNEGATE 1.234 F= check
-\ S" check FOVER",     p4_f_over)
-\ S" check FROT",     p4_f_rot)
-\ S" check FROUND",     p4_f_round)
-\ S" check FSWAP",     p4_f_swap)
-\     P4_RTco ("FVARIABLE",   p4_f_variable)
+S" check FOVER      " 1.2 3.4 FOVER 1.2 F= FDROP FDROP check
+S" check FROT       " 1.2 3.4 5.6 FROT 1.2 F= FDROP FDROP check
+S" check FROUND 1.0 " 1.0 FROUND 1.0 F= check
+S" check FROUND 1.4 " 1.4 FROUND 1.0 F= check
+S" check FROUND 1.5 " 2.0 FROUND 2.0 F= check
+S" check FROUND 1.9 " 1.9 FROUND 2.0 F= check
+S" check FSWAP      " 1.2 3.4 FSWAP 1.2 F= FDROP check
+( FVARIABLE )
 \ S" check REPRESENT",   p4_represent)
-}Test
-
-." Testing floating point extension words"
-Test{
 \ S" check F.",     pf_f_dot)
 \ S" check FE.",     pf_f_e_dot)
 \ S" check F**",     p4_f_star_star)
