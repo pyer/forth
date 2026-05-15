@@ -193,6 +193,13 @@ FCode (p4_f_less_than)
     fp += 2;
 }
 
+FCode (p4_f_equal)
+{
+    p4fcell f1 = *fp++;
+    p4fcell f2 = *fp++;
+    *--SP = P4_FLAG (f1 == f2);
+}
+
 FCode (p4_f_fetch)
 {
     *--fp = *(p4fcell *) *SP++;
@@ -438,16 +445,17 @@ WORDS (floating) =
     P4_FXco ("S>F",     pf_s_to_f),
     P4_FXco ("F>S",     pf_f_to_s),
 
-    P4_FXco ("F!",     p4_f_store),
-    P4_FXco ("F*",     p4_f_star),
-    P4_FXco ("F+",     p4_f_plus),
-    P4_FXco ("F-",     p4_f_minus),
-    P4_FXco ("F/",     p4_f_slash),
+    P4_FXco ("F!",      p4_f_store),
+    P4_FXco ("F*",      p4_f_star),
+    P4_FXco ("F+",      p4_f_plus),
+    P4_FXco ("F-",      p4_f_minus),
+    P4_FXco ("F/",      p4_f_slash),
     P4_FXco ("F0<",     p4_f_zero_less),
     P4_FXco ("F0=",     p4_f_zero_equal),
-    P4_FXco ("F<",     p4_f_less_than),
+    P4_FXco ("F<",      p4_f_less_than),
+    P4_FXco ("F=",      p4_f_equal),
 
-    P4_FXco ("F@",     p4_f_fetch),
+    P4_FXco ("F@",      p4_f_fetch),
     P4_RTco ("FCONSTANT",   p4_f_constant),
     P4_FXco ("FDEPTH",     p4_f_depth),
     P4_FXco ("FDROP",     p4_f_drop),

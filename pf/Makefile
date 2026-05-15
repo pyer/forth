@@ -43,5 +43,5 @@ manual:
 
 test:
 	pf -f test/test_core.fth
-	pf -f test/test_see.fth
+	pf -f test/test_floating.fth
 

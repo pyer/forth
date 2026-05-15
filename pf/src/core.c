@@ -717,7 +717,6 @@ EXIT
 
 WORDS (core) =
 {
-//    P4_INTO ("FORTH", 0),
     /** quick constants - implemented as code */
     P4_CONSTANT ("0",    0),
     P4_CONSTANT ("1",    1),
@@ -787,5 +786,4 @@ WORDS (core) =
     P4_FXco ("WITHIN",       p4_within),
     P4_END
 };
-//P4_COUNTWORDS (core, "Core words");
 

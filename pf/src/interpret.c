@@ -716,11 +716,10 @@ FCode (pf_dot_quote_execution)
  */
 FCode (pf_dot_quote)
 {
-    if (STATE)
-    {
+    if (STATE) {
         FX_COMPILE (pf_dot_quote);
-    pf_parse_comma_quote_();
-    }else{
+        pf_parse_comma_quote_();
+    } else {
 //        pf_skip_spaces();
 //        to_in++;    // skip only one space
         pf_parse_word('"');
@@ -803,6 +802,16 @@ FCode (pf_s_quote)
 }
 P4COMPILE (pf_s_quote, pf_s_quote_execution, P4_SKIPS_STRING);
 
+/* -------------------------------------------------------------- */
+/** "\\" ( [comment<eol>] -- ) [ANS]
+ * eat everything up to the next end-of-line so that it is
+ * getting ignored by the interpreter.
+ */
+FCode (pf_backslash)
+{
+        to_in = length;
+}
+
 /** "("  ( 'comment<closeparen>' -- ) [ANS]
  * eat everything up to the next closing paren - treat it
  * as a comment.
@@ -812,13 +821,14 @@ FCode (pf_paren)
         pf_parse_word(')');
 }
 
-/** "\\" ( [comment<eol>] -- ) [ANS]
- * eat everything up to the next end-of-line so that it is
- * getting ignored by the interpreter.
+/** ".(" ( 'comment<closeparen>' -- )
+ * Parse and display ccc delimited by )
+ * .( is immediate
  */
-FCode (pf_backslash)
+FCode (pf_dot_paren)
 {
-        to_in = length;
+        pf_parse_word(')');
+        pf_type ((const char *)word_ptr, word_len);
 }
 
 /* -------------------------------------------------------------- */
@@ -1236,11 +1246,11 @@ WORDS (interpret) =
     P4_FXco (".R",           pf_dot_r),
     P4_SXco ("C\"",          pf_c_quote),
     P4_SXco ("S\"",          pf_s_quote),
-    P4_IXco ("(",            pf_paren),
     P4_IXco ("\\",           pf_backslash),
+    P4_IXco ("(",            pf_paren),
+    P4_IXco (".(",           pf_dot_paren),
     P4_FXco ("INCLUDE",      pf_include),
     P4_FXco ("INCLUDED",     pf_included),
     P4_END
 };
-//P4_COUNTWORDS (interpret, "Interpreter words");
 

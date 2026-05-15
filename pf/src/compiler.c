@@ -1160,4 +1160,3 @@ WORDS (compiler) =
     P4_END
 
 };
-//P4_COUNTWORDS (compiler, "Compiler words");

@@ -36,4 +36,3 @@ see answer
 : pi? [ 3.14 ] fliteral f. ;
 see pi?
 
-bye

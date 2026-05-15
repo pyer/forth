@@ -107,13 +107,11 @@ FCode (pf_dot_s)
         if (dd == 0)
         {   /* !fd !dd */
             /* both stacks empty */
-            pf_outf ("\n%*s",
-              (int)(DECWIDTH + HEXWIDTH + 4), "<stacks empty> ");
-        }else{ /* !fd dd */
+            pf_outf ("\n%*s", (int)(DECWIDTH + HEXWIDTH + 4), "<stacks empty>");
+        } else { /* !fd dd */
             /* only data stack not empty */
             for (i = 0; i < dd; i++)
             {
-                pf_cr_();
                 pf_prCell (SP[i]);
             }
         }
@@ -122,23 +120,21 @@ FCode (pf_dot_s)
     else if (dd == 0) /* fd !dd */
     {
         /* only floating point stack not empty */
-        pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 4), "<stack empty> ", (int)precision, fp[0]);
+        pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), "<stack empty>  ", (int)precision, fp[0]);
         for (i = 1; i < fd; i++) {
-            pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)precision, fp[i]);
+          pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), " ", (int)precision, fp[i]);
         }
     } else { /* fd dd */
         int bd = dd < fd ? dd : fd;
         for (i = 0; i < bd; i++) {
-          pf_cr_();
           pf_prCell (SP[i]);
           pf_outf ("%15.*f ", (int)precision, fp[i]);
         }
         for (; i < dd; i++) {
-          pf_cr_();
           pf_prCell (SP[i]);
         }
         for (; i < fd; i++) {
-          pf_outf ("\n%*.*f ", (int)(DECWIDTH + HEXWIDTH + 4) + 15, (int)precision, fp[i]);
+          pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), " ", (int)precision, fp[i]);
         }
     }
 #endif

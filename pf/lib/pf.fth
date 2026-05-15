@@ -1,5 +1,3 @@
-( pf.4th version 1.1 )
-
 : ?  @ . ;
 
 : decimal 10 base ! ;
