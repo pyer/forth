@@ -192,7 +192,8 @@ void pf_init_system() /* main_init */
 void help_opt(char *progname)
 {
     printf("Usage: %s [-f file] [-e word] [v] [h]\n", progname);
-    puts("   -f file  : load file   (before -e option if any)");
+    puts("   -f file  : load file and exit");
+    puts("   -i file  : include file (before -e option if any)");
     puts("   -e word  : execute word (after -f option if any)");
     printf("   -s       : skip boot file '%s'\n", PF_BOOT_FILE);
     puts("   -v       : print version");
@@ -210,10 +211,11 @@ int main (int argc, char** argv)
     int boot_file = 1;
     int opt;
   
-    while ((opt = getopt(argc, argv, "e:f:svh")) != -1) {
+    while ((opt = getopt(argc, argv, "e:f:i:svh")) != -1) {
         switch (opt) {
         case 'e':
         case 'f':
+        case 'i':
             cmd = opt;
             strcpy( buffer, optarg );
             len = strlen(buffer);
@@ -245,10 +247,17 @@ int main (int argc, char** argv)
     case 0:
         if ( boot_file )
             pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-        if ( cmd == 'f' )
+        if ( cmd == 'i' ) {
             pf_include(buffer,len);
+        }
+        if ( cmd == 'f' ) {
+            pf_include(buffer,len);
+            pf_cr_();
+            pf_longjmp_exit ();
+        }
         if ( cmd == 'e' ) {
             pf_interpret(buffer, len, 0);
+            pf_cr_();
             pf_longjmp_exit ();
         }
         break;
