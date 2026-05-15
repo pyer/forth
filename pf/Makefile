@@ -24,10 +24,10 @@ compile: target $(objects)
 ifeq ($(ARCH),arm)
 	@echo "before compiling ARM architecture, set up environment: source /usr/local/angstrom/arm/environment-setup"
 	scp pf          bbb:/usr/bin/pf
-	scp lib/pf.4th  bbb:/usr/lib/pf.4th
+	scp lib/pf.fth  bbb:/usr/lib/pf.fth
 else
 	sudo install -m 755 pf /usr/bin/pf
-	sudo install -m 755 lib/pf.4th  /usr/lib/pf.4th
+	sudo install -m 755 lib/pf.fth  /usr/lib/pf.fth
 endif
 
 target:
@@ -42,6 +42,6 @@ manual:
 	sudo gzip -f /usr/share/man/man1/pf.1
 
 test:
-	pf -f test/see.4th
-	pf -f test/test.4th
+	pf -f test/test_core.fth
+	pf -f test/test_see.fth
 

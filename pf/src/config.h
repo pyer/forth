@@ -3,7 +3,7 @@
 
 #define TARGET_OS "linux-gnu"
 
-#define PF_BOOT_FILE "/usr/lib/pf.4th"
+#define PF_BOOT_FILE "/usr/lib/pf.fth"
 #define PF_HELP_FILE "/usr/share/man/pf.txt"
 
 #if defined ARM
