@@ -889,7 +889,7 @@ void pf_load_words (const p4Word wl[])
         NAMEFLAGS(LATEST) |= P4xIMMEDIATE;
         break;
     case 'r': // creates a word with special runtime
-        p4_Runtime2* runtime  = ((p4_Runtime2 *) (w->ptr));
+        p4_Runtime* runtime  = ((p4_Runtime *) (w->ptr));
         p4_header_in();
         FX_SCOMMA ( runtime->comp );
         break;

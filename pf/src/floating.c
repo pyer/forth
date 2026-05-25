@@ -213,10 +213,10 @@ FCode (p4_f_constant_RT)
 FCode (p4_f_constant)
 {
     p4_header_in();
-    FX_RUNTIME1 (p4_f_constant);
+    FX_RUNTIME (p4_f_constant);
     FX_FCOMMA (*fp++);
 }
-P4RUNTIME1(p4_f_constant, p4_f_constant_RT);
+P4RUNTIME(p4_f_constant, p4_f_constant_RT);
 
 FCode (p4_f_depth)
 {
@@ -312,10 +312,10 @@ FCode (p4_f_variable_RT)
 FCode (p4_f_variable)
 {
     p4_header_in();
-    FX_RUNTIME1 (p4_f_variable);
+    FX_RUNTIME (p4_f_variable);
     FX_FCOMMA (0.);
 }
-P4RUNTIME1(p4_f_variable, p4_f_variable_RT);
+P4RUNTIME(p4_f_variable, p4_f_variable_RT);
 
 FCode (p4_represent)    /* with help from Lennart Benshop */
 {

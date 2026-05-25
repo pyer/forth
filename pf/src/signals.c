@@ -485,8 +485,8 @@ FCode (pf_load_signals)
     for (s = siginfo; s < siginfo + SIGSIZE; s++)
     {
         p4_header_comma ((const char*) s->name, strlen (s->name));
-        FX_RUNTIME1(pf_constant);
-        FX_SCOMMA (s->sig);
+        FX_RUNTIME(pf_constant);
+        FX_SCOMMA(s->sig);
     }
 }
 

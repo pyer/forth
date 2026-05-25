@@ -270,10 +270,10 @@ FCode (pf_create_RT)
 FCode (pf_create)
 {
     p4_header_in();
-    FX_RUNTIME1 (pf_create);
+    FX_RUNTIME (pf_create);
     FX_RCOMMA (0);
 }
-P4RUNTIME1(pf_create, pf_create_RT);
+P4RUNTIME(pf_create, pf_create_RT);
 
 /** "((<BUILDS))" ( -- pfa ) [HIDDEN]
  */
@@ -289,10 +289,10 @@ FCode (pf_builds_RT)
 FCode (pf_builds)
 {
     p4_header_in();
-    FX_RUNTIME1 (pf_builds);
+    FX_RUNTIME (pf_builds);
     FX_RCOMMA (0);
 }
-P4RUNTIME1(pf_builds, pf_builds_RT);
+P4RUNTIME(pf_builds, pf_builds_RT);
 
 /** ((DEFER)) ( -- )
  * runtime of => DEFER words
@@ -321,11 +321,11 @@ FCode (pf_defer)
 {
 //    FX_RUNTIME_HEADER;
     p4_header_in();
-    FX_RUNTIME1 (pf_defer);
+    FX_RUNTIME (pf_defer);
     FX_XCOMMA (0); /* <-- leave it blank (may become chain-link later) */
     FX_XCOMMA (0); /* <-- put XT here in fig-mode */
 }
-P4RUNTIME1(pf_defer, pf_defer_RT);
+P4RUNTIME(pf_defer, pf_defer_RT);
 
 /* -------------------------------------------------------------- */
 /** "(DOES>)" ( -- pfa ) [HIDDEN]
@@ -376,7 +376,7 @@ FCode (pf_does_RT)
     *--SP = (p4cell) P4_TO_DOES_BODY(WP);  /* from CFA[2] */
     *--RP = IP; IP = *P4_TO_DOES_CODE(WP); /* from CFA[1] */
 }
-P4RUNTIME1(pf_does, pf_does_RT);
+P4RUNTIME(pf_does, pf_does_RT);
 
 /* -------------------------------------------------------------- */
 /** "(NEST)" ( -- ) [HIDDEN]
@@ -400,11 +400,11 @@ FCode (pf_colon)
     pf_Q_exec_();
     p4_header_in();
     NAMEFLAGS(LATEST) |= P4xSMUDGED;
-    FX_RUNTIME1 (pf_colon);
+    FX_RUNTIME (pf_colon);
     CSP = SP;
     STATE = P4_TRUE;
 }
-P4RUNTIME1(pf_colon, pf_colon_RT);
+P4RUNTIME(pf_colon, pf_colon_RT);
 
 
 /** "((;))" ( -- ) [HIDDEN] [EXIT]
@@ -533,10 +533,10 @@ FCode (pf_constant_RT)
 FCode (pf_constant)
 {
     p4_header_in();
-    FX_RUNTIME1 (pf_constant);
+    FX_RUNTIME (pf_constant);
     FX_SCOMMA (*SP++);
 }
-P4RUNTIME1(pf_constant, pf_constant_RT);
+P4RUNTIME(pf_constant, pf_constant_RT);
 
 /** "((VAR))" ( -- pfa ) [HIDDEN]
  * the runtime compiled by => VARIABLE
@@ -555,10 +555,10 @@ FCode (pf_variable_RT)
 FCode (pf_variable)
 {
     p4_header_in();
-    FX_RUNTIME1(pf_variable);
+    FX_RUNTIME(pf_variable);
     FX_SCOMMA (0);
 }
-P4RUNTIME1(pf_variable, pf_variable_RT);
+P4RUNTIME(pf_variable, pf_variable_RT);
 
 /* -------------------------------------------------------------- */
 /** "((LIT))" ( -- value ) [HIDDEN]
