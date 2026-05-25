@@ -42,11 +42,19 @@
 
 /* ----------------------------------------------------------------------- */
 /** BYE ( -- ) no-return
- * should quit the forth environment completly
+ * should quit the forth environment completly with a message
  */
 FCode (pf_bye)
 {
     pf_outs ("\nGoodbye!\n");
+    pf_longjmp_exit ();
+}
+
+/** QUIT ( -- ) no-return
+ * should quit the forth environment completly and silently
+ */
+FCode (pf_quit)
+{
     pf_longjmp_exit ();
 }
 
@@ -218,12 +226,6 @@ void pf_decompile_rest (char* nfa, p4xt *ip)
         char *name = cfa_to_name(*ip);
         pf_dot_name(name);
         p4_Semant *s = (p4_Semant *)((char *)(*ip) - (char *)&(((p4_Semant *)0)->exec[0]));
-//        printf("\n %p %p %p => %p \n", *ip, (char*)&(((p4_Semant *)0)->exec[0]), (char *)&((p4_Semant)0).exec, s );
-        /*
-#define OFFSET_OF(T,C) ((char *)&(((T *)0)->C) - (char *)0)
-        p4_Semant *s = ((p4_Semant *)((char *)(*ip) - OFFSET_OF (p4_Semant, exec[0])));
-        */
-        //pf_outf ("\nip = %p *ip = %p  s = %p  ", ip, *ip, s);
         if (s->magic == P4_SEMANT_MAGIC) {
           ip++;
           //pf_outf ("\nSEMANT_MAGIC %ld skips = %d ", s->magic, s->skips);
@@ -437,6 +439,7 @@ FCode (pf_history)
 WORDS (tools) =
 {
     P4_FXco ("BYE",          pf_bye),
+    P4_FXco ("QUIT",         pf_quit),
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco (".VERSION",     pf_dot_version),
