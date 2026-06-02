@@ -143,10 +143,4 @@
 /* gforth's IOR offset is -512, while pfe has traditionally -1024 */
 #define FX_IOR  ( -1024 - (errno))
 
-#define P4_ON_NO_BINARY         -2048
-#define P4_ON_BIN_TOO_BIG       -2049
-#define P4_ON_OUT_OF_MEMORY     -2050
-#define P4_ON_INDEX_RANGE       -2051
-#define P4_ON_COMPILE_FAIL      -2052
-
 #endif

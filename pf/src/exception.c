@@ -45,14 +45,6 @@ jmp_buf jump_loop;    /* BYE and ABORT do a THROW which longjmp() */
 p4_Except *catchframe = NULL;  /* links to chain of CATCHed words */
         /* and no exceptions to be caught */
 /************************************************************************/
-struct p4_Exception
-{
-    struct p4_Exception* next;
-    p4cell id;
-    const char* name;
-};
-
-struct p4_Exception* exception_link;
 
 /*
  * show the error, along with info like the block, filename, line numer.
@@ -136,20 +128,9 @@ static void throw_msg (int id, char *msg)
         /* Signals, see signal-ext.c,
      those not handled and not fatal lead to THROW */
         sprintf (msg, "Received signal %d", -256 - id);
-    } else if (-2048 < id && id <= -1024) {
+    } else if (id <= -1024) {
         /* File errors, see FX_IOR / P4_IOR(flag) */
         sprintf (msg, "I/O Error %d : %s", -1024-id, strerror (-1024-id));
-    } else if (-32767 < id && id <= -2048) {
-        /* search the exception_link for our id */
-        struct p4_Exception* expt = exception_link;
-        strcpy (msg, "module-specific error-condition");
-        while (expt) {
-          if (expt->id == id) {
-            strcpy (msg, expt->name);
-            break;
-          }
-          expt = expt->next;
-        }
     } else if (0 < id) {
         strcpy (msg, strerror (id));
     } else {
