@@ -17,32 +17,32 @@ S" check 2          " 2 1- 1 = check
 S" check 3          " 3 1 2 + = check
 false tmp !
 S" check !          " true tmp ! tmp @ check
-S" chech *          " 6 7 * 42 = check
-S" chech +          " 6 7 + 13 = check
+S" check *          " 6 7 * 42 = check
+S" check +          " 6 7 + 13 = check
 6 tmp !
-S" chech +!         " 7 tmp +! tmp @ 13 = check
-S" chech -          " 42 dup - 0= check
-S" chech /          " 42 6 / 7 = check
-S" chech /MOD       " 44 6 /MOD 7 = swap 2 = and check
-S" chech 0<         " -1 0<  check
-S" chech 0=         "  0 0=  check
-S" chech 0<>        "  1 0<> check
-S" chech 0>         "  1 0>  check
-S" chech 1+         "  -1 1+ 0= check
-S" chech 1-         "   1 1- 0= check
-S" chech 2+         "  -2 2+ 0= check
-S" chech 2-         "   2 2- 0= check
-S" chech 2*         "   21 2* 42 = check
-S" chech 2/         "   42 2/ 21 = check
-S" chech <          " -1 0 <  check
-S" chech =          "  0 0 =  check
-S" chech <>         "  1 0 <> check
-S" chech >          "  1 0 >  check
-S" chech ?DUP       " check_?dup check
+S" check +!         " 7 tmp +! tmp @ 13 = check
+S" check -          " 42 dup - 0= check
+S" check /          " 42 6 / 7 = check
+S" check /MOD       " 44 6 /MOD 7 = swap 2 = and check
+S" check 0<         " -1 0<  check
+S" check 0=         "  0 0=  check
+S" check 0<>        "  1 0<> check
+S" check 0>         "  1 0>  check
+S" check 1+         "  -1 1+ 0= check
+S" check 1-         "   1 1- 0= check
+S" check 2+         "  -2 2+ 0= check
+S" check 2-         "   2 2- 0= check
+S" check 2*         "   21 2* 42 = check
+S" check 2/         "   42 2/ 21 = check
+S" check <          " -1 0 <  check
+S" check =          "  0 0 =  check
+S" check <>         "  1 0 <> check
+S" check >          "  1 0 >  check
+S" check ?DUP       " check_?dup check
 false tmp !
 S" check @          " true tmp ! tmp @ check
-S" chech ABS        " -1 abs 1 = check
-S" chech AND        "  true false and false = check
+S" check ABS        " -1 abs 1 = check
+S" check AND        "  true false and false = check
 0 tmp ! 42 tmp C!
 S" check C!         " tmp @ 42 = check
 S" check C@         " tmp C@ 42 = check
