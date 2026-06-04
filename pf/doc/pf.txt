@@ -8,6 +8,16 @@ MAN               ( "<spaces>name" -- )
                   ( x a-addr -- )
                   Store x at a-addr.
 
+"                            "quote"
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( "ccc<quote>" -- )
+                  Parse ccc delimited by " (double-quote).  Append the run-time semantics
+                  given below to the current definition.
+        Run-time: ( -- c-addr u )
+                  Return c-addr and u describing a string consisting of the characters ccc.
+                  A program shall not alter the returned string.
+             See: C", S".
+
 #                            "number-sign"
                   ( ud1 -- ud2 )
                   Divide ud1 by the number in BASE giving the quotient ud2 and the
@@ -98,7 +108,7 @@ MAN               ( "<spaces>name" -- )
                   Display ccc.
              See: .(.
 
-.(                         "dot-paren" NOT IMPLEMENTED
+.(                         "dot-paren"
      Compilation: Perform the execution semantics given below.
        Execution: ( "ccc<paren>" -- )
                   Parse and display ccc delimited by ) (right parenthesis).
@@ -232,11 +242,6 @@ MAN               ( "<spaces>name" -- )
                   ( xt -- a-addr )
                   a-addr is the data-field address corresponding to xt.  An ambiguous
                   condition exists if xt is not for a word defined via CREATE.
-
->IN                                "to-in" NOT IMPLEMENTED
-                  ( -- a-addr )
-                  a-addr is the address of a cell containing the offset in characters from
-                  the start of the input buffer to the start of the parse area.
 
 >NUMBER                          "to-number"
                   ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 )
@@ -378,7 +383,7 @@ C"                               "c-quote"
         Run-time: ( -- c-addr )
                   Return c-addr, a counted string consisting of the characters ccc.  A
                   program shall not alter the returned string.
-             See: S".
+             See: S", ".
 
 CASE
   Interpretation: Interpretation semantics for this word are undefined.
@@ -691,7 +696,7 @@ LITERAL
                   Place x on the stack.
 
 LOOP
-   Interpretation: Interpretation semantics for this word are undefined.
+  Interpretation: Interpretation semantics for this word are undefined.
      Compilation: ( C: do-sys -- )
                   Append the run-time semantics given below to the current definition.
                   Resolve the destination of all unresolved occurrences of LEAVE between
@@ -731,6 +736,14 @@ MOVE              ( addr1 addr2 u -- )
                   what the u consecutive address units at addr1 contained before the
                   move.
              See: CMOVE, CMOVE>.
+
+NAME>CFA          ( c-addr -- cfa )
+                  c-addr is a counted string address of a word name.
+                  Return the cfa of this word.
+
+NAME>LFA          ( c-addr -- lfa )
+                  c-addr is a counted string address of a word name.
+                  Return the lfa of this word.
 
 NEGATE            ( n1 -- n2 )
                   Negate n1, giving its arithmetic inverse n2.
@@ -840,7 +853,7 @@ S"                                 "s-quote"
         Run-time: ( -- c-addr u )
                   Return c-addr and u describing a string consisting of the characters
                   ccc.  A program shall not alter the returned string.
-             See: C".
+             See: C", ".
 
 SIGN              ( n -- )
                   If n is negative, add a minus sign to the beginning of the pictured

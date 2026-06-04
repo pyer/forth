@@ -19,12 +19,10 @@
 #   define NAMEFLAGS(X)   (*((char*)(X)-1))    /* FFA is before NFA */
 #   define NAMEPTR(X)     (((char*)(X))+1)
 #   define NAMELEN(X)     (*(char*)X)
-#   define NAME_SIZE_MAX     127                 /* C99 defines SIZE_MAX for size_t */
 # else
 #   define NAMEFLAGS(X)   (*(char*)X)          /* FFA is the hi bits of NFA */
 #   define NAMEPTR(X)     (((char*)(X))+1)
-#   define NAMELEN(X)     ((*(char*)X)&31)
-#   define NAME_SIZE_MAX     31                  /* used for buffer-sizes */
+#   define NAMELEN(X)     ((*(char*)X)&NAME_SIZE_MAX)
 # endif
 
 

@@ -31,6 +31,12 @@
 #define BYTEORDER 1234
 
 //#define PF_WITH_FFA      1       /* use seperate FlagField */
+#if defined PF_WITH_FFA
+#  define NAME_SIZE_MAX     127                 /* C99 defines SIZE_MAX for size_t */
+#else
+#  define NAME_SIZE_MAX     31                  /* used for buffer-sizes */
+#endif
+
 #define PF_WITH_FLOATING 1       /* enable floating point numbers */
 
 #define PATH_LENGTH 256

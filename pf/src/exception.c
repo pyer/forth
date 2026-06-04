@@ -12,11 +12,7 @@
  *  @description
  *      These words implement an exception system in the
  *      widely known => THROW &amp; => CATCH concept.
- *
- *      see the PFE-SIG wordset for catching OS traps.
- *
  */
-
 
 #include <stdio.h>
 #include <stdarg.h>

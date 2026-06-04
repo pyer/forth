@@ -84,9 +84,27 @@ char** name_to_link (const char* p)
     return (char **) pf_aligned ((p4cell) (NAMEPTR(p) + NAMELEN(p)) );
 }
 
+/** NAME>LFA ( c-addr -- lfa )
+ * c-addr is a counted string address of a word name.
+ * Return the lfa of this word.
+ */
+FCode (pf_name_to_lfa)
+{
+    *SP = (p4cell) name_to_link ((char *) *SP);
+}
+
 p4xt name_to_cfa (const char *p)
 {
     return LINK_TO_CFA (name_to_link (p));
+}
+
+/** NAME>CFA ( c-addr -- cfa )
+ * c-addr is a counted string address of a word name.
+ * Return the cfa of this word.
+ */
+FCode (pf_name_to_cfa)
+{
+    *SP = (p4cell) name_to_cfa ((char *) *SP);
 }
 
 char * cfa_to_name (p4xt xt)
@@ -314,7 +332,7 @@ void pf_hold (char c)
 
 /** HOLD ( char# -- ) [ANS]
  * the old-style forth-formatting system -- this
- * word adds a char to the picutred output string.
+ * word adds a char to the pictured output string.
  */
 FCode (pf_hold)
 {
@@ -946,7 +964,6 @@ void name_to_caps(char *dest, const char *src, int len)
 
 char* p4_header_comma (const char *name, int len)
 {
-//printf("\nlatest %x  link %x",LATEST,wid->link);
     char *last = LATEST;
     /* move exception handling to the end of this word - esp. nametoolong */
     if (len == 0)
@@ -1031,7 +1048,7 @@ char* pf_word ( char del )
     return (char *)DP;
 }
 
-/* same as pf_word but convert th word to capital letters if any
+/* same as pf_word but convert the word to capital letters if any
 */
 char* cap_word ( char del )
 {
@@ -1123,20 +1140,20 @@ void pf_interpret(char *buf, int len, int n)
             continue;
         }
         pf_parse_word(' ');
-    *DP = 0; /* PARSE-WORD-NOHERE */
-    if (word_len>0) {
-        if (pf_find_word())
-           continue;
-        if (pf_convert_number())
-                   continue;
+        *DP = 0; /* PARSE-WORD-NOHERE */
+        if (word_len>0) {
+          if (pf_find_word())
+            continue;
+          if (pf_convert_number())
+            continue;
 #if defined PF_WITH_FLOATING
-        if (pf_convert_float())
-                   continue;
+          if (pf_convert_float())
+            continue;
 #endif
-            if (n>0)
-                printf( "\nLine %d: %s", n, buf );
-            p4_throw (P4_ON_UNDEFINED);
-    }
+          if (n>0)
+            printf( "\nLine %d: %s", n, buf );
+          p4_throw (P4_ON_UNDEFINED);
+        }
     }
 }
 
@@ -1232,6 +1249,8 @@ WORDS (interpret) =
     P4_FXco ("#>",           pf_sh_greater),
     P4_FXco ("#S",           pf_sh_s),
     P4_FXco ("'",            pf_tick),
+    P4_FXco ("NAME>CFA",     pf_name_to_cfa),
+    P4_FXco ("NAME>LFA",     pf_name_to_lfa),
     P4_FXco (">BODY",        pf_to_body),
     P4_FXco (">NUMBER",      pf_to_number),
     P4_FXco ("CHAR",         pf_char),
