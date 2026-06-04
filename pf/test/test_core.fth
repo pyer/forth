@@ -88,3 +88,53 @@ S" check WITHIN   " 1 2 3 within check
 
 }Test
 
+." Testing interpreter words"
+Test{
+
+base @ PAD ! ( PAD is used as a temporary variable )
+S" check BASE       " base @ 10 = check
+S" check DECIMAL    " base @ PAD ! decimal base @ PAD @ base ! 10 = check
+S" check HEX        " base @ PAD ! hex     base @ PAD @ base ! 16 = check
+
+    ( "SOURCE",       pf_source)
+    ( "SIGN",         pf_sign)
+    ( "<#",           pf_less_sh)
+    ( "#",            pf_sh)
+    ( "#>",           pf_sh_greater)
+    ( "#S",           pf_sh_s)
+    ( ">NUMBER",      pf_to_number)
+: dummy 42 ;
+S" check '          " ' dummy execute 42 = check
+S" check LATEST     " ' dummy latest name>cfa = check
+
+create foo
+S" check HERE       " ' foo >body here = check
+S" check >BODY      " ' foo >body here = check
+S" check NAME>CFA   " ' foo latest name>cfa = check
+
+S" check CHAR       " CHAR B 66 = check
+S" check COUNT      " HERE 1 c, 66 c, COUNT 1 = swap C@ 66 = AND check
+
+HERE 4 C, CHAR C C, CHAR H C, CHAR A C, CHAR R C, CONSTANT STRING1
+S" check FIND standard word  " STRING1 find -1 = swap ' CHAR = AND check
+HERE 1 C, CHAR [ C, CONSTANT STRING2
+IMMEDIATE \ Set the last created word STRING immediate
+S" check FIND immediate word " STRING2 find  1 = swap ' [ = AND check
+HERE 3 C, CHAR N C, CHAR O C, CHAR P C, CONSTANT STRING3
+S" check FIND undefined word " STRING3 find  0 = swap STRING3 = AND check
+
+    ( "HOLD",         pf_hold)
+    ( "PAD",          pf_pad)
+
+    ( ".",            pf_dot)
+    ( ".\"",          pf_dot_quote)
+    ( ".R",           pf_dot_r)
+    ( "C\"",          pf_c_quote)
+    ( "S\"",          pf_s_quote)
+    ( "\\",           pf_backslash)
+    ( "(",            pf_paren)
+    ( ".(",           pf_dot_paren)
+    ( "INCLUDE",      pf_include)
+    ( "INCLUDED",     pf_included)
+
+}Test
