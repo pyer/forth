@@ -5,6 +5,9 @@
 
 32 CONSTANT BL
 
+( shebang )
+: #!/usr/bin/pf ;
+
 : .date
   <# #s #> type
   <# # # 45 hold #> type

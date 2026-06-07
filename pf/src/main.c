@@ -21,7 +21,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <unistd.h>
 
 #include "const.h"
@@ -45,8 +44,6 @@ void pf_init_signal_handlers (void);
 static char memory[TOTAL_SIZE]; /* BSS */
 
 /************************************************************************/
-int exitcode = 0;
-
 /* dictionary */
 char* dict;
 char* dictlimit;
@@ -158,8 +155,8 @@ void pf_init_system() /* main_init */
 
     if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000) {
         puts ("ERROR: impossible memory map");
-        exitcode = 3;
-        pf_longjmp_exit ();
+        free(dict);
+        exit(3);
     }
 
     /* -------- cold boot stage ------- */
@@ -186,15 +183,14 @@ void pf_init_system() /* main_init */
     CSP = (p4cell*) RP;        /* come_back marker */
     RP = R0;                   /* return stack to its bottom */
     STATE = P4_FALSE;          /* interpreting now */
-    execute = pf_normal_execute;
 }
 
 void help_opt(char *progname)
 {
-    printf("Usage: %s [-f file] [-e word] [v] [h]\n", progname);
-    puts("   -f file  : load file and exit");
-    puts("   -i file  : include file (before -e option if any)");
-    puts("   -e word  : execute word (after -f option if any)");
+    printf("Usage: %s [OPTION] [script file]\n", progname);
+    puts("   -d       : debug, trace words");
+    puts("   -e word  : execute word");
+    puts("   -i file  : include file");
     printf("   -s       : skip boot file '%s'\n", PF_BOOT_FILE);
     puts("   -v       : print version");
     puts("   -h       : print this help");
@@ -205,20 +201,32 @@ void help_opt(char *progname)
 /************************************************************************/
 int main (int argc, char** argv)
 {
-    char cmd = 0;
     char buffer[256];
-    int len = 0;
+    char *option = NULL;
+    char *exec_word = NULL;
+    char *include = NULL;
+    char *load = NULL;
     int boot_file = 1;
-    int opt;
+    int index = 1;
   
-    while ((opt = getopt(argc, argv, "e:f:i:svh")) != -1) {
-        switch (opt) {
+    execute = pf_normal_execute;
+
+    while (index<argc) {
+      option = argv[index];
+      if (option[0] == '-') {
+        switch (option[1]) {
+        case '-':
+            break;
+        case 'd':
+            execute = pf_debug_execute;
+            break;
         case 'e':
-        case 'f':
+            index++;
+            exec_word = argv[index];
+            break;
         case 'i':
-            cmd = opt;
-            strcpy( buffer, optarg );
-            len = strlen(buffer);
+            index++;
+            include = argv[index];
             break;
         case 's':
             boot_file = 0;
@@ -233,11 +241,15 @@ int main (int argc, char** argv)
             help_opt(argv[0]);
             return 1;
         }
+      } else {
+        // file name to load
+        load = option;
+      }
+      index++;
     }
 
     /* boot stage */
     pf_init_system();
-    exitcode = 0;
 
     switch (setjmp (jump_loop)) {
     /* classify unhandled throw codes */
@@ -247,16 +259,16 @@ int main (int argc, char** argv)
     case 0:
         if ( boot_file )
             pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-        if ( cmd == 'i' ) {
-            pf_include(buffer,len);
+        if ( include ) {
+            pf_include(include, strlen(include));
         }
-        if ( cmd == 'f' ) {
-            pf_include(buffer,len);
-            pf_cr_();
-            pf_longjmp_exit ();
+        if ( load ) {
+            pf_include(load, strlen(load));
         }
-        if ( cmd == 'e' ) {
-            pf_interpret(buffer, len, 0);
+        if ( exec_word ) {
+            pf_interpret(exec_word, strlen(exec_word), 0);
+        }
+        if ( load || exec_word ) {
             pf_cr_();
             pf_longjmp_exit ();
         }
@@ -264,15 +276,14 @@ int main (int argc, char** argv)
     default:
         pf_cleanup_terminal();
         free(dict);
-        return exitcode;
+        return 0;
     }
 
     for (;;) {
             if (isatty (STDIN_FILENO))
                 pf_outs (" ok\n");
-            len = pf_accept (buffer, 255);
+            int len = pf_accept (buffer, 255);
             pf_interpret(buffer, len, 0);
             pf_Q_stack_();
     }
-//    return exitcode;
 }

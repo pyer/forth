@@ -29,6 +29,7 @@ char pf_number2digit(p4cell n);
 
 void pf_call (p4xt xt);
 void pf_normal_execute (p4xt xt);
+void pf_debug_execute  (p4xt xt);
 
 char * pf_tick_nfa (void);
 p4xt pf_tick_cfa (void);

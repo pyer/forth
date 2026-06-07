@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
@@ -45,9 +44,9 @@ int word_len = -1;
 /* -------------------------------------------------------------- */
 void show_word(void)
 {
-    if (word_ptr && word_len)
-    {
+    if (word_ptr && word_len) {
         pf_type (word_ptr, word_len);
+        pf_outc(' ');
     }
 }
 /* -------------------------------------------------------------- */
@@ -203,6 +202,16 @@ void pf_call (p4xt xt)
  */
 void pf_normal_execute (p4xt xt)
 {
+    pf_call(xt);
+}
+
+void pf_debug_execute (p4xt xt)
+{
+    char *nfa = cfa_to_name(xt);
+    if (nfa && (NAMEFLAGS(nfa) & P4xFLAG)) {
+        pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
+        pf_space_();
+    }
     pf_call(xt);
 }
 
@@ -568,12 +577,12 @@ int pf_find_word(void)
         return 0;
 
     xt = name_to_cfa (nfa);
-    if (! STATE || (NAMEFLAGS(nfa) & P4xIMMEDIATE))
-    {
-    pf_call (xt);    /* execute it now */
-    pf_Q_stack_();   /* check stack */
-    }else{
-    FX_XCOMMA (xt);  /* comma token */
+    if (! STATE || (NAMEFLAGS(nfa) & P4xIMMEDIATE)) {
+/*      pf_call (xt);    * execute it now */
+        execute (xt);
+      pf_Q_stack_();   /* check stack */
+    } else {
+      FX_XCOMMA (xt);  /* comma token */
     }
     return 1;
 }
@@ -587,7 +596,7 @@ int pf_convert_number(void)
 {
     /* WORD-string is at HERE and at word_ptr / word_len */
     const char *p = word_ptr;
-    p4cell        n = word_len;
+    p4cell      n = word_len;
 
     p4cell base = 0;
     int sign = 0;

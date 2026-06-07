@@ -42,6 +42,12 @@ manual:
 	sudo gzip -f /usr/share/man/man1/pf.1
 
 test:
-	pf -f test/test_core.fth
-	pf -f test/test_floating.fth
+	@pf test/test_core.fth
+	@pf test/test_floating.fth
+	@pf -e quit
+	@pf -i test/test_options.fth -e test_execute
+	@pf -i test/test_options.fth -e test_include
+	@pf -i test/test_options.fth -e test_skip -s
+	@test/test_shebang.fth
+
 
