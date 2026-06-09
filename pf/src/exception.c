@@ -185,21 +185,19 @@ void p4_throwstr (int id, const char* description)
     if (description)
         len = strlen(description);
 
-    if (frame && frame->magic == P4_EXCEPTION_MAGIC)
-    {
+    if (frame && frame->magic == P4_EXCEPTION_MAGIC) {
         IP = frame->ipp;
         SP = frame->spp;
 #if defined PF_WITH_FLOATING
         fp = frame->fpp;
 #endif
-  RP = frame->rpp;
+        RP = frame->rpp;
         longjmp (frame->jmp, id);
     }
 
     *--RP = IP;
     CSP = (p4cell*) RP;         /* come_back marker */
-    switch (id)
-    {
+    switch (id) {
      case P4_ON_ABORT_QUOTE:
          show_error (addr);
      case P4_ON_ABORT:
@@ -208,10 +206,9 @@ void p4_throwstr (int id, const char* description)
          throw_msg (id, msg);
          if (addr) {
              strcat (msg, " : ");
-             if (! len)
+             if (! len) {
                  strcat (msg, addr);
-             else
-             {
+             } else {
                  msg[len+strlen(msg)] = '\0';
                  strncat (msg, addr, len);
              }
@@ -238,7 +235,7 @@ FCode (p4_throw)
 {
     p4cell n = *SP++;
     if (n)
-   p4_throw (n);
+        p4_throw (n);
 }
 
 /** ABORT ( -- [THROW] ) [ANS]
