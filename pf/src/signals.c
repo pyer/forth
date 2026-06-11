@@ -431,8 +431,8 @@ void pf_init_signal_handlers (void)
     int i, j;
     for (i = 0; i < SIGSIZE; i++)
     {
-        /* some systems may have more than one name for the same signal,
-         * take care not to install it twice: */
+        // some systems may have more than one name for the same signal,
+        // take care not to install it twice:
         for (j = 0; j < i; j++)
             if (siginfo[i].sig == siginfo[j].sig)
                 goto cont;
@@ -447,9 +447,9 @@ void pf_init_signal_handlers (void)
   }
      cont:;
     }
-
     if (! isatty (STDIN_FILENO))
         return;
+
 #ifdef SIGTSTP
     if (signal (SIGTSTP, SIG_IGN) == SIG_DFL)
     {
@@ -459,6 +459,7 @@ void pf_init_signal_handlers (void)
         siginfo[getinfo (SIGTTOU)].old = signal (SIGTTOU, stop_hdl);
     }
 #endif
+
 #ifdef SIGWINCH
     winchg_hdl (SIGWINCH);
 #endif

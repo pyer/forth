@@ -122,11 +122,6 @@ void pf_init_system() /* main_init */
     long int float_stack_size = (TOTAL_SIZE / 32) / sizeof(p4fcell);
 #endif
 
-    setlocale (LC_ALL, "C");
-    /* ............................................................*/
-    pf_init_terminal();
-    pf_init_signal_handlers();
-
     /* _______________ dictionary block __________________ */
 
     dict = calloc (1, (size_t) total_size);
@@ -248,7 +243,10 @@ int main (int argc, char** argv)
       index++;
     }
 
-    /* boot stage */
+    /* boot stages */
+    setlocale (LC_ALL, "C");
+    pf_init_terminal();
+    pf_init_signal_handlers();
     pf_init_system();
 
     switch (setjmp (jump_loop)) {

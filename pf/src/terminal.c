@@ -58,11 +58,6 @@ FCode (pf_rows)
     *--SP = rows;
 }
 
-int get_outs(void)
-{
-    return out;
-}
-
 /************************************************************************/
 static struct termios tty_system;
 
@@ -75,22 +70,15 @@ void system_terminal(void)
 
 void interactive_terminal(void)
 {
-struct termios new_termios;
+    struct termios tty_interactive;
     /* set the keyboard in raw mode */
     if (isatty (STDIN_FILENO)) {
-        /* take two copies - one for now, one for later */
-        tcgetattr(STDIN_FILENO, &tty_system);
-        memcpy(&new_termios, &tty_system, sizeof(new_termios));
-        /* set the new terminal modei: nearly cfmakeraw but  */
-//        cfmakeraw(&new_termios);
-           new_termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
-                           | INLCR | IGNCR | ICRNL | IXON);
-           //new_termios.c_oflag &= ~OPOST;
-           new_termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-           new_termios.c_cflag &= ~(CSIZE | PARENB);
-           new_termios.c_cflag |= CS8;
-
-        tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+        /* get the copy of the default termios */
+        memcpy(&tty_interactive, &tty_system, sizeof(tty_interactive));
+        /* set the forth termios */
+        tty_interactive.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+        tty_interactive.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+        tcsetattr(STDIN_FILENO, TCSANOW, &tty_interactive);
     }
 }
 
@@ -104,25 +92,17 @@ void query_winsize (void)
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) >=0 ) {
         cols = ws.ws_col;
         rows = ws.ws_row;
-    //xmax = ws.ws_xpixel;
-    //ymax = ws.ws_ypixel;
     }
 #endif
 }
 
 void pf_init_terminal(void)
 {
-#ifdef TIOCGSIZE
-    struct ttysize ts;
-    ioctl(STDIN_FILENO, TIOCGSIZE, &ts);
-    cols = ts.ts_cols;
-    rows = ts.ts_lines;
-#else
-    query_winsize();
-#endif /* TIOCGSIZE */
-
     /* set the keyboard in raw mode */
+    tcgetattr(STDIN_FILENO, &tty_system);
     interactive_terminal();
+    /* set the window size */
+    query_winsize();
     /* init history */
     using_history();
     read_history();
@@ -174,7 +154,8 @@ int pf_outf (const char *s,...)
 FCode (pf_emit)
 {
     char c = (*SP++);
-    pf_outc (c);
+    pf_putc(c);
+    pf_flush();
 }
 
 /** EMITS ( n# ch -- )
