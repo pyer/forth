@@ -1199,3 +1199,11 @@ FE.               ( F: r -- )
 FABS              ( F: r1 -- r2 )
                   r2 is the absolute value of r1.
 
+RAISE             ( signal# -- )
+                  Send a signal to self.
+            See : SIGNAL
+
+SIGNAL            SIGNAL ( handler-xt* signal# -- )
+                  Install a signal handler.
+            See : RAISE
+

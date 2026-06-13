@@ -37,7 +37,7 @@
 
 /************************************************************************/
 const char* pf_version_string(void);
-void pf_init_signal_handlers (void);
+void pf_init_signals (void);
 
 /************************************************************************/
 
@@ -246,7 +246,7 @@ int main (int argc, char** argv)
     /* boot stages */
     setlocale (LC_ALL, "C");
     pf_init_terminal();
-    pf_init_signal_handlers();
+    pf_init_signals();
     pf_init_system();
 
     switch (setjmp (jump_loop)) {

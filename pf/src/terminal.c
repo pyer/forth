@@ -77,7 +77,8 @@ void interactive_terminal(void)
         memcpy(&tty_interactive, &tty_system, sizeof(tty_interactive));
         /* set the forth termios */
         tty_interactive.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-        tty_interactive.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+        //tty_interactive.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+        tty_interactive.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN);
         tcsetattr(STDIN_FILENO, TCSANOW, &tty_interactive);
     }
 }

@@ -1,0 +1,31 @@
+ 1 constant SIGHUP
+ 2 constant SIGINT
+ 3 constant SIGQUIT
+ 4 constant SIGILL
+ 5 constant SIGTRAP
+ 6 constant SIGABRT
+ 7 constant SIGBUS
+ 8 constant SIGFPE
+ 9 constant SIGKILL
+10 constant SIGUSR1
+11 constant SIGSEGV
+12 constant SIGUSR2
+13 constant SIGPIPE
+14 constant SIGALRM
+15 constant SIGTERM
+16 constant SIGSTKFLT
+17 constant SIGCHLD
+18 constant SIGCONT
+19 constant SIGSTOP
+20 constant SIGTSTP
+21 constant SIGTTIN
+22 constant SIGTTOU
+23 constant SIGURG
+24 constant SIGXCPU
+25 constant SIGXFSZ
+26 constant SIGVTALRM
+27 constant SIGPROF
+28 constant SIGWINCH
+29 constant SIGIO
+30 constant SIGPWR
+31 constant SIGSYS
