@@ -43,6 +43,7 @@ manual:
 
 test:
 	@pf test/test_core.fth
+	@pf test/test_does.fth
 	@pf test/test_floating.fth
 	@pf -e quit
 	@pf -i test/test_options.fth -e test_execute
