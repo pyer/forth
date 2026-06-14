@@ -160,38 +160,25 @@ FCode (pf_call_stop)
  * Run a forth word from within C-code
  * - this is the inner interpreter
  */
-void pf_call_loop (p4xt xt)
+void pf_call (p4xt xt)
 {
     p4_Except stop;
+    p4xt *saved_ip = IP;
 
     static p4code call_stop = pf_call_stop_;
     p4xt list[3];
     list[0] = xt;
     list[1] = &call_stop;
     list[2] = (p4xt) &stop;
-
     IP = list;
     WP = *IP;
 
-    if (setjmp (stop.jmp))
-    {
-        return;
-    }
-
-    /* next_loop */
-    for (;;)
-    {
-    /* ip and WP are same: register or not */
+    if (setjmp (stop.jmp)==0) {
+      for (;;) {
+        /* ip and WP are same: register or not */
         WP = *IP++, (*WP) (); // next
+      }
     }
-}
-
-/**
- */
-void pf_call (p4xt xt)
-{
-    p4xt *saved_ip = IP;
-    pf_call_loop (xt);
     IP = saved_ip;
 }
 
