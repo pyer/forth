@@ -30,6 +30,7 @@
 #define HLD    hold
 
 /* -------------------------------------------------------------- */
+int  debug_word = 0;
 char *hold;        /* auxiliary pointer for number output */
 /* -------------------------------------------------------------- */
 // input buffer
@@ -49,6 +50,21 @@ void show_word(void)
         pf_outc(' ');
     }
 }
+
+void show_name(p4xt xt)
+{
+    char *nfa = cfa_to_name(xt);
+    if (nfa && (NAMEFLAGS(nfa) & P4xFLAG)) {
+        pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
+        pf_space_();
+    }
+}
+
+void debug_mode(void)
+{
+    debug_word = 1;
+}
+
 /* -------------------------------------------------------------- */
 /** SOURCE ( -- c-addr u )
  *  c-addr is the address of, and u is the number of characters in, the input buffer.
@@ -157,6 +173,7 @@ FCode (pf_call_stop)
 }
 
 /**
+ * the NEXT call.
  * Run a forth word from within C-code
  * - this is the inner interpreter
  */
@@ -176,30 +193,12 @@ void pf_call (p4xt xt)
     if (setjmp (stop.jmp)==0) {
       for (;;) {
         /* ip and WP are same: register or not */
-        WP = *IP++, (*WP) (); // next
+        if (debug_word)
+            show_name(*IP);
+        WP = *IP++; (*WP) (); // next
       }
     }
     IP = saved_ip;
-}
-
-/* -------------------------------------------------------------- */
-/**
- * the NEXT call. Can be replaced by pf_debug_execute to
- * trace the inner forth interpreter.
- */
-void pf_normal_execute (p4xt xt)
-{
-    pf_call(xt);
-}
-
-void pf_debug_execute (p4xt xt)
-{
-    char *nfa = cfa_to_name(xt);
-    if (nfa && (NAMEFLAGS(nfa) & P4xFLAG)) {
-        pf_type ((const char *)NAMEPTR(nfa), NAMELEN(nfa));
-        pf_space_();
-    }
-    pf_call(xt);
 }
 
 /* -------------------------------------------------------------- */
@@ -565,8 +564,7 @@ int pf_find_word(void)
 
     xt = name_to_cfa (nfa);
     if (! STATE || (NAMEFLAGS(nfa) & P4xIMMEDIATE)) {
-/*      pf_call (xt);    * execute it now */
-        execute (xt);
+      pf_call (xt);    /* execute it now */
       pf_Q_stack_();   /* check stack */
     } else {
       FX_XCOMMA (xt);  /* comma token */

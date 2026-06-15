@@ -24,8 +24,6 @@ extern p4xt    WP;        /* speed up the inner interpreter */
 /* useful shortcuts */
 # define WP_PFA  ((p4cell *)&WP[1]) 
 
-extern void (*execute)(p4xt);  /* := normal_execute */
-
 extern p4cell *csp;       /* compiler security, saves sp here */
 #define CSP        (csp)
 

@@ -448,7 +448,7 @@ FCode (p4_dup)
  */
 FCode (p4_execute)
 {
-    execute ((p4xt) *SP++);
+    pf_call ((p4xt) *SP++);
 }
 
 /** FILL ( mem-ptr mem-len char# -- ) [ANS]

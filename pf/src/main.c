@@ -202,10 +202,9 @@ int main (int argc, char** argv)
     char *include = NULL;
     char *load = NULL;
     int boot_file = 1;
+    int debug = 0;
     int index = 1;
   
-    execute = pf_normal_execute;
-
     while (index<argc) {
       option = argv[index];
       if (option[0] == '-') {
@@ -213,7 +212,7 @@ int main (int argc, char** argv)
         case '-':
             break;
         case 'd':
-            execute = pf_debug_execute;
+            debug = 1;
             break;
         case 'e':
             index++;
@@ -276,6 +275,9 @@ int main (int argc, char** argv)
         free(dict);
         return 0;
     }
+
+    if (debug)
+        debug_mode();
 
     for (;;) {
             if (isatty (STDIN_FILENO))
