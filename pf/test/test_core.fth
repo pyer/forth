@@ -74,6 +74,7 @@ S" check ROT        " 3 2 1 rot 3 = tmp ! drop drop tmp @ check
 S" check SWAP       " 0 1 swap 0= swap drop check
 S" check XOR        " 0x55 0xAA xor 0xFF = check
 }Test
+cr
 
 ." Testing core extension words"
 Test{
@@ -87,6 +88,7 @@ S" check TUCK     " 1 0 tuck drop drop 0= check
 S" check WITHIN   " 1 2 3 within check
 
 }Test
+cr
 
 ." Testing interpreter words"
 Test{
@@ -138,3 +140,4 @@ S" check FIND undefined word " STRING3 find  0 = swap STRING3 = AND check
     ( "INCLUDED",     pf_included)
 
 }Test
+

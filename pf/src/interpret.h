@@ -31,14 +31,17 @@ char pf_number2digit(p4cell n);
 void pf_call (p4xt xt);
 
 char * pf_tick_nfa (void);
-p4xt pf_tick_cfa (void);
 
 void pf_skip_spaces(void);
 void pf_parse_word( char delimiter );
+char* parsed_word_ptr(void);
+int parsed_word_len(void);
 FCode (pf_parse_comma_quote);
 
 char* pf_word ( char );
 char* cap_word ( char );
+
+char* pf_find (const char *nm, int l);
 
 FCode (pf_char);
 FCode (pf_tick);

@@ -31,5 +31,5 @@ variable stack-depth
   if   tests @ . ." tests, " success @ . ." success, " errors @ . ." errors"
   else ." Stack error"
   then
-  cr cr ;
+  cr ;
 

@@ -436,6 +436,17 @@ void pf_parse_word( char delimiter )
     to_in = i+1;
 }
 
+// parsed word
+char* parsed_word_ptr(void)
+{
+    return word_ptr;
+}
+
+int parsed_word_len(void)
+{
+    return word_len;
+}
+
 /* -------------------------------------------------------------- */
 /**
  * tick next word,  and
@@ -453,14 +464,6 @@ char * pf_tick_nfa (void)
     return p;
 }
 
-/**
- * tick next word,  and return xt
- */
-p4xt pf_tick_cfa (void)
-{
-    return name_to_cfa (pf_tick_nfa ());
-}
-
 /** "'" ( 'name' -- name-xt* ) [ANS]
  * return the execution token of the following name. This word
  * is _not_ immediate and may not do what you expect in
@@ -471,7 +474,7 @@ p4xt pf_tick_cfa (void)
  */
 FCode (pf_tick)
 {
-    *--SP = (p4cell) pf_tick_cfa();
+    *--SP = (p4cell) name_to_cfa (pf_tick_nfa ());
 }
 
 /* -------------------------------------------------------------- */
