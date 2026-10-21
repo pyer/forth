@@ -883,9 +883,8 @@ STATE             ( -- a-addr )
                   STATE is true when in compilation state, false otherwise.  The true
                   value in STATE is non-zero, but is otherwise implementation-defined.
                   Only the following standard words alter the value in STATE: : (colon),
-                  ; (semicolon), ABORT, QUIT, :NONAME, [ (left-bracket), and ] (right-
-                  bracket).
-            Note: A program shall not directly alter the contents of STATE.
+                  ; (semicolon), ABORT, QUIT, [ (left-bracket), and ] (right-bracket).
+            Note: A program shall not directly alter the content of STATE.
 
 SWAP              ( x1 x2 -- x2 x1 )
                   Exchange the top two stack items.

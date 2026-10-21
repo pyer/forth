@@ -380,7 +380,6 @@ P4RUNTIME(pf_does, pf_does_RT);
 /* -------------------------------------------------------------- */
 /** "(NEST)" ( -- ) [HIDDEN]
  * compiled by => :
- * (see also => (NONAME) compiled by => :NONAME )
  */
 FCode (pf_colon_RT)
 {
@@ -418,7 +417,7 @@ FCode (pf_semicolon_execution)
 /** ";" ( -- ) [ANS] [EXIT] [END]
  * compiles => ((;)) which does => EXIT the current
  * colon-definition. It does then end compile-mode
- * and returns to execute-mode. See => : and => :NONAME
+ * and returns to execute-mode. See => :
  */
 FCode (pf_semicolon)
 {
@@ -657,8 +656,7 @@ FCode (p4_right_bracket)
  * traditional forth this is not even the least different than
  * a simple => , but in call-threaded code there's a big
  * difference - so COMPILE, is the portable one. Unlike
- * => COMPILE , => [COMPILE] and => POSTPONE this word does
- * not need the xt to have actually a name, see => :NONAME
+ * => COMPILE , => [COMPILE] and => POSTPONE
  */
 FCode (pf_compile_comma)
 {
