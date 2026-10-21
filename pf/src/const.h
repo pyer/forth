@@ -32,36 +32,6 @@
 #define P4xIMMEDIATE   0x40  /*  */
 #define P4xSMUDGED     0x20  /* the count byte of a definition */
 /* ---------------------------------------------------------------------- */
-/*
- * Decompiler style. Each 5 comma separated numbers, meaning:
- * (1) additional spaces after print,
- * (2) cr before print, (3) changed indentation for first cr,
- * (4) cr after print, (5) changed indentation for second cr.
- */
-
-#define P4_DEFAULT_STYLE    0, 0,  0,  0,  0
-#define P4_SEMICOLON_STYLE  0, 0, -4,  3,  0
-#define P4_DOES_STYLE       0, 1, -4,  0,  4
-
-#define P4_IF_STYLE         1, 1,  0,  0,  4
-#define P4_ELSE_STYLE       1, 1, -4,  1,  4
-#define P4_THEN_STYLE       1, 1, -4,  1,  0
-
-#define P4_BEGIN_STYLE      1, 1,  0,  0,  4
-#define P4_WHILE_STYLE      1, 1, -4,  0,  4
-#define P4_REPEAT_STYLE     1, 1, -4,  1,  0
-#define P4_UNTIL_STYLE      1, 1, -4,  1,  0
-#define P4_AGAIN_STYLE      1, 1, -4,  1,  0
-
-#define P4_DO_STYLE         1, 1,  0,  0,  4
-#define P4_LOOP_STYLE       1, 1, -4,  1,  0
-
-#define P4_CASE_STYLE       1, 1,  0,  0,  4
-#define P4_OF_STYLE         1, 1,  0,  0,  4
-#define P4_ENDOF_STYLE      0, 0,  0,  1, -4
-#define P4_ENDCASE_STYLE    0, 1, -4,  1,  0
-
-/* ---------------------------------------------------------------------- */
 /* Readable macros for magic numbers suggested by spc@pineal.math.fau.edu */
 /* FIXME: not ready for 16bit, isn't it? */
 #if BYTEORDER == 4321
