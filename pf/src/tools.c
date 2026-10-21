@@ -337,9 +337,24 @@ FCode (pf_see)
 FCode (pf_man)
 {
     char buffer[256];
-    char* nfa = pf_tick_nfa();
-    char *name = NAMEPTR(nfa);
-    int  len   = NAMELEN(nfa);
+    pf_skip_spaces();
+    pf_parse_word(' ');
+    char* name = parsed_word_ptr();
+    int   len  = parsed_word_len();
+    if (*name == '"' && len == 1) {
+      // " is in the manual but not in the dictionary
+      ;
+    } else {
+      register char* nfa = pf_find (name, len);
+      if (nfa) {
+        name = NAMEPTR(nfa);
+        len  = NAMELEN(nfa);
+      } else {
+        pf_outs("\nundefined\n");
+        return;
+      }
+    }
+
     bool notfound = 1;
     pf_cr_();
     FILE *fh = fopen( PF_HELP_FILE, "r" );
@@ -356,7 +371,7 @@ FCode (pf_man)
         }
         fclose( fh );
         if( notfound ) {
-          pf_outs("undocumented");
+          pf_outs("undocumented\n");
         }
     } else {
         printf( "ERROR: file %s not found.\n", name );
