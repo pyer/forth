@@ -251,6 +251,16 @@ FCode (p4_f_literal)
 }
 P4COMPILE (p4_f_literal, p4_f_literal_execution, P4_SKIPS_FLOAT);
 
+FCode (p4_float_plus)
+{
+    *SP += sizeof(p4fcell);
+}
+
+FCode (p4_floats)
+{
+    *SP *= sizeof(p4fcell);
+}
+
 FCode (p4_floor)
 {
   *fp = floor (*fp);
@@ -366,16 +376,6 @@ FCode (pf_f_e_dot)
     pf_outf ("%.*e ", (int)precision, *fp++);
 }
 
-FCode (p4_float_plus)
-{
-    *SP += sizeof(p4fcell);
-}
-
-FCode (p4_floats)
-{
-    *SP *= sizeof(p4fcell);
-}
-
 FCode (p4_f_star_star)
 {
     fp[1] = pow (fp[1], fp[0]);
@@ -397,17 +397,6 @@ FCode (p4_s_f_fetch)
     *--fp = *(float *) *SP++;
 }
 
-/*
-FCode (p4_s_float_plus)
-{
-    *SP += sizeof (float);
-}
-
-FCode (p4_s_floats)
-{
-    *SP *= sizeof (float);
-}
-*/
 
 /*-- simple mappings to the ANSI-C library  --*/
 /*

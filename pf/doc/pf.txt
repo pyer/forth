@@ -602,6 +602,35 @@ FIND              ( c-addr -- c-addr 0  |  xt 1  |  xt -1 )
                   those returned while not compiling.
              See: ', ['], POSTPONE.
 
+FCONSTANT         ( "<spaces>name" -- ) ( F: r -- ) or ( r "<spaces>name" -- )
+                  Skip leading space delimiters. Parse name delimited by a space.
+                  Create a definition for name with the execution semantics defined below.
+                  name is referred to as an "f-constant".
+  name Execution: ( -- ) ( F: -- r ) or ( -- r )
+                  Place r on the floating-point stack.
+
+FVARIABLE         ( "<spaces>name" -- )
+                  Skip leading space delimiters. Parse name delimited by a space.
+                  Create a definition for name with the execution semantics defined below.
+                  Reserve 1 FLOATS address units of data space at a float-aligned address.
+                  name is referred to as an "f-variable".
+  name Execution: ( -- f-addr )
+                  f-addr is the address of the data space reserved by FVARIABLE when it created name.
+                  A program is responsible for initializing the contents of the reserved space.
+
+FLITERAL
+  Interpretation: Interpretation semantics for this word are undefined.
+     Compilation: ( F: r -- ) or ( r -- )
+                  Append the run-time semantics given below to the current definition.
+       Execution: ( F: -- r ) or ( -- r )
+                  Place r on the floating-point stack.
+
+FLOAT+            ( f-addr1 -- f-addr2 )
+                  Add the size in address units of a floating-point number to f-addr1, giving f-addr2.
+
+FLOATS            ( n1 -- n2 )
+                  n2 is the size in address units of n1 floating-point numbers.
+
 HERE              ( -- addr )
                   addr is the data-space pointer.
 
@@ -616,8 +645,22 @@ HOLD              ( char -- )
 I
   Interpretation: Interpretation semantics for this word are undefined.
        Execution: ( -- n|u )  ( R:  loop-sys -- loop-sys )
-                  n|u is a copy of the current (innermost) loop index.  An ambiguous
+                  n|u is a copy of the current (innermost) loop index. An ambiguous
                   condition exists if the loop control parameters are unavailable.
+
+J
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- n|u ) ( R: loop-sys1 loop-sys2 -- loop-sys1 loop-sys2 )
+                  n|u is a copy of the next-outer loop index. An ambiguous condition
+                  exists if the loop control parameters of the next-outer loop, loop-sys1,
+                  are unavailable.
+
+K
+  Interpretation: Interpretation semantics for this word are undefined.
+       Execution: ( -- n|u ) ( R: loop-sys1 loop-sys2 loop-sys3 -- loop-sys1 loop-sys2 loop-sys3 )
+                  n|u is a copy of the next next-outer loop index. An ambiguous condition
+                  exists if the loop control parameters of the next-outer loop, loop-sys1,
+                  loop-sys3 are unavailable.
 
 IF
   Interpretation: Interpretation semantics for this word are undefined.
@@ -656,13 +699,6 @@ INCLUDED          ( i * x c-addr u -- j * x )
 INVERT            ( x1 -- x2 )
                   Invert all bits of x1, giving its logical inverse x2.
              See: NEGATE, NOT, 0=.
-
-J
-  Interpretation: Interpretation semantics for this word are undefined.
-       Execution: ( -- n|u ) ( R: loop-sys1 loop-sys2 -- loop-sys1 loop-sys2 )
-                  n|u is a copy of the next-outer loop index.  An ambiguous condition
-                  exists if the loop control parameters of the next-outer loop, loop-sys1,
-                  are unavailable.
 
 KEY               ( -- char )
                   Receive one character char, a member of the implementation-defined
