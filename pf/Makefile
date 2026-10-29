@@ -43,12 +43,12 @@ manual:
 
 test:
 	@pf test/test_core.fth
-	@pf test/test_does.fth
 	@pf test/test_floating.fth
+	@pf test/test_does.fth
+	@pf test/test_control_flow.fth
 	@pf -e quit
 	@pf -i test/test_options.fth -e test_execute
 	@pf -i test/test_options.fth -e test_include
 	@pf -i test/test_options.fth -e test_skip -s
 	@test/test_shebang.fth
-
 
