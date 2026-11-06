@@ -185,7 +185,8 @@ void pf_call (p4xt xt)
     static p4code call_stop = pf_call_stop_;
     p4xt list[3];
     list[0] = xt;
-    list[1] = &call_stop;
+//    list[1] = &call_stop;
+    list[1] = (p4xt) &call_stop;
     list[2] = (p4xt) &stop;
     IP = list;
     WP = *IP;

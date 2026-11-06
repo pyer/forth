@@ -43,6 +43,9 @@ void pf_init_signals (void);
 
 static char memory[TOTAL_SIZE]; /* BSS */
 
+jmp_buf jump_loop;    /* BYE and ABORT do a THROW which longjmp() */
+                      /* here thus C-stack gets cleaned up too */
+
 /************************************************************************/
 /* dictionary */
 char* dict;

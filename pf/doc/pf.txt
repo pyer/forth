@@ -276,8 +276,13 @@ MAN               ( "<spaces>name" -- )
                   x is the value stored at a-addr.
 
 ABORT             ( i*x -- ) ( R: j*x -- )
-                  Empty the data stack and perform the function of QUIT, which includes
-                  emptying the return stack, without displaying a message.
+                  Empty the return stack, make the user input device the input source,
+                  and enter interpretation state.
+                  Do not display a message.  Repeat the following:
+                  -  Accept a line from the input source into the input buffer and interpret.
+                  -  Display the implementation-defined system prompt if in
+                     interpretation state, all processing has been completed, and no
+                     ambiguous condition exists.
 
 ABORT"                          "abort-quote"
   Interpretation: Interpretation semantics for this word are undefined.
@@ -687,7 +692,7 @@ INCLUDED          ( i * x c-addr u -- j * x )
                   Remove c-addr u from the stack. Save the current input source specification.
                   Open the file specified by c-addr u, and make it the input source.
                   Other stack effects are due to the words included.
-                  Repeat until end of file: read a line from the file, fill the input buffer from the contents of that line, set >IN to zero, and interpret.
+                  Repeat until end of file: read a line from the file, fill the input buffer from the contents of that line and interpret.
                   Text interpretation begins at the start of the file.
                   When the end of the file is reached, close the file and restore the input source specification to its saved value.
                   An ambiguous condition exists if the named file can not be opened, if an I/O exception occurs reading the file,
@@ -835,15 +840,9 @@ POSTPONE          NOT IMPLEMENTED
                   name.  Append the compilation semantics of name to the current
                   definition.  An ambiguous condition exists if name is not found.
 
-QUIT              ( -- )  ( R:  i*x -- ) NOT IMPLEMENTED
-                  Empty the return stack, make the user input device the input source,
-                  and enter interpretation state.
-                  Do not display a message.  Repeat the following:
-                  -  Accept a line from the input source into the input buffer, set >IN
-                     to zero, and interpret.
-                  -  Display the implementation-defined system prompt if in
-                     interpretation state, all processing has been completed, and no
-                     ambiguous condition exists.
+QUIT              ( -- )  ( R:  i*x -- )
+                  Return control to the host operating system.
+            See : BYE
 
 R>                                "r-from"
   Interpretation: Interpretation semantics for this word are undefined.
@@ -919,7 +918,7 @@ STATE             ( -- a-addr )
                   STATE is true when in compilation state, false otherwise.  The true
                   value in STATE is non-zero, but is otherwise implementation-defined.
                   Only the following standard words alter the value in STATE: : (colon),
-                  ; (semicolon), ABORT, QUIT, [ (left-bracket), and ] (right-bracket).
+                  ; (semicolon), ABORT, [ (left-bracket), and ] (right-bracket).
             Note: A program shall not directly alter the content of STATE.
 
 SWAP              ( x1 x2 -- x2 x1 )
@@ -1140,8 +1139,8 @@ HISTORY           ( -- )
                   The format of the display is implementation-dependent.
 
 BYE               ( -- )
-                  Return control to the host operating system.
-
+                  Display a message and return control to the host operating system.
+            See : QUIT
 
 PRECISION         ( -- a-addr )
                   a-addr is the address of a cell containing the number of significant digits

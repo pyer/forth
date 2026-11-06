@@ -34,9 +34,6 @@
 
 
 /************************************************************************/
-jmp_buf jump_loop;    /* BYE and ABORT do a THROW which longjmp() */
-        /* here thus C-stack gets cleaned up too */
-
 p4_Except *catchframe = NULL;  /* links to chain of CATCHed words */
         /* and no exceptions to be caught */
 /************************************************************************/
@@ -235,7 +232,7 @@ FCode (p4_throw)
 {
     p4cell n = *SP++;
     if (n)
-        p4_throw (n);
+        p4_throw(n);
 }
 
 /** ABORT ( -- [THROW] ) [ANS]
