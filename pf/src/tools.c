@@ -108,7 +108,7 @@ FCode (pf_dot_s)
 
     int dd = S0 - SP;
 #if defined PF_WITH_FLOATING
-    int fd = f0 - fp;
+    int fd = F0 - FP;
     if (fd == 0)
 #endif
     {
@@ -128,21 +128,21 @@ FCode (pf_dot_s)
     else if (dd == 0) /* fd !dd */
     {
         /* only floating point stack not empty */
-        pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), "<stack empty>  ", (int)precision, fp[0]);
+        pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), "<stack empty>  ", (int)precision, FP[0]);
         for (i = 1; i < fd; i++) {
-          pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), " ", (int)precision, fp[i]);
+          pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), " ", (int)precision, FP[i]);
         }
     } else { /* fd dd */
         int bd = dd < fd ? dd : fd;
         for (i = 0; i < bd; i++) {
           pf_prCell (SP[i]);
-          pf_outf ("%15.*f ", (int)precision, fp[i]);
+          pf_outf ("%15.*f ", (int)precision, FP[i]);
         }
         for (; i < dd; i++) {
           pf_prCell (SP[i]);
         }
         for (; i < fd; i++) {
-          pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), " ", (int)precision, fp[i]);
+          pf_outf ("\n%*s%15.*f ", (int)(DECWIDTH + HEXWIDTH + 6), " ", (int)precision, FP[i]);
         }
     }
 #endif
@@ -155,10 +155,10 @@ FCode (pf_dot_s)
 FCode (pf_dot_status)
 {
     pf_outf ("\nDictionary space:    %7ld Bytes, in use: %7ld Bytes",(p4cell) (dictlimit - dict),(p4cell) (DP - dict));
-    pf_outf ("\nStack space:         %7ld cells",  (p4cell) (s0 - stack));   /* sizeof (p4cell) */
-    pf_outf ("\nReturn stack space:  %7ld cells",(p4cell) (r0 - rstack));    /* sizeof (p4xt**) */
+    pf_outf ("\nStack space:         %7ld cells",  (p4cell) (S0 - stack));   /* sizeof (p4cell) */
+    pf_outf ("\nReturn stack space:  %7ld cells",(p4cell) (R0 - rstack));    /* sizeof (p4xt**) */
 #if defined PF_WITH_FLOATING
-    pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (f0 - fstack));  /* sizeof (p4fcell) */
+    pf_outf ("\nFloating stack space:%7ld floats", (p4cell) (F0 - fstack));  /* sizeof (p4fcell) */
     pf_outf ("\nprecision:           %3d", (int) precision);
 #endif
     pf_cr_();

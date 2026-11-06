@@ -53,12 +53,12 @@ char* dictlimit;
 char* DP;           /* actual top of the dictionary */
 
 p4cell* stack;      /*  data stack */
-p4cell* s0;
-p4cell* sp;         /* the stack pointer */
+p4cell* S0;
+p4cell* SP;         /* the stack pointer */
 
 p4xt**  rstack;     /*  return stack */
-p4xt**  r0;
-p4xt**  rp;         /* the return stack pointer */
+p4xt**  R0;
+p4xt**  RP;         /* the return stack pointer */
 
 char *LATEST;     /* NFA of most recently CREATEd header */
 
@@ -93,7 +93,7 @@ void abort_system (void)
     BASE = 10;
     SP = S0;        /* stacks */
 #if defined PF_WITH_FLOATING
-    fp = f0;
+    FP = F0;
     precision = 6;
 #endif
 }
@@ -141,14 +141,14 @@ void pf_init_system() /* main_init */
 
     p4_dict_allocate (ret_stack_size, sizeof(p4xt*),
                       sizeof(p4cell),
-                      (void**) & rstack, (void**) &r0);
+                      (void**) & rstack, (void**) &R0);
     p4_dict_allocate (stack_size, sizeof(p4cell),
                       sizeof(p4cell),
-                      (void**) & stack,  (void**) &s0);
+                      (void**) & stack,  (void**) &S0);
 #if defined PF_WITH_FLOATING
     p4_dict_allocate (float_stack_size, sizeof(p4fcell),
                       sizeof(p4fcell),
-                      (void**) &fstack,  (void**) &f0);
+                      (void**) &fstack,  (void**) &F0);
 #endif
 
     if (dictlimit < dict + MIN_PAD + MIN_HOLD + 0x4000) {

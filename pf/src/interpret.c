@@ -1111,7 +1111,7 @@ int pf_convert_float(void)
     /* WORD-string is at HERE */
     if (! pf_to_float (word_ptr, word_len, &f))
         return 0; /* quick path */
-    *--fp = f;
+    *--FP = f;
     return 1;
 }
 #endif

@@ -105,13 +105,13 @@ FCode (pf_Q_pairs)
  */
 FCode (pf_Q_stack)
 {
-    if (RP > r0)            p4_throw (P4_ON_RSTACK_UNDER);
+    if (RP > R0)            p4_throw (P4_ON_RSTACK_UNDER);
     if (RP < rstack)        p4_throw (P4_ON_RSTACK_OVER);
-    if (SP > s0)            p4_throw (P4_ON_STACK_UNDER);
+    if (SP > S0)            p4_throw (P4_ON_STACK_UNDER);
     if (SP < stack)         p4_throw (P4_ON_STACK_OVER);
 #if defined PF_WITH_FLOATING
-    if (fp > f0)            p4_throw (P4_ON_FSTACK_UNDER);
-    if (fp < fstack)        p4_throw (P4_ON_FSTACK_OVER);
+    if (FP > F0)            p4_throw (P4_ON_FSTACK_UNDER);
+    if (FP < fstack)        p4_throw (P4_ON_FSTACK_OVER);
 #endif
     if (dictlimit - MIN_UNUSED < DP) 
         p4_throw (P4_ON_DICT_OVER);  

@@ -3,8 +3,8 @@
 
 
 extern p4fcell* fstack;
-extern p4fcell* f0;
-extern p4fcell* fp;
+extern p4fcell* F0;
+extern p4fcell* FP;
 extern p4cell precision;
 
 int pf_to_float (const char *p, p4cell n, p4fcell *r);

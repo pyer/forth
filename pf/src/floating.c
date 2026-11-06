@@ -43,8 +43,8 @@
 
 /* ------------------------------------------------------------------ */
 p4fcell* fstack;   /* floating point stack */
-p4fcell* f0;
-p4fcell* fp;       /* the floating point stack pointer */
+p4fcell* F0;
+p4fcell* FP;       /* the floating point stack pointer */
 
 /* ------------------------------------------------------------------ */
 #define FX_FCOMMA(X)     P4_COMMA_((X),p4fcell)
@@ -127,7 +127,7 @@ FCode (pf_to_float)
     if ( pf_to_float( p, n, &r ) == 0 ) {
         *SP = P4_FALSE;
     } else {
-        *--fp = r;
+        *--FP = r;
         *SP = P4_TRUE;
     }
 }
@@ -136,7 +136,7 @@ FCode (pf_to_float)
  */
 FCode (pf_s_to_f)
 {
-    *--fp = (p4fcell)(*SP++);
+    *--FP = (p4fcell)(*SP++);
 }
 
 /** ( f: r -- n )
@@ -145,98 +145,98 @@ FCode (pf_s_to_f)
  */
 FCode (pf_f_to_s)
 {
-    *--SP = rint (*fp++);
+    *--SP = rint (*FP++);
 }
 
 FCode (p4_f_store)
 {
-    *(p4fcell *) *SP++ = *fp++;
+    *(p4fcell *) *SP++ = *FP++;
 }
 
 FCode (p4_f_star)
 {
-    fp[1] *= fp[0];
-    fp++;
+    FP[1] *= FP[0];
+    FP++;
 }
 
 FCode (p4_f_plus)
 {
-    fp[1] += fp[0];
-    fp++;
+    FP[1] += FP[0];
+    FP++;
 }
 
 FCode (p4_f_minus)
 {
-    fp[1] -= fp[0];
-    fp++;
+    FP[1] -= FP[0];
+    FP++;
 }
 
 FCode (p4_f_slash)
 {
-    fp[1] /= fp[0];
-    fp++;
+    FP[1] /= FP[0];
+    FP++;
 }
 
 FCode (p4_f_zero_less)
 {
-    *--SP = P4_FLAG (*fp++ < 0);
+    *--SP = P4_FLAG (*FP++ < 0);
 }
 
 FCode (p4_f_zero_equal)
 {
-    *--SP = P4_FLAG (*fp++ == 0);
+    *--SP = P4_FLAG (*FP++ == 0);
 }
 
 FCode (p4_f_less_than)
 {
-    *--SP = P4_FLAG (fp[1] < fp[0]);
-    fp += 2;
+    *--SP = P4_FLAG (FP[1] < FP[0]);
+    FP += 2;
 }
 
 FCode (p4_f_equal)
 {
-    p4fcell f1 = *fp++;
-    p4fcell f2 = *fp++;
+    p4fcell f1 = *FP++;
+    p4fcell f2 = *FP++;
     *--SP = P4_FLAG (f1 == f2);
 }
 
 FCode (p4_f_fetch)
 {
-    *--fp = *(p4fcell *) *SP++;
+    *--FP = *(p4fcell *) *SP++;
 }
 
 FCode (p4_f_constant_RT)
 {
-    *--fp = *(p4fcell *)WP_PFA;
+    *--FP = *(p4fcell *)WP_PFA;
 }
 
 FCode (p4_f_constant)
 {
     p4_header_in();
     FX_RUNTIME (p4_f_constant);
-    FX_FCOMMA (*fp++);
+    FX_FCOMMA (*FP++);
 }
 P4RUNTIME(p4_f_constant, p4_f_constant_RT);
 
 FCode (p4_f_depth)
 {
-    *--SP = f0 - fp;
+    *--SP = F0 - FP;
 }
 
 FCode (p4_f_drop)
 {
-    fp++;
+    FP++;
 }
 
 FCode (p4_f_dup)
 {
-    fp--;
-    fp[0] = fp[1];
+    FP--;
+    FP[0] = FP[1];
 }
 
 FCode (p4_f_literal_execution)
 {
-    *--fp = *((*(p4fcell **)&(IP))++);
+    *--FP = *((*(p4fcell **)&(IP))++);
 }
 
 FCode (p4_f_literal)
@@ -246,7 +246,7 @@ FCode (p4_f_literal)
             FX_COMPILE (p4_f_literal);
         }
         FX_COMPILE (p4_f_literal);
-        FX_FCOMMA (*fp++);
+        FX_FCOMMA (*FP++);
     }
 }
 P4COMPILE (p4_f_literal, p4_f_literal_execution, P4_SKIPS_FLOAT);
@@ -263,55 +263,55 @@ FCode (p4_floats)
 
 FCode (p4_floor)
 {
-  *fp = floor (*fp);
+  *FP = floor (*FP);
 }
 
 FCode (p4_f_max)
 {
-    if (fp[0] > fp[1])
-        fp[1] = fp[0];
-    fp++;
+    if (FP[0] > FP[1])
+        FP[1] = FP[0];
+    FP++;
 }
 
 FCode (p4_f_min)
 {
-    if (fp[0] < fp[1])
-        fp[1] = fp[0];
-    fp++;
+    if (FP[0] < FP[1])
+        FP[1] = FP[0];
+    FP++;
 }
 
 FCode (p4_f_negate)
 {
-    *fp = -*fp;
+    *FP = -*FP;
 }
 
 FCode (p4_f_over)
 {
-    fp--;
-    fp[0] = fp[2];
+    FP--;
+    FP[0] = FP[2];
 }
 
 FCode (p4_f_rot)
 {
-    p4fcell h = fp[2];
+    p4fcell h = FP[2];
 
-    fp[2] = fp[1];
-    fp[1] = fp[0];
-    fp[0] = h;
+    FP[2] = FP[1];
+    FP[1] = FP[0];
+    FP[0] = h;
 }
 
 FCode (p4_f_round)
 {
     /* correct and fast */
-    *fp = rint (*fp);
+    *FP = rint (*FP);
 }
 
 FCode (p4_f_swap)
 {
-    p4fcell h = fp[1];
+    p4fcell h = FP[1];
 
-    fp[1] = fp[0];
-    fp[0] = h;
+    FP[1] = FP[0];
+    FP[0] = h;
 }
 
 FCode (p4_f_variable_RT)
@@ -333,7 +333,7 @@ FCode (p4_represent)    /* with help from Lennart Benshop */
     int u, log, sign;
     p4fcell f;
 
-    f = *fp++;
+    f = *FP++;
     p = (char *) SP[1];
     u = SP[0];
     SP--;
@@ -368,59 +368,59 @@ FCode (p4_represent)    /* with help from Lennart Benshop */
 
 FCode (pf_f_dot)
 {
-    pf_outf ("%.*f ", (int)precision, *fp++);
+    pf_outf ("%.*f ", (int)precision, *FP++);
 }
 
 FCode (pf_f_e_dot)
 {
-    pf_outf ("%.*e ", (int)precision, *fp++);
+    pf_outf ("%.*e ", (int)precision, *FP++);
 }
 
 FCode (p4_f_star_star)
 {
-    fp[1] = pow (fp[1], fp[0]);
-    fp++;
+    FP[1] = pow (FP[1], FP[0]);
+    FP++;
 }
 
 FCode (p4_f_abs)
 {
-  *fp = fabs (*fp);
+  *FP = fabs (*FP);
 }
 
 FCode (p4_s_f_store)
 {
-    *(float *) *SP++ = *fp++;
+    *(float *) *SP++ = *FP++;
 }
 
 FCode (p4_s_f_fetch)
 {
-    *--fp = *(float *) *SP++;
+    *--FP = *(float *) *SP++;
 }
 
 
 /*-- simple mappings to the ANSI-C library  --*/
 /*
-FCode (p4_f_acos)  { *fp = acos (*fp); }
-FCode (p4_f_acosh)  { *fp = acosh (*fp); }
-FCode (p4_f_alog)  { *fp = pow10 (*fp); }
-FCode (p4_f_asin)  { *fp = asin (*fp); }
-FCode (p4_f_asinh)  { *fp = asinh (*fp); }
-FCode (p4_f_atan)  { *fp = atan (*fp); }
-FCode (p4_f_atan2)  { fp [1] = atan2 (fp [1], fp [0]); fp++; }
-FCode (p4_f_atanh)  { *fp = atanh (*fp); }
-FCode (p4_f_cos)  { *fp = cos (*fp); }
-FCode (p4_f_cosh)  { *fp = cosh (*fp); }
-FCode (p4_f_exp)  { *fp = exp (*fp); }
-FCode (p4_f_expm1)  { *fp = expm1 (*fp); }
-FCode (p4_f_ln)    { *fp = log (*fp); }
-FCode (p4_f_lnp1)  { *fp = log1p (*fp); }
-FCode (p4_f_log)  { *fp = log10 (*fp); }
-FCode (p4_f_sin)  { *fp = sin (*fp); }
-FCode (p4_f_sincos)  { --fp; fp [0] = cos (fp [1]); fp [1] = sin (fp [1]); }
-FCode (p4_f_sinh)  { *fp = sinh (*fp); }
-FCode (p4_f_sqrt)  { *fp = sqrt (*fp); }
-FCode (p4_f_tan)  { *fp = tan (*fp); }
-FCode (p4_f_tanh)  { *fp = tanh (*fp); }
+FCode (p4_f_acos)  { *FP = acos (*FP); }
+FCode (p4_f_acosh)  { *FP = acosh (*FP); }
+FCode (p4_f_alog)  { *FP = pow10 (*FP); }
+FCode (p4_f_asin)  { *FP = asin (*FP); }
+FCode (p4_f_asinh)  { *FP = asinh (*FP); }
+FCode (p4_f_atan)  { *FP = atan (*FP); }
+FCode (p4_f_atan2)  { FP [1] = atan2 (FP [1], FP [0]); FP++; }
+FCode (p4_f_atanh)  { *FP = atanh (*FP); }
+FCode (p4_f_cos)  { *FP = cos (*FP); }
+FCode (p4_f_cosh)  { *FP = cosh (*FP); }
+FCode (p4_f_exp)  { *FP = exp (*FP); }
+FCode (p4_f_expm1)  { *FP = expm1 (*FP); }
+FCode (p4_f_ln)    { *FP = log (*FP); }
+FCode (p4_f_lnp1)  { *FP = log1p (*FP); }
+FCode (p4_f_log)  { *FP = log10 (*FP); }
+FCode (p4_f_sin)  { *FP = sin (*FP); }
+FCode (p4_f_sincos)  { --FP; FP [0] = cos (FP [1]); FP [1] = sin (FP [1]); }
+FCode (p4_f_sinh)  { *FP = sinh (*FP); }
+FCode (p4_f_sqrt)  { *FP = sqrt (*FP); }
+FCode (p4_f_tan)  { *FP = tan (*FP); }
+FCode (p4_f_tanh)  { *FP = tanh (*FP); }
 */
 
 /* ************************************************** */
