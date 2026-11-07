@@ -520,7 +520,7 @@ FCode (pf_allot)
  */
 FCode (pf_constant_RT)
 {
-    *--SP = WP_PFA[0];
+    *--SP = *WP_PFA;
 }
 
 /** CONSTANT ( value 'name' -- ) [ANS] [DOES: -- value ]

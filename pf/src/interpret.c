@@ -189,11 +189,10 @@ void pf_call (p4xt xt)
     list[1] = (p4xt) &call_stop;
     list[2] = (p4xt) &stop;
     IP = list;
-    WP = *IP;
 
     if (setjmp (stop.jmp)==0) {
       for (;;) {
-        /* ip and WP are same: register or not */
+        // ip and WP are same: register or not
         if (debug_word)
             show_name(*IP);
         WP = *IP++; (*WP) (); // next
