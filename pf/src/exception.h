@@ -1,41 +1,10 @@
 #ifndef _PF_EXCEPTION_H
 #define _PF_EXCEPTION_H
 
-/** 
- * --  Exception-oriented Subroutines.
- * 
- *  Copyright (C) Tektronix, Inc. 1998 - 2001.
- *  Copyright (C) 2005 - 2008 Guido U. Draheim <guidod@gmx.de>
- *
- *  @see     GNU LGPL
- *  @author  Guido U. Draheim            (modified by $Author: guidod $)
- *  @version $Revision: 1.6 $
- *     (modified $Date: 2008-05-04 02:57:30 $)
- */
-
 extern jmp_buf jump_loop;
 
 #define pf_longjmp_abort() (longjmp(jump_loop, 'A'))
 #define pf_longjmp_exit()  (longjmp(jump_loop, 'X'))
-
-typedef struct p4_Except p4_Except; /* an exception frame */
-
-struct p4_Except
-{
-    p4cell magic;
-    p4xt** rpp;              /* P4_REGRP_T */
-    p4xt *ipp;               /* P4_REGIP_T */
-    p4cell *spp;             /* P4_REGSP_T */
-    p4cell *lpp;             /* P4_REGLP_T */
-    p4fcell *fpp;            /* P4_REGFP_T */
-    jmp_buf jmp;
-    p4_Except *prev;
-};
-
-/**
- * the CATCH impl
- */
-int p4_catch (p4xt xt) ; /*{*/
 
 /**
  * the THROW impl

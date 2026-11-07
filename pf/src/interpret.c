@@ -163,13 +163,13 @@ char * cfa_to_name (p4xt xt)
  */
 
 /**
- * longjmp via (Except->jmp) following inline
+ * longjmp following inline
  * - purpose: stop the inner interpreter
  */
 FCode (pf_call_stop)
 {
-    p4_Except *buf = (p4_Except *) *IP;
-    longjmp (buf->jmp, 1);
+    jmp_buf *buf = (jmp_buf *) *IP;
+    longjmp (*buf, 1);
 }
 
 /**
@@ -179,18 +179,17 @@ FCode (pf_call_stop)
  */
 void pf_call (p4xt xt)
 {
-    p4_Except stop;
+    jmp_buf jump_call;
     p4xt *saved_ip = IP;
 
     static p4code call_stop = pf_call_stop_;
     p4xt list[3];
     list[0] = xt;
-//    list[1] = &call_stop;
     list[1] = (p4xt) &call_stop;
-    list[2] = (p4xt) &stop;
+    list[2] = (p4xt) &jump_call;
     IP = list;
 
-    if (setjmp (stop.jmp)==0) {
+    if (setjmp (jump_call)==0) {
       for (;;) {
         // ip and WP are same: register or not
         if (debug_word)

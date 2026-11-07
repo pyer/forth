@@ -34,9 +34,6 @@
 
 
 /************************************************************************/
-p4_Except *catchframe = NULL;  /* links to chain of CATCHed words */
-        /* and no exceptions to be caught */
-/************************************************************************/
 
 /*
  * show the error, along with info like the block, filename, line numer.
@@ -130,67 +127,17 @@ static void throw_msg (int id, char *msg)
     }
 }
 
-/**
- * the CATCH impl
- */
-int p4_catch (p4xt xt)
-{
-    register int returnvalue;
-    auto p4_Except frame;
-
-    frame.magic = P4_EXCEPTION_MAGIC;
-    frame.ipp = IP;
-    frame.spp = SP;
-#if defined PF_WITH_FLOATING
-    frame.fpp = FP;
-#endif
-    frame.rpp = RP;
-    frame.prev = catchframe;  catchframe = &frame;
-    returnvalue = setjmp (frame.jmp);
-    if (! returnvalue) {
-        pf_call (xt);
-    }
-    catchframe = frame.prev;
-    RP = frame.rpp;
-    return returnvalue;
-}
-
-/** CATCH ( catch-xt* -- 0 | throw#! ) [ANS]
- * execute the given execution-token and catch
- * any exception that can be caught therein.
- * software can arbitrarily raise an exception
- * using => THROW - the value 0 means there
- * was no exception, other denote implementation
- * dependent exception-codes.
- */
-FCode (p4_catch)
-{
-    p4cell catch_code = p4_catch ((p4xt) *SP++);
-    *--SP = catch_code;
-}
-
 
 /**
  * the THROW impl
  */
 void p4_throwstr (int id, const char* description)
 {
-    p4_Except *frame = catchframe;
     char msg[256];
     char* addr = (char*) description;
     int len = 0;
     if (description)
         len = strlen(description);
-
-    if (frame && frame->magic == P4_EXCEPTION_MAGIC) {
-        IP = frame->ipp;
-        SP = frame->spp;
-#if defined PF_WITH_FLOATING
-        FP = frame->fpp;
-#endif
-        RP = frame->rpp;
-        longjmp (frame->jmp, id);
-    }
 
     *--RP = IP;
     CSP = (p4cell*) RP;         /* come_back marker */
@@ -270,7 +217,6 @@ P4COMPILE (pf_abort_quote, pf_abort_quote_execution, P4_SKIPS_STRING);
 
 WORDS (exception) =
 {
-    P4_FXco ("CATCH",    p4_catch),
     P4_FXco ("THROW",    p4_throw),
     P4_FXco ("ABORT",    pf_abort),
     P4_SXco ("ABORT\"",  pf_abort_quote),
