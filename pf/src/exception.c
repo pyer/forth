@@ -215,11 +215,22 @@ FCode (pf_abort_quote)
 }
 P4COMPILE (pf_abort_quote, pf_abort_quote_execution, P4_SKIPS_STRING);
 
+/* ----------------------------------------------------------------------- */
+/** QUIT ( -- ) no-return
+ * should quit the forth environment completly and silently
+ */
+FCode (pf_quit)
+{
+    pf_longjmp_exit ();
+}
+
+/************************************************************************/
 WORDS (exception) =
 {
     P4_FXco ("THROW",    p4_throw),
     P4_FXco ("ABORT",    pf_abort),
     P4_SXco ("ABORT\"",  pf_abort_quote),
+    P4_FXco ("QUIT",     pf_quit),
     P4_END
 };
 

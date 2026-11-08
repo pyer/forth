@@ -1,3 +1,7 @@
+\ Default lib
+
+: BYE CR ." Goodbye !" CR QUIT ;
+
 : ?  @ . ;
 
 : decimal 10 base ! ;

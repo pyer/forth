@@ -21,7 +21,6 @@
  */
 
 #include <ctype.h>
-#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,8 +28,8 @@
 #include "config.h"
 #include "const.h"
 #include "macro.h"
+
 #include "compiler.h"
-#include "exception.h"
 #include "interpret.h"
 #include "terminal.h"
 #include "history.h"
@@ -39,24 +38,6 @@
 #if defined PF_WITH_FLOATING
   #include "floating.h"
 #endif
-
-/* ----------------------------------------------------------------------- */
-/** BYE ( -- ) no-return
- * should quit the forth environment completly with a message
- */
-FCode (pf_bye)
-{
-    pf_outs ("\nGoodbye!\n");
-    pf_longjmp_exit ();
-}
-
-/** QUIT ( -- ) no-return
- * should quit the forth environment completly and silently
- */
-FCode (pf_quit)
-{
-    pf_longjmp_exit ();
-}
 
 /* ----------------------------------------------------------------------- */
 #define DECWIDTH (sizeof (p4cell) * 5 / 2 + 1)
@@ -453,8 +434,6 @@ FCode (pf_history)
 /* ----------------------------------------------------------------------- */
 WORDS (tools) =
 {
-    P4_FXco ("BYE",          pf_bye),
-    P4_FXco ("QUIT",         pf_quit),
     P4_FXco (".S",           pf_dot_s),
     P4_FXco (".STATUS",      pf_dot_status),
     P4_FXco (".VERSION",     pf_dot_version),

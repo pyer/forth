@@ -204,8 +204,9 @@ int main (int argc, char** argv)
     char *exec_word = NULL;
     char *include = NULL;
     char *load = NULL;
-    int boot_file = 1;
-    int debug = 0;
+    bool boot_file = true;
+    bool debug = false;
+
     int index = 1;
   
     while (index<argc) {
@@ -215,7 +216,7 @@ int main (int argc, char** argv)
         case '-':
             break;
         case 'd':
-            debug = 1;
+            debug = true;
             break;
         case 'e':
             index++;
@@ -226,7 +227,7 @@ int main (int argc, char** argv)
             include = argv[index];
             break;
         case 's':
-            boot_file = 0;
+            boot_file = false;
             break;
         case 'v':
             puts(pf_version_string());
@@ -256,31 +257,33 @@ int main (int argc, char** argv)
     case 'A': /* do abort */
         abort_system();
         break;
-    case 0:
+    case 'X': /* do quit */
+        pf_cr_();
+        pf_cleanup_terminal();
+        free(dict);
+        return 0;
+    case 0: /* manage options */
         if ( boot_file )
-            pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
-        if ( include ) {
-            pf_include(include, strlen(include));
-        }
-        if ( load ) {
-            pf_include(load, strlen(load));
-        }
-        if ( exec_word ) {
-            pf_interpret(exec_word, strlen(exec_word), 0);
-        }
+          pf_include((const char *)PF_BOOT_FILE, strlen(PF_BOOT_FILE) );
+        if ( include )
+          pf_include(include, strlen(include));
+        if ( debug )
+          debug_mode();
+        if ( load )
+          pf_include(load, strlen(load));
+        if ( exec_word )
+          pf_interpret(exec_word, strlen(exec_word), 0);
+
         if ( load || exec_word ) {
-            pf_cr_();
             pf_longjmp_exit ();
         }
         break;
-    default:
+    default: /* same as quit */
+        pf_cr_();
         pf_cleanup_terminal();
         free(dict);
         return 0;
     }
-
-    if (debug)
-        debug_mode();
 
     for (;;) {
             if (isatty (STDIN_FILENO))
