@@ -1029,10 +1029,11 @@ P4COMPILE (pf_endcase, p4_drop, P4_SKIPS_NOTHING);
  */
 FCode (pf_of_execution)
 {
-    if (SP[0] != SP[1])          /* tos equals second? */
-    { SP += 1; FX_BRANCH; }      /* no: drop top, branch */
-    else
-    { SP += 2; FX_SKIP_BRANCH; } /* yes: drop both, don't branch */
+    if (SP[0] != SP[1]) {        /* tos equals second? */
+      SP += 1; FX_BRANCH;        /* no: drop top, branch */
+    } else {
+      SP += 2; FX_SKIP_BRANCH;   /* yes: drop both, don't branch */
+    }
 }
 
 /** OF ( value test -- value ) [ANS]
