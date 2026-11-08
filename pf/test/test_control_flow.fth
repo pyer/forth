@@ -61,7 +61,7 @@ CR
     1 OF 11 ENDOF
     2 OF 22 ENDOF
     3 OF 33 ENDOF
-    ( other case) 44
+    44 swap
   ENDCASE ;
 
 Test{
